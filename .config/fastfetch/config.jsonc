@@ -16,37 +16,37 @@
     {
       "type": "kernel",
       "key": "kernel",
-      "keyColor": "red",
+      "keyColor": "#FFB6C1",
     },
     {
       "type": "wm",
       "key": "wm",
-      "keyColor": "red",
+      "keyColor": "#FFB6C1",
     },
     {
       "type": "uptime",
       "key": "uptime",
-      "keyColor": "red",
+      "keyColor": "#FFB6C1",
     },
     {
       "type": "shell",
       "key": "shell",
-      "keyColor": "red",
+      "keyColor": "#FFB6C1",
     },
     {
       "type": "terminal",
       "key": "terminal",
-      "keyColor": "red",
+      "keyColor": "#FFB6C1",
     },
     {
       "type": "cpu",
       "key": "cpu",
-      "keyColor": "red",
+      "keyColor": "#FFB6C1",
     },
     {
       "type": "memory",
       "key": "memory",
-      "keyColor": "red",
+      "keyColor": "#FFB6C1",
     },
   ],
 }
