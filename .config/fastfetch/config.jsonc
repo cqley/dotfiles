@@ -4,11 +4,49 @@
     "source": "none",
     "type": "builtin",
   },
+
   "display": {
     "separator": ": ",
     "key": {
       "width": 11,
     },
   },
-  "modules": ["os", "kernel", "uptime", "shell", "terminal", "cpu", "memory"],
+
+  "modules": [
+    {
+      "type": "kernel",
+      "key": "kernel",
+      "keyColor": "red",
+    },
+    {
+      "type": "wm",
+      "key": "wm",
+      "keyColor": "red",
+    },
+    {
+      "type": "uptime",
+      "key": "uptime",
+      "keyColor": "red",
+    },
+    {
+      "type": "shell",
+      "key": "shell",
+      "keyColor": "red",
+    },
+    {
+      "type": "terminal",
+      "key": "terminal",
+      "keyColor": "red",
+    },
+    {
+      "type": "cpu",
+      "key": "cpu",
+      "keyColor": "red",
+    },
+    {
+      "type": "memory",
+      "key": "memory",
+      "keyColor": "red",
+    },
+  ],
 }
