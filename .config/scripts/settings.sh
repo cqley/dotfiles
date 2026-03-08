@@ -3,7 +3,7 @@ HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 DUNST_CONF="$HOME/.config/dunst/dunstrc"
 
 options="sharp/round toggle\nborder toggle"
-choice=$(echo -e "$options" | fuzzel -d -p ">")
+choice=$(echo -e "$options" | fuzzel -d -p "> ")
 
 [[ -z "$choice" ]] && exit
 
