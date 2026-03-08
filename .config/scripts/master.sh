@@ -1,4 +1,5 @@
 #!/bin/bash
+
 SCRIPT_DIR="$HOME/.config/scripts"
 
 options="wallpaper\nsettings\nfastfetch"
