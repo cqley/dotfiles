@@ -7,6 +7,6 @@ choice=$(echo -e "$options" | fuzzel -d -p "> ")
 
 case "$choice" in
     *wallpaper*) "$SCRIPT_DIR/wallpaper.sh" ;;
-    *decorations*) "$SCRIPT_DIR/settings.sh" ;;
+    *settings*) "$SCRIPT_DIR/settings.sh" ;;
     *fastfetch*) kitty sh -c "fastfetch; read -p 'press enter to close...'" ;;
 esac
