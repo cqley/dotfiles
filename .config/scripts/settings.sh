@@ -1,4 +1,5 @@
 #!/bin/bash
+
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 DUNST_CONF="$HOME/.config/dunst/dunstrc"
 
