@@ -1,9 +1,9 @@
 #!/bin/bash
 SCRIPT_DIR="$HOME/.config/scripts"
 
-options="󰸉 wallpaper\n󰳗 decorations\n󰒓 fastfetch"
+options="wallpaper\nsettings\nfastfetch"
 
-choice=$(echo -e "$options" | rofi -dmenu -i -p "master" -theme-str 'window {width: 400px;}')
+choice=$(echo -e "$options" | fuzzel -d -p "> ")
 
 case "$choice" in
     *wallpaper*) "$SCRIPT_DIR/wallpaper.sh" ;;
