@@ -2,8 +2,8 @@
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 DUNST_CONF="$HOME/.config/dunst/dunstrc"
 
-options="󰃟 sharp/round toggle\n󰃇 border toggle"
-choice=$(echo -e "$options" | rofi -dmenu -i -p "settings")
+options="sharp/round toggle\nborder toggle"
+choice=$(echo -e "$options" | fuzzel -d -p ">")
 
 [[ -z "$choice" ]] && exit
 
