@@ -1,4 +1,5 @@
 [global]
+    include = ~/.cache/wal/colors-dunst
     origin = top-right
     offset = 15x15
     width = 250
