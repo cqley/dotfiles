@@ -28,6 +28,9 @@ case "$choice" in
 
             hyprctl keyword decoration:rounding 15 > /dev/null
             hyprctl reload > /dev/null
+
+            killall dunst && dunst &
+            sleep 0.2
             notify-send "toggled" "rounded"
         else
             sed -i '/@dynamic_rounding/c\    rounding = 0 # @dynamic_rounding' "$HYPR_CONF"
@@ -39,9 +42,11 @@ case "$choice" in
 
             hyprctl keyword decoration:rounding 0 > /dev/null
             hyprctl reload > /dev/null
+
+            killall dunst && dunst &
+            sleep 0.2
             notify-send "toggled" "sharp"
         fi
-        killall dunst && dunst &
         ;;
 
     *border*)
