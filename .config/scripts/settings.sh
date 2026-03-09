@@ -32,14 +32,14 @@ case "$choice" in
             hyprctl reload > /dev/null
 
             killall dunst && dunst &
-
+            
             if pgrep -x "btop" > /dev/null; then
                 pkill -x "btop"
-                sleep 0.2
+                sleep 0.1
                 kitty btop &
             fi
 
-            sleep 0.2
+            sleep 0.1
             notify-send "toggled" "rounded"
         else
             sed -i '/@dynamic_rounding/c\    rounding = 0 # @dynamic_rounding' "$HYPR_CONF"
@@ -54,14 +54,14 @@ case "$choice" in
             hyprctl reload > /dev/null
 
             killall dunst && dunst &
-
+            
             if pgrep -x "btop" > /dev/null; then
                 pkill -x "btop"
-                sleep 0.2
+                sleep 0.1
                 kitty btop &
             fi
 
-            sleep 0.2
+            sleep 0.1
             notify-send "toggled" "sharp"
         fi
         ;;
