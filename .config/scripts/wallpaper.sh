@@ -17,7 +17,7 @@ fi
 FULL_PATH="$WALL_DIR/$selected"
 
 swww img -o "$MAIN_MONITOR" "$FULL_PATH" --transition-type grow --transition-duration 1.5 --transition-fps 120
-swww img -o "$SECOND_MONITOR" /dev/null --transition-type none 2>/dev/null
+swww clear 000000 --outputs "$SECOND_MONITOR"
 
 wal -i "$FULL_PATH" -n -q
 
