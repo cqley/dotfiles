@@ -1,15 +1,15 @@
 #!/bin/bash
 
-WALL_DIR="$HOME/.config/wallpaper"
-CACHE_PATH="$HOME/.cache/current_wallpaper.png"
+WALL_DIR="$HOME/.config/wallpaper/"
+CACHE_PATH="$HOME/.cache/wallpaper.*"
 
 selected=$(echo -e "random\n$(ls "$WALL_DIR")" | fuzzel -d -p "> ")
 
 [[ -z "$selected" ]] && exit
 
 if [ "$selected" = "random" ]; then
-    current_wall=$(basename "$(readlink -f "$CACHE_PATH")")
-    selected=$(ls "$WALL_DIR" | grep -v "$current_wall" | shuf -n 1)
+    wall=$(basename "$(readlink -f "$CACHE_PATH")")
+    selected=$(ls "$WALL_DIR" | grep -v "$wall" | shuf -n 1)
 fi
 
 FULL_PATH="$WALL_DIR/$selected"
