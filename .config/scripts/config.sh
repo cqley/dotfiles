@@ -11,7 +11,7 @@ declare -A configs=(
     ["scripts"]="$HOME/.config/scripts/"
 )
 
-choice=$(printf "%s\n" "${!configs[@]}" | fuzzel -d -p "edit config > ")
+choice=$(printf "%s\n" "${!configs[@]}" | fuzzel -d -p "> ")
 
 [[ -z "$choice" ]] && exit
 
