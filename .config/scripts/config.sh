@@ -1,7 +1,7 @@
 #!/bin/bash
 
 declare -A configs=(
-    ["hyprland"]="$HOME/.config/hypr/hyprland.conf"
+    ["hypr"]="$HOME/.config/hypr/"
     ["waybar"]="$HOME/.config/waybar/config"
     ["waybar-style"]="$HOME/.config/waybar/style.css"
     ["kitty"]="$HOME/.config/kitty/kitty.conf"
