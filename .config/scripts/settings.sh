@@ -2,6 +2,7 @@
 
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 DUNST_CONF="$HOME/.config/dunst/dunstrc"
+FUZZEL_CONF="$HOME/.config/fuzzel/fuzzel.ini"
 
 options="sharp/round toggle\nborder toggle\ngaps toggle"
 choice=$(echo -e "$options" | fuzzel -d -p "> ")
@@ -15,6 +16,15 @@ case "$choice" in
             sed -i '/@dynamic_power/c\    rounding_power = 10 # @dynamic_power' "$HYPR_CONF"
             sed -i '/@dynamic_dunst/c\    corner_radius = 15 # @dynamic_dunst' "$DUNST_CONF"
             sed -i '/@dynamic_smartgaps/s/^\([^#]\)/#\1/' "$HYPR_CONF"
+            sed -i '/^radius=/c\radius=10' "$FUZZEL_CONF"
+            sed -i '/^selection-radius=/c\selection-radius=5' "$FUZZEL_CONF"
+
+            if grep -q "gaps_in = 0 #" "$HYPR_CONF"; then
+                sed -i '/@dynamic_gaps_in/c\    gaps_in = 5 # @dynamic_gaps_in' "$HYPR_CONF"
+                sed -i '/@dynamic_gaps_out/c\    gaps_out = 10 # @dynamic_gaps_out' "$HYPR_CONF"
+                hyprctl keyword general:gaps_in 5 > /dev/null
+                hyprctl keyword general:gaps_out 10 > /dev/null
+            fi
 
             hyprctl keyword decoration:rounding 15 > /dev/null
             hyprctl reload > /dev/null
@@ -24,6 +34,8 @@ case "$choice" in
             sed -i '/@dynamic_power/c\    rounding_power = 0 # @dynamic_power' "$HYPR_CONF"
             sed -i '/@dynamic_dunst/c\    corner_radius = 0 # @dynamic_dunst' "$DUNST_CONF"
             sed -i '/@dynamic_smartgaps/s/^#//g' "$HYPR_CONF"
+            sed -i '/^radius=/c\radius=0' "$FUZZEL_CONF"
+            sed -i '/^selection-radius=/c\selection-radius=0' "$FUZZEL_CONF"
 
             hyprctl keyword decoration:rounding 0 > /dev/null
             hyprctl reload > /dev/null
@@ -36,14 +48,12 @@ case "$choice" in
         if grep -q "border_size = 0 #" "$HYPR_CONF"; then
             sed -i '/@dynamic_border/c\    border_size = 2 # @dynamic_border' "$HYPR_CONF"
             sed -i '/@dynamic_smartgaps/s/^\([^#]\)/#\1/' "$HYPR_CONF"
-
             hyprctl keyword general:border_size 2 > /dev/null
             hyprctl reload > /dev/null
             notify-send "borders" "enabled"
         else
             sed -i '/@dynamic_border/c\    border_size = 0 # @dynamic_border' "$HYPR_CONF"
             sed -i '/@dynamic_smartgaps/s/^#//g' "$HYPR_CONF"
-
             hyprctl keyword general:border_size 0 > /dev/null
             hyprctl reload > /dev/null
             notify-send "borders" "disabled"
@@ -51,6 +61,11 @@ case "$choice" in
         ;;
 
     *gaps*)
+        if ! grep -q "rounding = 0 #" "$HYPR_CONF"; then
+            notify-send "action denied" "gaps must stay on in rounded mode"
+            exit
+        fi
+
         if grep -q "gaps_in = 0 #" "$HYPR_CONF"; then
             sed -i '/@dynamic_gaps_in/c\    gaps_in = 5 # @dynamic_gaps_in' "$HYPR_CONF"
             sed -i '/@dynamic_gaps_out/c\    gaps_out = 10 # @dynamic_gaps_out' "$HYPR_CONF"
