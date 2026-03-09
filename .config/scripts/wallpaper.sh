@@ -2,6 +2,8 @@
 
 WALL_DIR="$HOME/.config/wallpaper/"
 CACHE_PATH="$HOME/.cache/wallpaper.*"
+MAIN_MONITOR="HDMI-A-1"
+SECOND_MONITOR="DP-1"
 
 selected=$(echo -e "random\n$(ls "$WALL_DIR")" | fuzzel -d -p "> ")
 
@@ -14,7 +16,8 @@ fi
 
 FULL_PATH="$WALL_DIR/$selected"
 
-swww img "$FULL_PATH" --transition-type grow --transition-duration 1.5 --transition-fps 120
+swww img -o "$MAIN_MONITOR" "$FULL_PATH" --transition-type grow --transition-duration 1.5 --transition-fps 120
+swww img -o "$SECOND_MONITOR" /dev/null --transition-type none 2>/dev/null
 
 wal -i "$FULL_PATH" -n -q
 
