@@ -3,6 +3,7 @@
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 DUNST_CONF="$HOME/.config/dunst/dunstrc"
 FUZZEL_CONF="$HOME/.config/fuzzel/fuzzel.ini"
+BTOP_CONF="$HOME/.config/btop/btop.conf"
 
 options="sharp/round toggle\nborder toggle\ngaps toggle"
 choice=$(echo -e "$options" | fuzzel -d -p "> ")
@@ -18,6 +19,7 @@ case "$choice" in
             sed -i '/@dynamic_smartgaps/s/^\([^#]\)/#\1/' "$HYPR_CONF"
             sed -i '/^radius=/c\radius=10' "$FUZZEL_CONF"
             sed -i '/^selection-radius=/c\selection-radius=5' "$FUZZEL_CONF"
+            sed -i '/^rounded_corners =/c\rounded_corners = true' "$BTOP_CONF"
 
             if grep -q "gaps_in = 0 #" "$HYPR_CONF"; then
                 sed -i '/@dynamic_gaps_in/c\    gaps_in = 5 # @dynamic_gaps_in' "$HYPR_CONF"
@@ -30,6 +32,13 @@ case "$choice" in
             hyprctl reload > /dev/null
 
             killall dunst && dunst &
+
+            if pgrep -x "btop" > /dev/null; then
+                pkill -x "btop"
+                sleep 0.2
+                kitty btop &
+            fi
+
             sleep 0.2
             notify-send "toggled" "rounded"
         else
@@ -39,11 +48,19 @@ case "$choice" in
             sed -i '/@dynamic_smartgaps/s/^#//g' "$HYPR_CONF"
             sed -i '/^radius=/c\radius=0' "$FUZZEL_CONF"
             sed -i '/^selection-radius=/c\selection-radius=0' "$FUZZEL_CONF"
+            sed -i '/^rounded_corners =/c\rounded_corners = false' "$BTOP_CONF"
 
             hyprctl keyword decoration:rounding 0 > /dev/null
             hyprctl reload > /dev/null
 
             killall dunst && dunst &
+
+            if pgrep -x "btop" > /dev/null; then
+                pkill -x "btop"
+                sleep 0.2
+                kitty btop &
+            fi
+
             sleep 0.2
             notify-send "toggled" "sharp"
         fi
