@@ -15,6 +15,7 @@ FULL_PATH="$WALL_DIR/$selected"
 swww img "$FULL_PATH" --transition-type grow --transition-duration 1.5 --transition-fps 120
 
 wal -i "$FULL_PATH" -n -q
+ln -sf "$FULL_PATH" "$HOME/.cache/wallpaper.*"
 
 kill -SIGUSR1 $(pgrep kitty) 2>/dev/null
 
