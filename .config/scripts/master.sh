@@ -11,5 +11,5 @@ case "$choice" in
     *settings*) "$SCRIPT_DIR/settings.sh" ;;
     *config*) "$SCRIPT_DIR/config.sh" ;;
     *btop*) kitty btop ;;
-    *fastfetch*) kitty sh -c "fastfetch; read -p 'press enter to close...'" ;;
+    *fastfetch*) kitty sh -c "fastfetch; read -p ''" ;;
 esac
