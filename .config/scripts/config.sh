@@ -1,21 +1,26 @@
 #!/bin/bash
 
-declare -A configs=(
-    ["hypr"]="$HOME/.config/hypr/"
-    ["waybar"]="$HOME/.config/waybar/config"
-    ["waybar-style"]="$HOME/.config/waybar/style.css"
-    ["kitty"]="$HOME/.config/kitty/kitty.conf"
-    ["fuzzel"]="$HOME/.config/fuzzel/fuzzel.ini"
-    ["dunst"]="$HOME/.config/dunst/dunstrc"
-    ["bashrc"]="$HOME/.bashrc"
-    ["scripts"]="$HOME/.config/scripts/"
+configs=(
+    "hypr:$HOME/.config/hypr/"
+    "scripts:$HOME/.config/scripts/"
+    "kitty:$HOME/.config/kitty/kitty.conf"
+    "fish:$HOME/.config/fish/config.fish"
+    "btop:$HOME/.config/btop/btop.conf"
+    "fastfetch:$HOME/.config/fastfetch/config.jsonc"
+    "fuzzel:$HOME/.config/fuzzel/fuzzel.ini"
+    "dunst:$HOME/.config/dunst/dunstrc"
 )
 
-choice=$(printf "%s\n" "${!configs[@]}" | fuzzel -d -p "> ")
+choice=$(printf "%s\n" "${configs[@]}" | cut -d':' -f1 | fuzzel -d -p "> ")
 
 [[ -z "$choice" ]] && exit
 
-path="${configs[$choice]}"
+for item in "${configs[@]}"; do
+    if [[ "$item" == "$choice:"* ]]; then
+        path="${item#*:}"
+        break
+    fi
+done
 
 if [ -e "$path" ]; then
     zeditor "$path"
