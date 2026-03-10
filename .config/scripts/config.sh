@@ -9,6 +9,8 @@ configs=(
     "fastfetch:$HOME/.config/fastfetch/config.jsonc"
     "fuzzel:$HOME/.config/fuzzel/fuzzel.ini"
     "dunst:$HOME/.config/dunst/dunstrc"
+    "csgo:$HOME/.local/share/Steam/steamapps/common/csgo legacy/csgo/cfg/autoexec.cfg"
+    "cs2:$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg/autoexec.cfg"
 )
 
 choice=$(printf "%s\n" "${configs[@]}" | cut -d':' -f1 | fuzzel -d -p "> ")
