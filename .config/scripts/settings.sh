@@ -15,7 +15,7 @@ case "$choice" in
         if grep -q "rounding = 0 #" "$HYPR_CONF"; then
             sed -i '/@dynamic_rounding/c\    rounding = 15 # @dynamic_rounding' "$HYPR_CONF"
             sed -i '/@dynamic_power/c\    rounding_power = 10 # @dynamic_power' "$HYPR_CONF"
-            sed -i '/@dynamic_dunst/c\    corner_radius = 15 # @dynamic_dunst' "$DUNST_CONF"
+            sed -i '/@dynamic_corners/c\    corner_radius = 15 # @dynamic_corners' "$DUNST_CONF"
             sed -i '/@dynamic_smartgaps/s/^\([^#]\)/#\1/' "$HYPR_CONF"
             sed -i '/^radius=/c\radius=10' "$FUZZEL_CONF"
             sed -i '/^selection-radius=/c\selection-radius=5' "$FUZZEL_CONF"
