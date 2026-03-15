@@ -12,7 +12,7 @@
     padding = 15
     horizontal_padding = 20
     transparency = 5
-    corner_radius = 0
+    corner_radius = 0 # @dynamic_corners
     icon_position = left
     max_icon_size = 32
     markup = full
