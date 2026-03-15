@@ -1,0 +1,45 @@
+[global]
+    origin = top-right
+    offset = (15, 15)
+    width = 250
+    height = (0, 75)
+    monitor = 0
+    follow = mouse
+    frame_width = 2
+    frame_color = "#F0E3BA"
+    separator_color = frame
+    separator_height = 2
+    padding = 15
+    horizontal_padding = 20
+    transparency = 5
+    corner_radius = 0
+    icon_position = left
+    max_icon_size = 32
+    markup = full
+    format = "<span foreground='#F0E3BA'><b>%s</b></span>\n%b"
+    alignment = left
+    word_wrap = yes
+    ellipsize = middle
+    sort = yes
+    stack_duplicates = true
+    hide_duplicate_count = false
+    show_indicators = yes
+    sticky_history = yes
+    history_length = 20
+    idle_threshold = 120
+
+[urgency_low]
+    background = "#232A2E"
+    foreground = "#F0E3BA"
+    timeout = 10
+
+[urgency_normal]
+    background = "#232A2E"
+    foreground = "#F0E3BA"
+    timeout = 10
+
+[urgency_critical]
+    background = "#48504E"
+    foreground = "#FFFFFF"
+    frame_color = "#F0E3BA"
+    timeout = 0
