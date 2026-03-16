@@ -1,0 +1,112 @@
+configuration {
+    font:                "JetBrainsMono Nerd Font 12";
+    show-icons:          false;
+    lines:               6;
+    width:               30;
+    hover-select:        true;
+    me-select-entry:     "";
+    me-accept-entry:     "MousePrimary";
+}
+
+* {
+    background-color:    #1F1F1F;
+    border-color:        #FFFFFF;
+    text-color:          #FFFFFF;
+    normal-background:   #1F1F1F;
+    normal-foreground:   #FFFFFF;
+    selected-normal-background: #CCCCCC;
+    selected-normal-foreground: #000000;
+    prompt-foreground:   #FFFFFF;
+    placeholder-foreground: #808080;
+}
+
+window {
+    width:               20%;
+    background-color:    #1F1F1F;
+    border:              1px;
+    border-color:        #FFFFFF;
+    border-radius:       0px;
+    padding:             4px 5px;
+    location:            center;
+    anchor:              center;
+    y-offset:            20px;
+}
+
+mainbox {
+    background-color:    transparent;
+    border:              0;
+    padding:             2px;
+    spacing:             0;
+    children:            [ inputbar, listview ];
+}
+
+inputbar {
+    background-color:    transparent;
+    text-color:          #FFFFFF;
+    padding:             4px 0px;
+    spacing:             0;
+    children:            [ prompt, entry ];
+}
+
+prompt {
+    background-color:    transparent;
+    text-color:          #FFFFFF;
+    padding:             0px 4px 0px 0px;
+    content:             ">";
+}
+
+entry {
+    background-color:    transparent;
+    text-color:          #FFFFFF;
+    placeholder-color:   #808080;
+    placeholder:         "";
+    cursor:              default;
+}
+
+listview {
+    background-color:    transparent;
+    border:              0;
+    padding:             2px 0px 0px 0px;
+    spacing:             0;
+    lines:               6;
+    columns:             1;
+    fixed-height:        true;
+    scrollbar:           false;
+}
+
+element {
+    background-color:    transparent;
+    text-color:          #FFFFFF;
+    border-radius:       0px;
+    padding:             2px 4px;
+    cursor:              default;
+}
+
+element alternate normal {
+    background-color:    transparent;
+    text-color:          #FFFFFF;
+}
+
+element selected {
+    background-color:    #CCCCCC;
+    text-color:          #000000;
+}
+
+element-text {
+    background-color:    transparent;
+    text-color:          inherit;
+    highlight:           bold #FFFFFF;
+    cursor:              default;
+}
+
+message {
+    background-color:    transparent;
+    border:              0;
+    padding:             2px;
+}
+
+textbox {
+    background-color:    transparent;
+    text-color:          #CCCCCC;
+    padding:             2px 4px;
+}
