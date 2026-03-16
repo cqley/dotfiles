@@ -8,7 +8,7 @@ MAIN_MONITOR="HDMI-A-1"
 SECOND_MONITOR="DP-1"
 
 list_images() {
-    DICE_ICON="$HOME/.config/rofi/dice.png"
+    DICE_ICON="$HOME/.config/wallpaper/dice.png"
     echo -en "random\0icon\x1f$DICE_ICON\n"
 
     for img in "$WALLPAPER_DIR"*; do
