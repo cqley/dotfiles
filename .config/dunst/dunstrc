@@ -1,8 +1,8 @@
 [global]
     origin = top-right
-    offset = 15x15
+    offset = (15, 15)
     width = 250
-    height = 75
+    height = (0, 75)
     monitor = 0
     follow = mouse
     frame_width = 2
