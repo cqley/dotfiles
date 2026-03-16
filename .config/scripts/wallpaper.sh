@@ -2,7 +2,7 @@
 
 WALLPAPER_DIR="$HOME/.config/wallpaper/"
 THUMBNAIL_DIR="$HOME/.cache/thumbnails/"
-CACHE_PATH="$HOME/.cache/wallpaper/wallpaper.img"
+CACHE_PATH="$HOME/.cache/wallpaper/wallpaper.*"
 RASI_THEME="$HOME/.config/rofi/wallpaper.rasi"
 MAIN_MONITOR="HDMI-A-1"
 SECOND_MONITOR="DP-1"
