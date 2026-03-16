@@ -4,13 +4,17 @@ HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 DUNST_CONF="$HOME/.config/dunst/dunstrc"
 FUZZEL_CONF="$HOME/.config/fuzzel/fuzzel.ini"
 BTOP_CONF="$HOME/.config/btop/btop.conf"
+ANIMATION_SCRIPT="$HOME/.config/scripts/animations.sh"
 
-options="sharp/round toggle\nborder toggle\ngaps toggle"
+options="sharp/round toggle\nborder toggle\ngaps toggle\nanimations"
 choice=$(echo -e "$options" | fuzzel -d -p "> ")
 
 [[ -z "$choice" ]] && exit
 
 case "$choice" in
+    *animations*)
+        $ANIMATION_SCRIPT
+        ;;
     *sharp/round*)
         if grep -q "rounding = 0 #" "$HYPR_CONF"; then
             sed -i '/@dynamic_rounding/c\    rounding = 15 # @dynamic_rounding' "$HYPR_CONF"
@@ -32,7 +36,7 @@ case "$choice" in
             hyprctl reload > /dev/null
 
             killall dunst && dunst &
-            
+
             if pgrep -x "btop" > /dev/null; then
                 pkill -x "btop"
                 sleep 0.1
@@ -54,7 +58,7 @@ case "$choice" in
             hyprctl reload > /dev/null
 
             killall dunst && dunst &
-            
+
             if pgrep -x "btop" > /dev/null; then
                 pkill -x "btop"
                 sleep 0.1
@@ -87,7 +91,6 @@ case "$choice" in
             notify-send "action denied" "gaps must stay on in rounded mode"
             exit
         fi
-
         if grep -q "gaps_in = 0 #" "$HYPR_CONF"; then
             sed -i '/@dynamic_gaps_in/c\    gaps_in = 5 # @dynamic_gaps_in' "$HYPR_CONF"
             sed -i '/@dynamic_gaps_out/c\    gaps_out = 10 # @dynamic_gaps_out' "$HYPR_CONF"
