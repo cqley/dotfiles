@@ -7,7 +7,6 @@ RASI_THEME="$HOME/.config/rofi/wallpaper.rasi"
 MAIN_MONITOR="HDMI-A-1"
 SECOND_MONITOR="DP-1"
 
-mkdir -p "$THUMBNAIL_DIR"
 list_images() {
     DICE_ICON="$HOME/.config/rofi/dice.png"
     echo -en "random\0icon\x1f$DICE_ICON\n"
@@ -31,7 +30,7 @@ selected=$(list_images | rofi -dmenu -i -p ">" -theme "$RASI_THEME")
 
 if [[ "$selected" == "random" ]]; then
     current_wall=$(basename "$(readlink -f "$CACHE_PATH")" 2>/dev/null)
-    selected=$(ls "$WALLPAPER_DIR" | grep -v "$current_wall" | shuf -n 1)
+    selected=$(ls -p "$WALLPAPER_DIR" | grep -v / | grep -v "^$current_wall$" | shuf -n 1)
 fi
 
 FULL_PATH="$WALLPAPER_DIR/$selected"
@@ -40,6 +39,7 @@ swww img -o "$MAIN_MONITOR" "$FULL_PATH" --transition-type grow --transition-dur
 swww clear --outputs "$SECOND_MONITOR"
 
 wal -i "$FULL_PATH" -n -q
+mkdir -p "$(dirname "$CACHE_PATH")"
 ln -sf "$FULL_PATH" "$CACHE_PATH"
 
 kill -SIGUSR1 $(pgrep kitty) 2>/dev/null
