@@ -3,7 +3,7 @@
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 options="fade\nvertical\nhorizontal"
 
-choice=$(echo -e "$options" | fuzzel -d -p "> ")
+choice=$(echo -e "$options" | rofi -dmenu -i -p ">")
 
 [[ -z "$choice" ]] && exit
 
