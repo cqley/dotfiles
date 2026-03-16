@@ -4,7 +4,7 @@ SCRIPT_DIR="$HOME/.config/scripts"
 
 options="btop\nconfig\nsettings\nwallpaper\nfastfetch"
 
-choice=$(echo -e "$options" | fuzzel -d -p "> ")
+choice=$(echo -e "$options" | rofi -dmenu -p ">")
 
 case "$choice" in
     *btop*) kitty btop ;;
