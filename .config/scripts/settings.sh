@@ -7,7 +7,7 @@ BTOP_CONF="$HOME/.config/btop/btop.conf"
 ANIMATION_SCRIPT="$HOME/.config/scripts/animations.sh"
 
 options="sharp/round toggle\nborder toggle\ngaps toggle\nanimations"
-choice=$(echo -e "$options" | fuzzel -d -p "> ")
+choice=$(echo -e "$options" | rofi -dmenu -i -p ">")
 
 [[ -z "$choice" ]] && exit
 
