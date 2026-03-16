@@ -7,7 +7,7 @@ configs=(
     "fish:$HOME/.config/fish/config.fish"
     "btop:$HOME/.config/btop/btop.conf"
     "fastfetch:$HOME/.config/fastfetch/config.jsonc"
-    "rofi:$HOME/.config/rofi/config.rasi"
+    "rofi:$HOME/.config/rofi/"
     "dunst:$HOME/.config/dunst/dunstrc"
     "csgo:$HOME/.local/share/Steam/steamapps/common/csgo legacy/csgo/cfg/autoexec.cfg"
     "cs2:$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg/autoexec.cfg"
