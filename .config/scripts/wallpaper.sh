@@ -13,6 +13,9 @@ list_images() {
 
     for img in "$WALLPAPER_DIR"*; do
         filename=$(basename "$img")
+
+        [[ "$filename" == "dice.png" ]] && continue
+
         thumb="$THUMBNAIL_DIR$filename"
 
         if [ ! -f "$thumb" ]; then
@@ -30,7 +33,7 @@ selected=$(list_images | rofi -dmenu -i -p ">" -theme "$RASI_THEME")
 
 if [[ "$selected" == "random" ]]; then
     current_wall=$(basename "$(readlink -f "$CACHE_PATH")" 2>/dev/null)
-    selected=$(ls -p "$WALLPAPER_DIR" | grep -v / | grep -v "^$current_wall$" | shuf -n 1)
+    selected=$(ls -p "$WALLPAPER_DIR" | grep -v / | grep -v "^$current_wall$" | grep -v "dice.png" | shuf -n 1)
 fi
 
 FULL_PATH="$WALLPAPER_DIR/$selected"
