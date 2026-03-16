@@ -13,7 +13,7 @@ configs=(
     "cs2:$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg/autoexec.cfg"
 )
 
-choice=$(printf "%s\n" "${configs[@]}" | cut -d':' -f1 | fuzzel -d -p "> ")
+choice=$(printf "%s\n" "${configs[@]}" | cut -d':' -f1 | rofi -dmenu -i -p ">")
 
 [[ -z "$choice" ]] && exit
 
