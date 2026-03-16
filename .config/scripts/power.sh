@@ -1,7 +1,7 @@
 #!/bin/bash
 
 options="lock\nlogout\nshutdown\nreboot"
-choice=$(echo -e "$options" | fuzzel -d -p "> ")
+choice=$(echo -e "$options" | rofi -dmenu -i -p ">")
 
 case "$choice" in
     lock)
