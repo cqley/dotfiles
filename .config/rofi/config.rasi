@@ -1,4 +1,6 @@
 configuration {
+    modi:                "drun";
+    display-drun:        ">";
     font:                "JetBrainsMono Nerd Font 12";
     show-icons:          false;
     lines:               6;
@@ -25,7 +27,8 @@ window {
     background-color:    #1F1F1F;
     border:              1px;
     border-color:        #FFFFFF;
-    border-radius:       0px;
+    /* @dynamic_rofi_window */
+    border-radius: 15px;
     padding:             4px 5px;
     location:            center;
     anchor:              center;
@@ -77,7 +80,8 @@ listview {
 element {
     background-color:    transparent;
     text-color:          #FFFFFF;
-    border-radius:       0px;
+    /* @dynamic_rofi_element */
+    border-radius: 8px;
     padding:             2px 4px;
     cursor:              default;
 }
