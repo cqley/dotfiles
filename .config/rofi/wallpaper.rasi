@@ -17,11 +17,12 @@ window {
     location:                    east;
     width:                       320px;
     height:                      70%;
-    x-offset:                    -15px;
+    x-offset:                   -15px;
     y-offset:                    0px;
     background-color:            #1F1F1F;
     border:                      1px;
-    border-radius:               0px;
+    /* @dynamic_rofi_window */
+    border-radius: 15px;
     border-color:                #FFFFFF;
 }
 
@@ -69,7 +70,8 @@ element {
     orientation:                 vertical;
     background-color:            transparent;
     padding:                     0px;
-    border-radius:               0px;
+    /* @dynamic_rofi_element */
+    border-radius: 8px;
     cursor:                      default;
 }
 
