@@ -2,7 +2,8 @@
 
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 DUNST_CONF="$HOME/.config/dunst/dunstrc"
-FUZZEL_CONF="$HOME/.config/fuzzel/fuzzel.ini"
+ROFI_CONF="$HOME/.config/rofi/config.rasi"
+WALL_CONF="$HOME/.config/rofi/wallpaper.rasi"
 BTOP_CONF="$HOME/.config/btop/btop.conf"
 ANIMATION_SCRIPT="$HOME/.config/scripts/animations.sh"
 
@@ -21,8 +22,12 @@ case "$choice" in
             sed -i '/@dynamic_power/c\    rounding_power = 10 # @dynamic_power' "$HYPR_CONF"
             sed -i '/@dynamic_corners/c\    corner_radius = 15 # @dynamic_corners' "$DUNST_CONF"
             sed -i '/@dynamic_smartgaps/s/^\([^#]\)/#\1/' "$HYPR_CONF"
-            sed -i '/^radius=/c\radius=10' "$FUZZEL_CONF"
-            sed -i '/^selection-radius=/c\selection-radius=5' "$FUZZEL_CONF"
+
+            for conf in "$ROFI_CONF" "$WALL_CONF"; do
+                sed -i '/@dynamic_rofi_window/{n;s/border-radius: .*/border-radius: 15px;/}' "$conf"
+                sed -i '/@dynamic_rofi_element/{n;s/border-radius: .*/border-radius: 8px;/}' "$conf"
+            done
+
             sed -i '/^rounded_corners =/c\rounded_corners = true' "$BTOP_CONF"
 
             if grep -q "gaps_in = 0 #" "$HYPR_CONF"; then
@@ -34,7 +39,6 @@ case "$choice" in
 
             hyprctl keyword decoration:rounding 15 > /dev/null
             hyprctl reload > /dev/null
-
             killall dunst && dunst &
 
             if pgrep -x "btop" > /dev/null; then
@@ -50,13 +54,16 @@ case "$choice" in
             sed -i '/@dynamic_power/c\    rounding_power = 0 # @dynamic_power' "$HYPR_CONF"
             sed -i '/@dynamic_dunst/c\    corner_radius = 0 # @dynamic_dunst' "$DUNST_CONF"
             sed -i '/@dynamic_smartgaps/s/^#//g' "$HYPR_CONF"
-            sed -i '/^radius=/c\radius=0' "$FUZZEL_CONF"
-            sed -i '/^selection-radius=/c\selection-radius=0' "$FUZZEL_CONF"
+
+            for conf in "$ROFI_CONF" "$WALL_CONF"; do
+                sed -i '/@dynamic_rofi_window/{n;s/border-radius: .*/border-radius: 0px;/}' "$conf"
+                sed -i '/@dynamic_rofi_element/{n;s/border-radius: .*/border-radius: 0px;/}' "$conf"
+            done
+
             sed -i '/^rounded_corners =/c\rounded_corners = false' "$BTOP_CONF"
 
             hyprctl keyword decoration:rounding 0 > /dev/null
             hyprctl reload > /dev/null
-
             killall dunst && dunst &
 
             if pgrep -x "btop" > /dev/null; then
