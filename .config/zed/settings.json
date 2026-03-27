@@ -14,7 +14,7 @@
     "lsp": true,
   },
   "linked_edits": true,
-  "enable_language_server": true,
+  "enable_language_server": false,
   "tasks": {
     "enabled": true,
   },
@@ -104,6 +104,6 @@
   "theme": {
     "mode": "dark",
     "light": "One Light",
-    "dark": "One Dark",
+    "dark": "GitHub Dark Default",
   },
 }
