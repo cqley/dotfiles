@@ -1,4 +1,4 @@
 # dotfiles
 
-- Operating System: https://archlinux.org/
-- Window Manager: https://hypr.land/
+- operating system: https://archlinux.org/
+- window manager: https://hypr.land/
