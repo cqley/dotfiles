@@ -38,8 +38,8 @@ fi
 
 FULL_PATH="$WALLPAPER_DIR/$selected"
 
-swww img -o "$MAIN_MONITOR" "$FULL_PATH" --transition-type grow --transition-duration 1.5 --transition-fps 120
-swww clear --outputs "$SECOND_MONITOR"
+awww img -o "$MAIN_MONITOR" "$FULL_PATH" --transition-type grow --transition-duration 1.5 --transition-fps 120
+awww clear --outputs "$SECOND_MONITOR"
 
 wal -i "$FULL_PATH" -n -q
 mkdir -p "$(dirname "$CACHE_PATH")"
