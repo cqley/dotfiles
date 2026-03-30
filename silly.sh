@@ -3,7 +3,6 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/x2p3lnk7tq9z/dotfiles.git"
-DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 
 PACMAN_PKGS=(
     hyprland
@@ -24,7 +23,7 @@ PACMAN_PKGS=(
 AUR_PKGS=(
     zed
     awww
-    pywal16
+    python-pywal16
 )
 
 [[ $EUID -eq 0 ]] && { echo "do not run as root"; exit 1; }
@@ -41,23 +40,28 @@ fi
 
 yay -S --needed --noconfirm "${AUR_PKGS[@]}"
 
-if [[ -d "$DOTFILES_DIR/.git" ]]; then
-    git -C "$DOTFILES_DIR" pull --ff-only &>/dev/null
-else
-    git clone --depth=1 "$REPO_URL" "$DOTFILES_DIR" &>/dev/null
-fi
+tmp=$(mktemp -d)
+git clone --depth=1 "$REPO_URL" "$tmp/dotfiles" &>/dev/null
 
 mkdir -p "$HOME/.config"
 
-for src in "$DOTFILES_DIR/.config"/*/; do
+for src in "$tmp/dotfiles/.config"/*/; do
     name="$(basename "$src")"
     dst="$HOME/.config/$name"
     [[ -e "$dst" || -L "$dst" ]] && rm -rf "$dst"
     cp -r "$src" "$dst"
 done
 
-if [[ -d "$DOTFILES_DIR/.config/scripts" ]]; then
-    find "$DOTFILES_DIR/.config/scripts" -type f | xargs chmod +x
+if [[ -d "$tmp/dotfiles/.config/scripts" ]]; then
+    find "$HOME/.config/scripts" -type f | xargs chmod +x
 fi
 
+mkdir -p "$HOME/.config/wallpaper"
+find "$tmp/dotfiles/wallpaper" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" \) | while read -r img; do
+    cp "$img" "$HOME/.config/wallpaper/"
+done
+
+rm -rf "$tmp"
+
+hyprctl reload &>/dev/null
 echo "dotfiles installed"
