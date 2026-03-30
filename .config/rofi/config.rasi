@@ -79,8 +79,7 @@ listview {
 element {
     background-color:    transparent;
     text-color:          #FFFFFF;
-    /* @dynamic_rofi_element */
-    border-radius: 8px;
+    border-radius:       0px;
     padding:             2px 4px;
     cursor:              default;
 }
