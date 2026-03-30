@@ -1,50 +1,17 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
 REPO_URL="https://github.com/x2p3lnk7tq9z/dotfiles.git"
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 
-PACMAN_PKGS=(
-    hyprland
-    hyprlock
-    xdg-desktop-portal-hyprland
-    kitty
-    rofi
-    git
-    base-devel
-)
-
-AUR_PKGS=()
-HOME_DOTFILES=()
-
-INSTALL_PKGS=false
-
-for arg in "$@"; do
-    case "$arg" in
-        --packages|-p) INSTALL_PKGS=true ;;
-        --help|-h)
-            echo "usage: $0 [--packages]"
-            exit 0 ;;
-    esac
-done
-
 [[ $EUID -eq 0 ]] && { echo "do not run as root"; exit 1; }
 command -v git &>/dev/null || { echo "git required"; exit 1; }
 
-if $INSTALL_PKGS; then
-    sudo pacman -Syu --needed --noconfirm "${PACMAN_PKGS[@]}"
-
-    if ! command -v yay &>/dev/null; then
-        tmp=$(mktemp -d)
-        git clone --depth=1 https://aur.archlinux.org/yay.git "$tmp/yay"
-        (cd "$tmp/yay" && makepkg -si --noconfirm)
-        rm -rf "$tmp"
-    fi
-
-    if [[ ${#AUR_PKGS[@]} -gt 0 ]]; then
-        yay -S --needed --noconfirm "${AUR_PKGS[@]}"
-    fi
+if ! command -v yay &>/dev/null; then
+    tmp=$(mktemp -d)
+    git clone --depth=1 https://aur.archlinux.org/yay.git "$tmp/yay"
+    (cd "$tmp/yay" && makepkg -si --noconfirm)
+    rm -rf "$tmp"
 fi
 
 if [[ -d "$DOTFILES_DIR/.git" ]]; then
@@ -60,10 +27,6 @@ for src in "$DOTFILES_DIR/.config"/*/; do
     dst="$HOME/.config/$name"
     [[ -e "$dst" || -L "$dst" ]] && rm -rf "$dst"
     cp -r "$src" "$dst"
-done
-
-for f in "${HOME_DOTFILES[@]}"; do
-    [[ -e "$DOTFILES_DIR/$f" ]] && cp -r "$DOTFILES_DIR/$f" "$HOME/$f"
 done
 
 if [[ -d "$DOTFILES_DIR/.config/scripts" ]]; then
