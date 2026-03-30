@@ -11,15 +11,15 @@ configuration {
 }
 
 * {
-    background-color:    #1F1F1F;
-    border-color:        #FFFFFF;
-    text-color:          #FFFFFF;
-    normal-background:   #1F1F1F;
-    normal-foreground:   #FFFFFF;
+    background-color:           #1F1F1F;
+    border-color:               #FFFFFF;
+    text-color:                 #FFFFFF;
+    normal-background:          #1F1F1F;
+    normal-foreground:          #FFFFFF;
     selected-normal-background: #CCCCCC;
     selected-normal-foreground: #000000;
-    prompt-foreground:   #FFFFFF;
-    placeholder-foreground: #808080;
+    prompt-foreground:          #FFFFFF;
+    placeholder-foreground:     #808080;
 }
 
 window {
@@ -27,8 +27,7 @@ window {
     background-color:    #1F1F1F;
     border:              1px;
     border-color:        #FFFFFF;
-    /* @dynamic_rofi_window */
-    border-radius: 15px;
+    border-radius:       0px;
     padding:             4px 5px;
     location:            center;
     anchor:              center;
