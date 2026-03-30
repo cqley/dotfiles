@@ -7,7 +7,7 @@ WALL_CONF="$HOME/.config/rofi/wallpaper.rasi"
 BTOP_CONF="$HOME/.config/btop/btop.conf"
 ANIMATION_SCRIPT="$HOME/.config/scripts/animations.sh"
 
-options="sharp/round toggle\nborder toggle\ngaps toggle\nanimations"
+options="border toggle\ngaps toggle\nanimations"
 choice=$(echo -e "$options" | rofi -dmenu -i -p ">")
 
 [[ -z "$choice" ]] && exit
@@ -15,66 +15,6 @@ choice=$(echo -e "$options" | rofi -dmenu -i -p ">")
 case "$choice" in
     *animations*)
         $ANIMATION_SCRIPT
-        ;;
-    *sharp/round*)
-        if grep -q "rounding = 0 #" "$HYPR_CONF"; then
-            sed -i '/@dynamic_rounding/c\    rounding = 15 # @dynamic_rounding' "$HYPR_CONF"
-            sed -i '/@dynamic_power/c\    rounding_power = 10 # @dynamic_power' "$HYPR_CONF"
-            sed -i '/@dynamic_corners/c\    corner_radius = 15 # @dynamic_corners' "$DUNST_CONF"
-            sed -i '/@dynamic_smartgaps/s/^\([^#]\)/#\1/' "$HYPR_CONF"
-
-            for conf in "$ROFI_CONF" "$WALL_CONF"; do
-                sed -i '/@dynamic_rofi_window/{n;s/border-radius: .*/border-radius: 15px;/}' "$conf"
-                sed -i '/@dynamic_rofi_element/{n;s/border-radius: .*/border-radius: 8px;/}' "$conf"
-            done
-
-            sed -i '/^rounded_corners =/c\rounded_corners = true' "$BTOP_CONF"
-
-            if grep -q "gaps_in = 0 #" "$HYPR_CONF"; then
-                sed -i '/@dynamic_gaps_in/c\    gaps_in = 5 # @dynamic_gaps_in' "$HYPR_CONF"
-                sed -i '/@dynamic_gaps_out/c\    gaps_out = 10 # @dynamic_gaps_out' "$HYPR_CONF"
-                hyprctl keyword general:gaps_in 5 > /dev/null
-                hyprctl keyword general:gaps_out 10 > /dev/null
-            fi
-
-            hyprctl keyword decoration:rounding 15 > /dev/null
-            hyprctl reload > /dev/null
-            killall dunst && dunst &
-
-            if pgrep -x "btop" > /dev/null; then
-                pkill -x "btop"
-                sleep 0.1
-                kitty btop &
-            fi
-
-            sleep 0.1
-            notify-send "toggled" "rounded"
-        else
-            sed -i '/@dynamic_rounding/c\    rounding = 0 # @dynamic_rounding' "$HYPR_CONF"
-            sed -i '/@dynamic_power/c\    rounding_power = 0 # @dynamic_power' "$HYPR_CONF"
-            sed -i '/@dynamic_dunst/c\    corner_radius = 0 # @dynamic_dunst' "$DUNST_CONF"
-            sed -i '/@dynamic_smartgaps/s/^#//g' "$HYPR_CONF"
-
-            for conf in "$ROFI_CONF" "$WALL_CONF"; do
-                sed -i '/@dynamic_rofi_window/{n;s/border-radius: .*/border-radius: 0px;/}' "$conf"
-                sed -i '/@dynamic_rofi_element/{n;s/border-radius: .*/border-radius: 0px;/}' "$conf"
-            done
-
-            sed -i '/^rounded_corners =/c\rounded_corners = false' "$BTOP_CONF"
-
-            hyprctl keyword decoration:rounding 0 > /dev/null
-            hyprctl reload > /dev/null
-            killall dunst && dunst &
-
-            if pgrep -x "btop" > /dev/null; then
-                pkill -x "btop"
-                sleep 0.1
-                kitty btop &
-            fi
-
-            sleep 0.1
-            notify-send "toggled" "sharp"
-        fi
         ;;
 
     *border*)
@@ -94,10 +34,6 @@ case "$choice" in
         ;;
 
     *gaps*)
-        if ! grep -q "rounding = 0 #" "$HYPR_CONF"; then
-            notify-send "action denied" "gaps must stay on in rounded mode"
-            exit
-        fi
         if grep -q "gaps_in = 0 #" "$HYPR_CONF"; then
             sed -i '/@dynamic_gaps_in/c\    gaps_in = 5 # @dynamic_gaps_in' "$HYPR_CONF"
             sed -i '/@dynamic_gaps_out/c\    gaps_out = 10 # @dynamic_gaps_out' "$HYPR_CONF"
