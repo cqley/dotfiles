@@ -18,7 +18,7 @@ while true; do
             for i in $(seq 1 10); do
                 art_url=$(playerctl metadata mpris:artUrl 2>/dev/null)
                 [ -n "$art_url" ] && break
-                sleep 0.2
+                sleep 0.1
             done
 
             if [ -n "$art_url" ]; then
