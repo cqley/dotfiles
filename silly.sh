@@ -5,8 +5,32 @@ set -euo pipefail
 REPO_URL="https://github.com/x2p3lnk7tq9z/dotfiles.git"
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 
+PACMAN_PKGS=(
+    hyprland
+    hyprlock
+    xdg-desktop-portal-hyprland
+    kitty
+    rofi
+    dunst
+    btop
+    fastfetch
+    fish
+    imagemagick
+    libnotify
+    git
+    base-devel
+)
+
+AUR_PKGS=(
+    zed
+    awww
+    pywal16
+)
+
 [[ $EUID -eq 0 ]] && { echo "do not run as root"; exit 1; }
 command -v git &>/dev/null || { echo "git required"; exit 1; }
+
+sudo pacman -Syu --needed --noconfirm "${PACMAN_PKGS[@]}"
 
 if ! command -v yay &>/dev/null; then
     tmp=$(mktemp -d)
@@ -14,6 +38,8 @@ if ! command -v yay &>/dev/null; then
     (cd "$tmp/yay" && makepkg -si --noconfirm)
     rm -rf "$tmp"
 fi
+
+yay -S --needed --noconfirm "${AUR_PKGS[@]}"
 
 if [[ -d "$DOTFILES_DIR/.git" ]]; then
     git -C "$DOTFILES_DIR" pull --ff-only &>/dev/null
