@@ -47,6 +47,7 @@ mkdir -p "$HOME/.config"
 
 for src in "$tmp/dotfiles/.config"/*/; do
     name="$(basename "$src")"
+    [[ "$name" == "wallpaper" ]] && continue
     dst="$HOME/.config/$name"
     [[ -e "$dst" || -L "$dst" ]] && rm -rf "$dst"
     cp -r "$src" "$dst"
@@ -57,7 +58,7 @@ if [[ -d "$tmp/dotfiles/.config/scripts" ]]; then
 fi
 
 mkdir -p "$HOME/.config/wallpaper"
-find "$tmp/dotfiles/wallpaper" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" \) | while read -r img; do
+find "$tmp/dotfiles/.config/wallpaper" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" \) ! -iname "README*" | while read -r img; do
     cp "$img" "$HOME/.config/wallpaper/"
 done
 
