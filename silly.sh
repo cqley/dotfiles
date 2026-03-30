@@ -6,7 +6,9 @@ REPO_URL="https://github.com/x2p3lnk7tq9z/dotfiles.git"
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 
 PACMAN_PKGS=(
+    hyprland
     hyprlock
+    xdg-desktop-portal-hyprland
     kitty
     rofi
     dunst
