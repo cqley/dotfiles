@@ -3,12 +3,12 @@
 configs=(
     "hypr:$HOME/.config/hypr/"
     "scripts:$HOME/.config/scripts/"
-    "kitty:$HOME/.config/kitty/kitty.conf"
-    "fish:$HOME/.config/fish/config.fish"
-    "btop:$HOME/.config/btop/btop.conf"
-    "fastfetch:$HOME/.config/fastfetch/config.jsonc"
     "rofi:$HOME/.config/rofi/"
     "dunst:$HOME/.config/dunst/dunstrc"
+    "fish:$HOME/.config/fish/config.fish"
+    "kitty:$HOME/.config/kitty/kitty.conf"
+    "btop:$HOME/.config/btop/btop.conf"
+    "fastfetch:$HOME/.config/fastfetch/config.jsonc"
     "csgo:$HOME/.local/share/Steam/steamapps/common/csgo legacy/csgo/cfg/autoexec.cfg"
     "cs2:$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg/autoexec.cfg"
 )
