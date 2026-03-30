@@ -63,5 +63,4 @@ done
 
 rm -rf "$tmp"
 
-hyprctl reload &>/dev/null
 echo "dotfiles installed"
