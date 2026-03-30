@@ -3,8 +3,8 @@
     offset = (15, 15)
     width = 250
     height = (0, 75)
-    monitor = 0
-    follow = mouse
+    monitor = 1
+    follow = none
     frame_width = 2
     frame_color = "#c0c0c0"
     separator_color = frame
