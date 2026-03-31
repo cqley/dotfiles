@@ -11,10 +11,10 @@ configuration {
 }
 
 * {
-    background-color:           #1F1F1F;
+    background-color:           #111111;
     border-color:               #FFFFFF;
     text-color:                 #FFFFFF;
-    normal-background:          #1F1F1F;
+    normal-background:          #111111;
     normal-foreground:          #FFFFFF;
     selected-normal-background: #CCCCCC;
     selected-normal-foreground: #000000;
@@ -24,7 +24,7 @@ configuration {
 
 window {
     width:               20%;
-    background-color:    #1F1F1F;
+    background-color:    #111111;
     border:              1px;
     border-color:        #FFFFFF;
     border-radius:       0px;
