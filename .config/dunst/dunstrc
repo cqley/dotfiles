@@ -1,45 +1,34 @@
 [global]
     origin = top-right
     offset = (15, 15)
-    width = 250
-    height = (0, 75)
     monitor = 1
     follow = none
+    width = 250
+    height = (0, 75)
     frame_width = 2
-    frame_color = "#c0c0c0"
+    frame_color = "#ffffff"
+    corner_radius = 0
+    background = "#000000"
+    foreground = "#ffffff"
     separator_color = frame
     separator_height = 2
     padding = 15
     horizontal_padding = 20
-    transparency = 5
-    corner_radius = 0
     icon_position = left
     max_icon_size = 32
     markup = full
     format = "<span foreground='#ffffff'><b>%s</b></span>\n%b"
     alignment = left
     word_wrap = yes
-    ellipsize = middle
-    sort = yes
-    stack_duplicates = true
-    hide_duplicate_count = false
-    show_indicators = yes
-    sticky_history = yes
-    history_length = 20
-    idle_threshold = 120
-
-[urgency_low]
-    background = "#0f1212"
-    foreground = "#f0e0e0"
-    timeout = 10
-
-[urgency_normal]
-    background = "#0f1212"
-    foreground = "#f0e0e0"
-    timeout = 10
+    sort = no
+    stack_duplicates = false
+    notification_limit = 1
+    indicate_hidden = yes
+    overlap_hide = no
+    override_dbus_timeout = 3
 
 [urgency_critical]
-    background = "#d64e4e"
-    foreground = "#f0e0e0"
-    frame_color = "#d64e4e"
-    timeout = 0
+    background = "#ff0000"
+    foreground = "#ffffff"
+    frame_color = "#ffffff"
+    override_dbus_timeout = 5
