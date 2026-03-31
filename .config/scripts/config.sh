@@ -7,6 +7,7 @@ configs=(
     "dunst:$HOME/.config/dunst/dunstrc"
     "fish:$HOME/.config/fish/config.fish"
     "kitty:$HOME/.config/kitty/kitty.conf"
+    "zed:$HOME/.config/zed/settings.json"
     "btop:$HOME/.config/btop/btop.conf"
     "fastfetch:$HOME/.config/fastfetch/config.jsonc"
     "csgo:$HOME/.local/share/Steam/steamapps/common/csgo legacy/csgo/cfg/autoexec.cfg"
