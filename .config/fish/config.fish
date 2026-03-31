@@ -12,6 +12,7 @@ abbr -a spi sudo pacman -S
 abbr -a yi yay -S
 abbr -a search yay -Ss
 abbr -a fetch fastfetch
+abbr -a zed zeditor
 
 if status is-interactive
     cat ~/.cache/wal/sequences
