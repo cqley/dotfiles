@@ -7,7 +7,7 @@ configuration {
 }
 
 * {
-    background-color:            #1F1F1F;
+    background-color:            #111111;
     text-color:                  #FFFFFF;
     border-color:                #FFFFFF;
 }
@@ -19,7 +19,7 @@ window {
     height:                      70%;
     x-offset:                   -15px;
     y-offset:                    0px;
-    background-color:            #1F1F1F;
+    background-color:            #111111;
     border:                      1px;
     border-radius:               0px;
     border-color:                #FFFFFF;
