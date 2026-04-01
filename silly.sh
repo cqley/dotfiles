@@ -64,7 +64,6 @@ install() {
     done
 
     rm -rf "$tmp"
-    sleep 1 && hyprctl reload && clear
     echo "dotfiles installed"
 }
 
