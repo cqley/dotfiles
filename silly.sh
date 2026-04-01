@@ -26,43 +26,101 @@ AUR_PKGS=(
     python-pywal16
 )
 
-[[ $EUID -eq 0 ]] && { echo "do not run as root"; exit 1; }
-command -v git &>/dev/null || { echo "git required"; exit 1; }
+install() {
+    [[ $EUID -eq 0 ]] && { echo "do not run as root"; exit 1; }
+    command -v git &>/dev/null || { echo "git required"; exit 1; }
 
-sudo pacman -Syu --needed --noconfirm "${PACMAN_PKGS[@]}"
+    sudo pacman -Syu --needed --noconfirm "${PACMAN_PKGS[@]}"
 
-if ! command -v yay &>/dev/null; then
+    if ! command -v yay &>/dev/null; then
+        tmp=$(mktemp -d)
+        git clone --depth=1 https://aur.archlinux.org/yay.git "$tmp/yay"
+        (cd "$tmp/yay" && makepkg -si --noconfirm)
+        rm -rf "$tmp"
+    fi
+
+    yay -S --needed --noconfirm "${AUR_PKGS[@]}"
+
     tmp=$(mktemp -d)
-    git clone --depth=1 https://aur.archlinux.org/yay.git "$tmp/yay"
-    (cd "$tmp/yay" && makepkg -si --noconfirm)
+    git clone --depth=1 "$REPO_URL" "$tmp/dotfiles" &>/dev/null
+
+    mkdir -p "$HOME/.config"
+
+    for src in "$tmp/dotfiles/.config"/*/; do
+        name="$(basename "$src")"
+        [[ "$name" == "wallpaper" ]] && continue
+        dst="$HOME/.config/$name"
+        [[ -e "$dst" || -L "$dst" ]] && rm -rf "$dst"
+        cp -r "$src" "$dst"
+    done
+
+    if [[ -d "$tmp/dotfiles/.config/scripts" ]]; then
+        find "$HOME/.config/scripts" -type f | xargs chmod +x
+    fi
+
+    mkdir -p "$HOME/.config/wallpaper"
+    find "$tmp/dotfiles/.config/wallpaper" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" \) ! -iname "README*" | while read -r img; do
+        cp "$img" "$HOME/.config/wallpaper/"
+    done
+
     rm -rf "$tmp"
-fi
+    echo "dotfiles installed"
+}
 
-yay -S --needed --noconfirm "${AUR_PKGS[@]}"
+sync() {
+    CONFIGS=(btop dunst fastfetch fish hypr kitty rofi scripts wallpaper zed)
 
-tmp=$(mktemp -d)
-git clone --depth=1 "$REPO_URL" "$tmp/dotfiles" &>/dev/null
+    echo
+    for name in "${CONFIGS[@]}"; do
+        echo "$name"
+    done
+    echo
+    read -rp "> " input
 
-mkdir -p "$HOME/.config"
+    tmp=$(mktemp -d)
+    git clone --depth=1 "$REPO_URL" "$tmp/dotfiles" &>/dev/null
 
-for src in "$tmp/dotfiles/.config"/*/; do
-    name="$(basename "$src")"
-    [[ "$name" == "wallpaper" ]] && continue
-    dst="$HOME/.config/$name"
-    [[ -e "$dst" || -L "$dst" ]] && rm -rf "$dst"
-    cp -r "$src" "$dst"
-done
+    reload_hypr=false
+    synced_any=false
 
-if [[ -d "$tmp/dotfiles/.config/scripts" ]]; then
-    find "$HOME/.config/scripts" -type f | xargs chmod +x
-fi
+    for name in $input; do
+        src="$tmp/dotfiles/.config/$name"
+        dst="$HOME/.config/$name"
 
-mkdir -p "$HOME/.config/wallpaper"
-find "$tmp/dotfiles/.config/wallpaper" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" \) ! -iname "README*" | while read -r img; do
-    cp "$img" "$HOME/.config/wallpaper/"
-done
+        if [[ ! -d "$src" ]]; then
+            echo "unknown: $name"
+            continue
+        fi
 
-rm -rf "$tmp"
+        if [[ "$name" == "wallpaper" ]]; then
+            mkdir -p "$dst"
+            find "$src" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" \) ! -iname "README*" | while read -r img; do
+                cp "$img" "$dst/"
+            done
+        else
+            [[ -e "$dst" || -L "$dst" ]] && rm -rf "$dst"
+            cp -r "$src" "$dst"
+        fi
 
-hyprctl reload
-echo "dotfiles installed"
+        [[ "$name" == "scripts" ]] && find "$dst" -type f | xargs chmod +x
+        [[ "$name" == "hypr" ]] && reload_hypr=true
+        echo "synced $name"
+        synced_any=true
+    done
+
+    rm -rf "$tmp"
+
+    $reload_hypr && hyprctl reload &>/dev/null
+    $synced_any || echo "nothing synced"
+}
+
+echo "install"
+echo "sync"
+echo
+read -rp "> " choice
+
+case "$choice" in
+    install) install ;;
+    sync) sync ;;
+    *) echo "invalid"; exit 1 ;;
+esac
