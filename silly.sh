@@ -75,7 +75,7 @@ sync() {
         echo "$name"
     done
     echo
-    read -rp "> " input
+    read -rp "> " input </dev/tty
 
     tmp=$(mktemp -d)
     git clone --depth=1 "$REPO_URL" "$tmp/dotfiles" &>/dev/null
@@ -117,7 +117,7 @@ sync() {
 echo "install"
 echo "sync"
 echo
-read -rp "> " choice
+read -rp "> " choice </dev/tty
 
 case "$choice" in
     install) install ;;
