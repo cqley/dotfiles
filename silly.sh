@@ -5,24 +5,25 @@ set -euo pipefail
 REPO_URL="https://github.com/x2p3lnk7tq9z/dotfiles.git"
 
 PACMAN_PKGS=(
+    base-devel
+    git
+    fish
     hyprland
     hyprlock
     xdg-desktop-portal-hyprland
     xdg-utils
     perl-file-mimeinfo
     nautilus
-    imv
-    mpv
     kitty
     rofi
     dunst
     btop
     fastfetch
-    fish
+    imv
+    mpv
     imagemagick
+    playerctl
     libnotify
-    git
-    base-devel
 )
 
 AUR_PKGS=(
