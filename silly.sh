@@ -9,6 +9,8 @@ PACMAN_PKGS=(
     hyprlock
     xdg-desktop-portal-hyprland
     nautilus
+    imv
+    mpv
     kitty
     rofi
     dunst
