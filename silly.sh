@@ -8,6 +8,8 @@ PACMAN_PKGS=(
     hyprland
     hyprlock
     xdg-desktop-portal-hyprland
+    xdg-utils
+    perl-file-mimeinfo
     nautilus
     imv
     mpv
