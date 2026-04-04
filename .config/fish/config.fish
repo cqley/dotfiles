@@ -11,7 +11,7 @@ abbr -a update sudo pacman -Syu
 abbr -a pi sudo pacman -S
 abbr -a pr sudo pacman -Rns
 abbr -a yi yay -S
-abbr -a search yay -Ss
+abbr -a ys yay -Ss
 abbr -a zed zeditor
 
 if status is-interactive
