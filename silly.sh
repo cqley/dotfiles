@@ -13,6 +13,7 @@ PACMAN_PKGS=(
     xdg-desktop-portal-hyprland
     xdg-utils
     perl-file-mimeinfo
+    cliphist
     nautilus
     kitty
     rofi
