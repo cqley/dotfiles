@@ -2,7 +2,7 @@
 
 SCRIPT_DIR="$HOME/.config/scripts"
 
-options="btop\nconfig\nsettings\nwallpaper\nfastfetch"
+options="btop\nconfig\nsettings\nwallpaper\nssh"
 
 choice=$(echo -e "$options" | rofi -dmenu -i -p ">")
 
