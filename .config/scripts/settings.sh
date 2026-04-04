@@ -1,10 +1,6 @@
 #!/bin/bash
 
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
-DUNST_CONF="$HOME/.config/dunst/dunstrc"
-ROFI_CONF="$HOME/.config/rofi/config.rasi"
-WALL_CONF="$HOME/.config/rofi/wallpaper.rasi"
-BTOP_CONF="$HOME/.config/btop/btop.conf"
 ANIMATION_SCRIPT="$HOME/.config/scripts/animations.sh"
 
 options="border toggle\ngaps toggle\nanimations"
