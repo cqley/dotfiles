@@ -69,6 +69,10 @@ install() {
     done
 
     rm -rf "$tmp"
+
+    xdg-mime default imv.desktop image/jpeg image/png image/gif image/webp image/bmp image/tiff
+    xdg-mime default mpv.desktop video/mp4 video/x-matroska video/webm video/quicktime video/x-msvideo video/x-flv
+    
     hyprctl reload && clear
     echo "dotfiles installed"
 }
