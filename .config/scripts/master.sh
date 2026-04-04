@@ -11,5 +11,5 @@ case "$choice" in
     *config*) "$SCRIPT_DIR/config.sh" ;;
     *settings*) "$SCRIPT_DIR/settings.sh" ;;
     *wallpaper*) "$SCRIPT_DIR/wallpaper.sh" ;;
-    *fastfetch*) kitty sh -c "fastfetch; read -p ''" ;;
+    *ssh*) "$SCRIPT_DIR/ssh.sh" ;;
 esac
