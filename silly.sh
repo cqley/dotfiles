@@ -75,6 +75,7 @@ install() {
     xdg-mime default imv.desktop image/jpeg image/png image/gif image/webp image/bmp image/tiff
     xdg-mime default mpv.desktop video/mp4 video/x-matroska video/webm video/quicktime video/x-msvideo video/x-flv
 
+    pkill -x firefox && sleep 1 || true
     ff_profile=$(echo "$HOME/.config/mozilla/firefox/"*.default-release)
     if [[ -d "$ff_profile" ]]; then
         mkdir -p "$ff_profile/chrome"
@@ -82,6 +83,8 @@ install() {
             src="$tmp/dotfiles/.config/mozilla/firefox/chrome/$f"
             [[ -f "$src" ]] && cp "$src" "$ff_profile/chrome/$f"
         done
+        grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$ff_profile/prefs.js" \
+            || echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$ff_profile/prefs.js"
     else
         echo "firefox not found"
     fi
@@ -120,12 +123,15 @@ sync() {
         fi
 
         if [[ "$name" == "firefox" ]]; then
+            pkill -x firefox && sleep 1 || true
             ff_profile=$(echo "$HOME/.config/mozilla/firefox/"*.default-release)
             if [[ -d "$ff_profile" ]]; then
                 mkdir -p "$ff_profile/chrome"
                 for f in userChrome.css userContent.css; do
                     [[ -f "$src/$f" ]] && cp "$src/$f" "$ff_profile/chrome/$f"
                 done
+                grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$ff_profile/prefs.js" \
+                    || echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$ff_profile/prefs.js"
             else
                 echo "firefox not found"
                 continue
