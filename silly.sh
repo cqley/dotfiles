@@ -72,13 +72,24 @@ install() {
 
     xdg-mime default imv.desktop image/jpeg image/png image/gif image/webp image/bmp image/tiff
     xdg-mime default mpv.desktop video/mp4 video/x-matroska video/webm video/quicktime video/x-msvideo video/x-flv
-    
+
+    ff_profile=$(echo "$HOME/.config/mozilla/firefox/"*.default-release)
+    if [[ -d "$ff_profile" ]]; then
+        mkdir -p "$ff_profile/chrome"
+        for f in userChrome.css userContent.css; do
+            src="$tmp/dotfiles/.config/mozilla/firefox/chrome/$f"
+            [[ -f "$src" ]] && cp "$src" "$ff_profile/chrome/$f"
+        done
+    else
+        echo "firefox not found"
+    fi
+
     hyprctl reload && clear
     echo "dotfiles installed"
 }
 
 sync() {
-    CONFIGS=(btop dunst fastfetch fish hypr kitty rofi scripts wallpaper zed)
+    CONFIGS=(btop dunst fastfetch fish firefox hypr kitty rofi scripts wallpaper zed)
 
     echo
     for name in "${CONFIGS[@]}"; do
@@ -94,15 +105,30 @@ sync() {
     synced_any=false
 
     for name in $input; do
-        src="$tmp/dotfiles/.config/$name"
+        if [[ "$name" == "firefox" ]]; then
+            src=$(echo "$tmp/dotfiles/.config/mozilla/firefox/"*.default-release/chrome)
+        else
+            src="$tmp/dotfiles/.config/$name"
+        fi
         dst="$HOME/.config/$name"
 
-        if [[ ! -d "$src" ]]; then
+        if [[ "$name" != "firefox" ]] && [[ ! -d "$src" ]]; then
             echo "unknown: $name"
             continue
         fi
 
-        if [[ "$name" == "wallpaper" ]]; then
+        if [[ "$name" == "firefox" ]]; then
+            ff_profile=$(echo "$HOME/.config/mozilla/firefox/"*.default-release)
+            if [[ -d "$ff_profile" ]]; then
+                mkdir -p "$ff_profile/chrome"
+                for f in userChrome.css userContent.css; do
+                    [[ -f "$src/$f" ]] && cp "$src/$f" "$ff_profile/chrome/$f"
+                done
+            else
+                echo "firefox not found"
+                continue
+            fi
+        elif [[ "$name" == "wallpaper" ]]; then
             mkdir -p "$dst"
             find "$src" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" \) ! -iname "README*" | while read -r img; do
                 cp "$img" "$dst/"
