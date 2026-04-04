@@ -1,0 +1,173 @@
+:root {
+    --accent-color: 45, 45, 45;
+    --tab-color: 240, 240, 244;
+    --tab-text-color: 255, 255, 255;
+    --secondary-accent-color: 127, 127, 127;
+    --second-tab-text-color: 127, 127, 127;
+    --third-accent-color: 235, 219, 178;
+    --light-color: 255, 255, 255;
+    --dark-color: 0, 0, 0;
+    --url-back: 249, 249, 251;
+    --caption-min-color: 215, 153, 33;
+    --caption-max-color: 69, 133, 136;
+    --caption-close-color: 177, 98, 134;
+    --navbarWidth: 25vw;
+    --animationSpeed: 0.5s;
+}
+
+#TabsToolbar {
+    margin-right: var(--navbarWidth) !important;
+}
+
+#nav-bar {
+    margin-left: calc(100vw - var(--navbarWidth)) !important;
+}
+
+#urlbar-container {
+    min-width: 0px !important;
+}
+
+:root[uidensity="compact"] #nav-bar {
+    margin-top: -37px !important;
+    height: 37px !important;
+}
+
+:root:not([uidensity="compact"]):not([uidensity="touch"]) #nav-bar {
+    margin-top: -44px !important;
+    height: 44px !important;
+}
+
+:root[uidensity="touch"] #nav-bar {
+    margin-top: -49px !important;
+    height: 49px !important;
+}
+
+#TabsToolbar > .titlebar-buttonbox-container {
+    visibility: collapse !important;
+}
+
+.titlebar-spacer {
+    display: none !important;
+}
+
+#back-button {
+    display: none !important;
+}
+
+#forward-button {
+    display: none !important;
+}
+
+#stop-reload-button {
+    display: none !important;
+}
+
+#tracking-protection-icon-container {
+    display: none !important;
+}
+
+#identity-box > :not(#notification-popup-box) {
+    display: none !important;
+}
+
+#identity-box {
+    margin: 0 !important;
+}
+
+#notification-popup-box {
+    margin-inline-end: var(--identity-box-margin-inline);
+}
+
+.urlbar-icon,
+#userContext-indicator,
+#userContext-label {
+    fill: transparent !important;
+    background: transparent !important;
+    color: transparent !important;
+}
+
+#urlbar:not(:hover, :active, [focused]) .urlbar-icon {
+    visibility: hidden;
+}
+
+#urlbar .urlbar-icon {
+    fill: var(--toolbar-color) !important;
+}
+
+#nav-bar,
+toolbar#nav-bar {
+    background: rgba(var(--dark-color), 1) !important;
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+    padding-bottom: 4px !important;
+}
+
+#navigator-toolbox {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+toolbar,
+#toolbar-menubar,
+#TabsToolbar,
+#PersonalToolbar {
+    border-top: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+#PersonalToolbar {
+    background: rgba(var(--dark-color), 1) !important;
+    color: rgba(var(--light-color), 1) !important;
+    padding-bottom: 6px !important;
+    padding-top: 1px !important;
+}
+
+.toolbar-items,
+.toolbarbutton-1,
+#nav-bar-customization-target {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+#urlbar-background {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+#urlbar,
+#urlbar *,
+#urlbar-container,
+#urlbar-input-container {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+#urlbar:not(:hover):not([breakout][breakout-extend]) > #urlbar-background {
+    background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+#urlbar[breakout][breakout-extend] > #urlbar-background {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.browser-toolbox-background {
+    background: rgba(var(--dark-color), 1) !important;
+    will-change: initial;
+}
+
+:root:-moz-lwtheme-brighttext,
+.sidebar-panel[lwt-sidebar-brighttext],
+body[lwt-sidebar-brighttext] {
+    --main-bgcolor: var(--dark-color);
+    --transparent-bgcolor: var(--dark-color);
+}
