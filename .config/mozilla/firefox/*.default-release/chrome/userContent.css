@@ -1,0 +1,6 @@
+@-moz-document url("about:newtab"), url("about:home") {
+    div.logo,
+    div.wordmark {
+        display: none !important;
+    }
+}
