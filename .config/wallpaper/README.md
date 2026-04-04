@@ -25,6 +25,6 @@
   </tr>
   <tr>
     <td width="50%"><img src="wallhaven-8gedj1.png" width="100%"/></td>
-    <td width="50%"><img src="wallhaven-d553zg.png" width="100%"/></td>
+    <td width="50%"><img src="wallhaven-1qdz21.png" width="100%"/></td>
   </tr>
 </table>
