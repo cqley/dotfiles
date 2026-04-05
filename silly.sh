@@ -172,6 +172,7 @@ sync() {
 
         [[ "$name" == "scripts" ]] && find "$dst" -type f | xargs chmod +x
         [[ "$name" == "hypr" ]] && reload_hypr=true
+        [[ "$name" == "gtk-3.0" ]] && printf "file://$HOME/Downloads Downloads\nfile://$HOME/Documents Documents\nfile://$HOME/Pictures Pictures\nfile://$HOME/Videos Videos\nfile://$HOME/.config .config\n" > ~/.config/gtk-3.0/bookmarks
         echo "synced $name"
         synced_any=true
     done
