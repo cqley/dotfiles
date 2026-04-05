@@ -15,16 +15,52 @@
     --animationSpeed: 0.5s;
 }
 
+:root:-moz-lwtheme-brighttext,
+.sidebar-panel[lwt-sidebar-brighttext],
+body[lwt-sidebar-brighttext] {
+    --main-bgcolor: var(--dark-color);
+    --transparent-bgcolor: var(--dark-color);
+}
+
+#navigator-toolbox {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+toolbar,
+#toolbar-menubar,
+#TabsToolbar,
+#PersonalToolbar {
+    border-top: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 #TabsToolbar {
     margin-right: var(--navbarWidth) !important;
 }
 
-#nav-bar {
-    margin-left: calc(100vw - var(--navbarWidth)) !important;
+#TabsToolbar > .titlebar-buttonbox-container {
+    visibility: collapse !important;
 }
 
-#urlbar-container {
-    min-width: 0px !important;
+.titlebar-spacer {
+    display: none !important;
+}
+
+#nav-bar,
+toolbar#nav-bar {
+    background: rgba(var(--dark-color), 1) !important;
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+    padding-bottom: 4px !important;
+}
+
+#nav-bar {
+    margin-left: calc(100vw - var(--navbarWidth)) !important;
 }
 
 :root[uidensity="compact"] #nav-bar {
@@ -42,12 +78,21 @@
     height: 49px !important;
 }
 
-#TabsToolbar > .titlebar-buttonbox-container {
-    visibility: collapse !important;
+.browser-toolbox-background {
+    background: rgba(var(--dark-color), 1) !important;
+    will-change: initial;
 }
 
-.titlebar-spacer {
+#PersonalToolbar {
     display: none !important;
+}
+
+.toolbar-items,
+.toolbarbutton-1,
+#nav-bar-customization-target {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
 #back-button {
@@ -59,6 +104,26 @@
 }
 
 #stop-reload-button {
+    display: none !important;
+}
+
+#alltabs-button {
+    display: none !important;
+}
+
+#sidebar-button {
+    display: none !important;
+}
+
+#downloads-button {
+    display: none !important;
+}
+
+#unified-extensions-button {
+    display: none !important;
+}
+
+#nav-bar-overflow-button {
     display: none !important;
 }
 
@@ -78,60 +143,8 @@
     margin-inline-end: var(--identity-box-margin-inline);
 }
 
-.urlbar-icon,
-#userContext-indicator,
-#userContext-label {
-    fill: transparent !important;
-    background: transparent !important;
-    color: transparent !important;
-}
-
-#urlbar:not(:hover, :active, [focused]) .urlbar-icon {
-    visibility: hidden;
-}
-
-#urlbar .urlbar-icon {
-    fill: var(--toolbar-color) !important;
-}
-
-#nav-bar,
-toolbar#nav-bar {
-    background: rgba(var(--dark-color), 1) !important;
-    box-shadow: none !important;
-    border: none !important;
-    outline: none !important;
-    padding-bottom: 4px !important;
-}
-
-#navigator-toolbox {
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-toolbar,
-#toolbar-menubar,
-#TabsToolbar,
-#PersonalToolbar {
-    border-top: none !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-#PersonalToolbar {
-    background: rgba(var(--dark-color), 1) !important;
-    color: rgba(var(--light-color), 1) !important;
-    padding-bottom: 6px !important;
-    padding-top: 1px !important;
-}
-
-.toolbar-items,
-.toolbarbutton-1,
-#nav-bar-customization-target {
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
+#urlbar-container {
+    min-width: 0px !important;
 }
 
 #urlbar-background {
@@ -160,14 +173,18 @@ toolbar,
     box-shadow: none !important;
 }
 
-.browser-toolbox-background {
-    background: rgba(var(--dark-color), 1) !important;
-    will-change: initial;
+#urlbar:not(:hover, :active, [focused]) .urlbar-icon {
+    visibility: hidden;
 }
 
-:root:-moz-lwtheme-brighttext,
-.sidebar-panel[lwt-sidebar-brighttext],
-body[lwt-sidebar-brighttext] {
-    --main-bgcolor: var(--dark-color);
-    --transparent-bgcolor: var(--dark-color);
+#urlbar .urlbar-icon {
+    fill: var(--toolbar-color) !important;
+}
+
+.urlbar-icon,
+#userContext-indicator,
+#userContext-label {
+    fill: transparent !important;
+    background: transparent !important;
+    color: transparent !important;
 }
