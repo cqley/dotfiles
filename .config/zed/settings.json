@@ -107,6 +107,6 @@
   "theme": {
     "mode": "dark",
     "light": "",
-    "dark": "",
+    "dark": "pywal",
   },
 }
