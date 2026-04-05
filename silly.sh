@@ -111,7 +111,7 @@ install() {
 }
 
 sync() {
-    CONFIGS=(btop dunst fastfetch fish firefox hypr kitty rofi scripts wallpaper zed)
+    CONFIGS=(btop dunst fastfetch fish firefox gtk-3.0 gtk-4.0 hypr kitty rofi scripts wallpaper zed)
 
     echo
     for name in "${CONFIGS[@]}"; do
