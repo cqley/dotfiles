@@ -11,8 +11,8 @@ case "$choice" in
     fade)
         sed -i '/@dynamic_workspaces/c\    animation = workspaces, 1, 1.94, almostLinear, fade # @dynamic_workspaces' "$HYPR_CONF"
         sed -i '/@dynamic_special/c\    animation = specialWorkspace, 1, 1.94, almostLinear, fade # @dynamic_special' "$HYPR_CONF"
-        hyprctl keyword animation "workspaces, 1, 1.94, almostLinear, fade"
-        hyprctl keyword animation "specialWorkspace, 1, 1.94, almostLinear, fade"
+        hyprctl keyword animation "workspaces, 1, 1, almostLinear, fade"
+        hyprctl keyword animation "specialWorkspace, 1, 1, almostLinear, fade"
         notify-send "animations" "fade"
         ;;
     vertical)
