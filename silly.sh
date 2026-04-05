@@ -31,6 +31,7 @@ AUR_PKGS=(
     zed
     awww
     python-pywal16
+    python-pywalfox
 )
 
 install() {
