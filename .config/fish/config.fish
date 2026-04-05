@@ -16,4 +16,6 @@ abbr -a zed zeditor
 
 if status is-interactive
     cat ~/.cache/wal/sequences
+    test -f ~/.cache/wal/colors.fish; and source ~/.cache/wal/colors.fish
 end
+
