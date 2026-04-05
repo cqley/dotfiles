@@ -44,6 +44,7 @@ awww clear --outputs "$SECOND_MONITOR"
 wal -i "$FULL_PATH" -n -q
 mkdir -p "$(dirname "$CACHE_PATH")"
 ln -sf "$FULL_PATH" "$CACHE_PATH"
+ln -sf ~/.cache/wal/colors-zed.json ~/.config/zed/themes/colors-zed.json
 
 kill -SIGUSR1 $(pgrep kitty) 2>/dev/null
 killall dunst
