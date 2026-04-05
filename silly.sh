@@ -20,6 +20,7 @@ PACMAN_PKGS=(
     dunst
     btop
     fastfetch
+    firefox
     imv
     mpv
     imagemagick
@@ -57,6 +58,7 @@ install() {
     for src in "$tmp/dotfiles/.config"/*/; do
         name="$(basename "$src")"
         [[ "$name" == "wallpaper" ]] && continue
+        [[ "$name" == "mozilla" ]] && continue
         dst="$HOME/.config/$name"
         [[ -e "$dst" || -L "$dst" ]] && rm -rf "$dst"
         cp -r "$src" "$dst"
@@ -71,24 +73,35 @@ install() {
         cp "$img" "$HOME/.config/wallpaper/"
     done
 
-    rm -rf "$tmp"
-
     xdg-mime default imv.desktop image/jpeg image/png image/gif image/webp image/bmp image/tiff
     xdg-mime default mpv.desktop video/mp4 video/x-matroska video/webm video/quicktime video/x-msvideo video/x-flv
 
     pkill -x firefox && sleep 1 || true
-    ff_profile=$(echo "$HOME/.config/mozilla/firefox/"*.default-release)
-    if [[ -d "$ff_profile" ]]; then
+    firefox --headless --no-remote 2>/dev/null &
+    sleep 3
+    pkill -x firefox || true
+    sleep 1
+    ff_profile=""
+    for p in "$HOME/.config/mozilla/firefox/"*.default-release; do
+        [[ "$(basename "$p")" == "*.default-release" ]] && continue
+        [[ -d "$p" ]] && { ff_profile="$p"; break; }
+    done
+    if [[ -n "$ff_profile" ]]; then
+        ff_src=""
+        for p in "$tmp/dotfiles/.config/mozilla/firefox/"*.default-release/chrome; do
+            [[ -d "$p" ]] && { ff_src="$p"; break; }
+        done
         mkdir -p "$ff_profile/chrome"
         for f in userChrome.css userContent.css; do
-            src="$tmp/dotfiles/.config/mozilla/firefox/chrome/$f"
-            [[ -f "$src" ]] && cp "$src" "$ff_profile/chrome/$f"
+            [[ -n "$ff_src" && -f "$ff_src/$f" ]] && cp "$ff_src/$f" "$ff_profile/chrome/$f"
         done
         grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$ff_profile/prefs.js" \
             || echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$ff_profile/prefs.js"
     else
-        echo "firefox not found"
+        echo "firefox profile not found"
     fi
+
+    rm -rf "$tmp"
 
     hyprctl reload && clear
     echo "dotfiles installed"
@@ -112,7 +125,10 @@ sync() {
 
     for name in $input; do
         if [[ "$name" == "firefox" ]]; then
-            src=$(echo "$tmp/dotfiles/.config/mozilla/firefox/"*.default-release/chrome)
+            src=""
+            for p in "$tmp/dotfiles/.config/mozilla/firefox/"*.default-release/chrome; do
+                [[ -d "$p" ]] && { src="$p"; break; }
+            done
         else
             src="$tmp/dotfiles/.config/$name"
         fi
@@ -125,8 +141,12 @@ sync() {
 
         if [[ "$name" == "firefox" ]]; then
             pkill -x firefox && sleep 1 || true
-            ff_profile=$(echo "$HOME/.config/mozilla/firefox/"*.default-release)
-            if [[ -d "$ff_profile" ]]; then
+            ff_profile=""
+            for p in "$HOME/.config/mozilla/firefox/"*.default-release; do
+                [[ "$(basename "$p")" == "*.default-release" ]] && continue
+                [[ -d "$p" ]] && { ff_profile="$p"; break; }
+            done
+            if [[ -n "$ff_profile" ]]; then
                 mkdir -p "$ff_profile/chrome"
                 for f in userChrome.css userContent.css; do
                     [[ -f "$src/$f" ]] && cp "$src/$f" "$ff_profile/chrome/$f"
@@ -134,7 +154,7 @@ sync() {
                 grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$ff_profile/prefs.js" \
                     || echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$ff_profile/prefs.js"
             else
-                echo "firefox not found"
+                echo "firefox profile not found"
                 continue
             fi
         elif [[ "$name" == "wallpaper" ]]; then
