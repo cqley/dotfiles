@@ -29,5 +29,6 @@
   </tr>
   <tr>
     <td width="50%"><img src="grey_lain_wallpaper.jpg" width="100%"/></td>
+    <td width="50%"><img src="wallhaven-0pvpoj.jpg" width="100%"/></td>
   </tr>
 </table>
