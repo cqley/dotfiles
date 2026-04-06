@@ -29,8 +29,8 @@ window {
     border-color:        #FFFFFF;
     border-radius:       0px;
     padding:             4px 5px;
-    location:            center;
-    anchor:              center;
+    location:            north;
+    anchor:              north;
     y-offset:            20px;
 }
 
