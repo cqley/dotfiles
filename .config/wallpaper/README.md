@@ -27,4 +27,7 @@
     <td width="50%"><img src="wallhaven-8gedj1.png" width="100%"/></td>
     <td width="50%"><img src="wallhaven-1qdz21.png" width="100%"/></td>
   </tr>
+  <tr>
+    <td width="50%"><img src="grey_lain_wallpaper.jpg" width="100%"/></td>
+  </tr>
 </table>
