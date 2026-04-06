@@ -4,6 +4,7 @@ WALLPAPER_DIR="$HOME/.config/wallpaper/"
 THUMBNAIL_DIR="$HOME/.cache/thumbnails/"
 CACHE_PATH="$HOME/.cache/wallpaper/wallpaper.*"
 RASI_THEME="$HOME/.config/rofi/wallpaper.rasi"
+ROFI_CONFIG="$HOME/.config/rofi/config.rasi"
 DUNST_CONFIG="$HOME/.config/dunst/dunstrc"
 MAIN_MONITOR="HDMI-A-1"
 SECOND_MONITOR="DP-1"
@@ -49,6 +50,14 @@ ln -sf ~/.cache/wal/colors-zed.json ~/.config/zed/themes/colors-zed.json
 
 if [ -f "$HOME/.cache/wal/colors.sh" ]; then
     source "$HOME/.cache/wal/colors.sh"
+    sed -i \
+        -e "s/border-color:[[:space:]]*#[A-Fa-f0-9]*/border-color: $color2/g" \
+        -e "s/text-color:[[:space:]]*#[A-Fa-f0-9]*/text-color: $color2/g" \
+        -e "s/normal-foreground:[[:space:]]*#[A-Fa-f0-9]*/normal-foreground: $color2/g" \
+        -e "s/prompt-foreground:[[:space:]]*#[A-Fa-f0-9]*/prompt-foreground: $color2/g" \
+        -e "s/selected-normal-background:[[:space:]]*#[A-Fa-f0-9]*/selected-normal-background: $color2/g" \
+        -e "s/selected-normal-foreground:[[:space:]]*#[A-Fa-f0-9]*/selected-normal-foreground: #000000/g" \
+        "$ROFI_CONFIG"
     sed -i "s/^[[:space:]]*frame_color = .*/    frame_color = \"$color2\"/" "$DUNST_CONFIG"
 fi
 
