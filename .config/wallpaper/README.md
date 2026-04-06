@@ -31,4 +31,6 @@
     <td width="50%"><img src="grey_lain_wallpaper.jpg" width="100%"/></td>
     <td width="50%"><img src="wallhaven-0pvpoj.png" width="100%"/></td>
   </tr>
+  <tr>
+    <td width="50%"><img src="wallhaven-rqyk2m.jpg" width="100%"/></td>
 </table>
