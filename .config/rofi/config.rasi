@@ -97,7 +97,7 @@ element selected {
 element-text {
     background-color:    transparent;
     text-color:          inherit;
-    highlight:           bold #000000;
+    highlight:           #FFFFFF;
     cursor:              default;
 }
 
