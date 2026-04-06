@@ -4,6 +4,7 @@ WALLPAPER_DIR="$HOME/.config/wallpaper/"
 THUMBNAIL_DIR="$HOME/.cache/thumbnails/"
 CACHE_PATH="$HOME/.cache/wallpaper/wallpaper.*"
 RASI_THEME="$HOME/.config/rofi/wallpaper.rasi"
+DUNST_CONFIG="$HOME/.config/dunst/dunstrc"
 MAIN_MONITOR="HDMI-A-1"
 SECOND_MONITOR="DP-1"
 
@@ -45,6 +46,11 @@ wal -i "$FULL_PATH" -n -q
 mkdir -p "$(dirname "$CACHE_PATH")"
 ln -sf "$FULL_PATH" "$CACHE_PATH"
 ln -sf ~/.cache/wal/colors-zed.json ~/.config/zed/themes/colors-zed.json
+
+if [ -f "$HOME/.cache/wal/colors.sh" ]; then
+    source "$HOME/.cache/wal/colors.sh"
+    sed -i "s/^[[:space:]]*frame_color = .*/    frame_color = \"$color4\"/" "$DUNST_CONFIG"
+fi
 
 kill -SIGUSR1 $(pgrep kitty) 2>/dev/null
 killall dunst
