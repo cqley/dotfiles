@@ -150,7 +150,7 @@ vpn_menu() {
                 if [[ -n "$last" ]]; then
                     vpn_connect "$last" vpn_menu
                 else
-                    notify "vpn" "no previous server, pick one from locations"
+                    notify "vpn" "no previous connection"
                     vpn_menu
                 fi
             fi
