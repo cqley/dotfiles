@@ -22,7 +22,7 @@ list_images() {
         thumb="$THUMBNAIL_DIR$filename"
 
         if [ ! -f "$thumb" ]; then
-            magick convert "$img" -thumbnail 300x "$thumb" &
+            magick "$img" -thumbnail 300x "$thumb" &
         fi
 
         echo -en "$filename\0icon\x1f$thumb\n"
