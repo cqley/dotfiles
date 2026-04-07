@@ -67,7 +67,6 @@ vpn_connect() {
     fi
 }
 
-
 vpn_servers() {
     local location="$1"
     mapfile -t active  < <(wg_active)
