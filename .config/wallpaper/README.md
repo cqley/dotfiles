@@ -1,6 +1,6 @@
 <table>
   <tr>
-    <td width="50%"><img src="8gedj.png" width="100%"/></td>
+    <td width="50%"><img src="8gedj1.png" width="100%"/></td>
     <td width="50%"><img src="6dpvpx.jpg" width="100%"/></td>
   </tr>
   <tr>
