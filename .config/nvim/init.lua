@@ -22,29 +22,29 @@ vim.opt.directory = vim.fn.stdpath("state") .. "/swap//"
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-vim.keymap.set({"n", "i"}, "<C-s>", "<cmd>write<cr>", {desc = "Save file"})
-vim.keymap.set("n", "<C-s>", "<cmd>write<cr>", {desc = "Save file"})
-vim.keymap.set("n", "<C-q>", "<cmd>quit<cr>", {desc = "Quit Neovim"})
-vim.keymap.set("n", "<C-Q>", "<cmd>quit!<cr>", {desc = "Force quit"})
-vim.keymap.set("n", "<C-h>", "<cmd>nohlsearch<cr>", {desc = "Clear search highlight"})
-vim.keymap.set({"n", "x"}, "gy", '"+y', {desc = "Copy to clipboard"})
-vim.keymap.set({"n", "x"}, "gp", '"+p', {desc = "Paste from clipboard"})
-vim.keymap.set("n", "<C-z>", "u", {desc = "Undo"})
-vim.keymap.set("i", "<C-z>", "<C-o>u", {desc = "Undo"})
-vim.keymap.set("n", "<C-y>", "<C-r>", {desc = "Redo"})
-vim.keymap.set("i", "<C-y>", "<C-o><C-r>", {desc = "Redo"})
-vim.keymap.set({"n", "i"}, "<C-a>", "ggVG", {desc = "Select all"})
-vim.keymap.set("n", "<C-ff>", "<cmd>Telescope find_files<cr>", {desc = "Find files"})
-vim.keymap.set("n", "<C-fg>", "<cmd>Telescope live_grep<cr>", {desc = "Text search"})
-vim.keymap.set("n", "<C-fb>", "<cmd>Telescope buffers<cr>", {desc = "Find buffers"})
-vim.keymap.set("n", "<C-fh>", "<cmd>Telescope help_tags<cr>", {desc = "Help tags"})
-vim.keymap.set("n", "<C-h>", "<C-w>h", {desc = "Move to left split"})
-vim.keymap.set("n", "<C-j>", "<C-w>j", {desc = "Move to lower split"})
-vim.keymap.set("n", "<C-k>", "<C-w>k", {desc = "Move to upper split"})
-vim.keymap.set("n", "<C-l>", "<C-w>l", {desc = "Move to right split"})
-vim.keymap.set("n", "<C-|>", "<cmd>vsplit<cr>", {desc = "Vertical split"})
-vim.keymap.set("n", "<C-->", "<cmd>split<cr>", {desc = "Horizontal split"})
-vim.keymap.set("n", "<C-x>", "<cmd>close<cr>", {desc = "Close split"})
+vim.keymap.set({"n", "i"}, "<C-s>", "<cmd>write<cr>", {desc = "save file"})
+vim.keymap.set("n", "<C-s>", "<cmd>write<cr>", {desc = "save file"})
+vim.keymap.set("n", "<C-q>", "<cmd>quit<cr>", {desc = "quit neovim"})
+vim.keymap.set("n", "<C-Q>", "<cmd>quit!<cr>", {desc = "force quit"})
+vim.keymap.set("n", "<C-h>", "<cmd>nohlsearch<cr>", {desc = "clear search highlight"})
+vim.keymap.set({"n", "x"}, "gy", '"+y', {desc = "copy to clipboard"})
+vim.keymap.set({"n", "x"}, "gp", '"+p', {desc = "paste from clipboard"})
+vim.keymap.set("n", "<C-z>", "u", {desc = "undo"})
+vim.keymap.set("i", "<C-z>", "<C-o>u", {desc = "undo"})
+vim.keymap.set("n", "<C-y>", "<C-r>", {desc = "redo"})
+vim.keymap.set("i", "<C-y>", "<C-o><C-r>", {desc = "redo"})
+vim.keymap.set({"n", "i"}, "<C-a>", "ggVG", {desc = "select all"})
+vim.keymap.set("n", "<C-ff>", "<cmd>Telescope find_files<cr>", {desc = "find files"})
+vim.keymap.set("n", "<C-fg>", "<cmd>Telescope live_grep<cr>", {desc = "text search"})
+vim.keymap.set("n", "<C-fb>", "<cmd>Telescope buffers<cr>", {desc = "find buffers"})
+vim.keymap.set("n", "<C-fh>", "<cmd>Telescope help_tags<cr>", {desc = "help tags"})
+vim.keymap.set("n", "<C-h>", "<C-w>h", {desc = "move to left split"})
+vim.keymap.set("n", "<C-j>", "<C-w>j", {desc = "move to lower split"})
+vim.keymap.set("n", "<C-k>", "<C-w>k", {desc = "move to upper split"})
+vim.keymap.set("n", "<C-l>", "<C-w>l", {desc = "move to right split"})
+vim.keymap.set("n", "<C-|>", "<cmd>vsplit<cr>", {desc = "vertical split"})
+vim.keymap.set("n", "<C-->", "<cmd>split<cr>", {desc = "horizontal split"})
+vim.keymap.set("n", "<C-x>", "<cmd>close<cr>", {desc = "close split"})
 
 vim.cmd.colorscheme("default")
 vim.opt.matchpairs = ""
@@ -71,10 +71,10 @@ require("lazy").setup({
     dependencies = { "nvim-lua/plenary.nvim" },
     cmd = "Telescope",
     keys = {
-      { "<C-ff>", "<cmd>Telescope find_files<cr>", desc = "Find files" },
-      { "<C-fg>", "<cmd>Telescope live_grep<cr>", desc = "Text search" },
-      { "<C-fb>", "<cmd>Telescope buffers<cr>", desc = "Find buffers" },
-      { "<C-fh>", "<cmd>Telescope help_tags<cr>", desc = "Help tags" },
+      { "<C-ff>", "<cmd>Telescope find_files<cr>", desc = "find files" },
+      { "<C-fg>", "<cmd>Telescope live_grep<cr>", desc = "text search" },
+      { "<C-fb>", "<cmd>Telescope buffers<cr>", desc = "find buffers" },
+      { "<C-fh>", "<cmd>Telescope help_tags<cr>", desc = "help tags" },
     },
     config = function()
       local telescope = require("telescope")
@@ -111,12 +111,12 @@ require("lazy").setup({
       "MunifTanjim/nui.nvim",
     },
     keys = {
-      { "<C-e>", "<cmd>Neotree toggle<cr>", desc = "Toggle file explorer" },
+      { "<C-e>", "<cmd>Neotree toggle<cr>", desc = "toggle file explorer" },
     },
     config = function()
       require("neo-tree").setup({
         window = {
-          position = "left",
+          position = "right",
           width = 30,
           mappings = {
             ["l"] = "open",
