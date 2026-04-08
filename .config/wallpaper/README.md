@@ -1,7 +1,6 @@
 <table>
   <tr>
     <td width="50%"><img src="8gedj1.png" width="100%"/></td>
-    <td width="50%"><img src="6dpvpx.jpg" width="100%"/></td>
   </tr>
   <tr>
     <td width="50%"><img src="mdrovk.png" width="100%"/></td>
@@ -37,5 +36,6 @@
   </tr>
   <tr>
     <td width="50%"><img src="zxr53y.png" width="100%"/></td>
+    <td width="50%"><img src="6dpvpx.jpg" width="100%"/></td>
   </tr>
 </table>
