@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-REPO_URL="https://github.com/x2p3lnk7tq9z/dotfiles.git"
+REPO_URL="https://github.com/cqley/dotfiles.git"
 
 PACMAN_PKGS=(
     base-devel
