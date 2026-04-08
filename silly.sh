@@ -78,7 +78,7 @@ install() {
     xdg-mime default mpv.desktop video/mp4 video/x-matroska video/webm video/quicktime video/x-msvideo video/x-flv
     xdg-mime default dev.zed.Zed.desktop text/plain text/markdown text/x-shellscript text/x-python text/x-lua text/x-perl text/x-ruby text/x-yaml text/css text/html application/json application/xml text/x-csrc text/x-chdr text/x-c++src text/x-rust text/x-go
     gsettings set org.gnome.nautilus.window-state sort-column 'type'
-    printf "file://$HOME/Downloads Downloads\nfile://$HOME/Documents Documents\nfile://$HOME/Pictures Pictures\nfile://$HOME/Videos Videos\nfile://$HOME/.config .config\n" > ~/.config/gtk-3.0/bookmarks
+    printf "file://$HOME/Downloads Downloads\nfile://$HOME/Documents Documents\nfile://$HOME/Pictures Pictures\nfile://$HOME/Videos Videos\nfile://$HOME/.config .config\nfile:/// /\n" > ~/.config/gtk-3.0/bookmarks
     
     pkill -x firefox && sleep 1 || true
     firefox --headless --no-remote 2>/dev/null &
@@ -173,7 +173,7 @@ sync() {
 
         [[ "$name" == "scripts" ]] && find "$dst" -type f | xargs chmod +x
         [[ "$name" == "hypr" ]] && reload_hypr=true
-        [[ "$name" == "gtk-3.0" ]] && printf "file://$HOME/Downloads Downloads\nfile://$HOME/Documents Documents\nfile://$HOME/Pictures Pictures\nfile://$HOME/Videos Videos\nfile://$HOME/.config .config\n" > ~/.config/gtk-3.0/bookmarks
+        [[ "$name" == "gtk-3.0" ]] && printf "file://$HOME/Downloads Downloads\nfile://$HOME/Documents Documents\nfile://$HOME/Pictures Pictures\nfile://$HOME/Videos Videos\nfile://$HOME/.config .config\nfile:/// /\n" > ~/.config/gtk-3.0/bookmarks
         echo "synced $name"
         synced_any=true
     done
