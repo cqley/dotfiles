@@ -8,12 +8,12 @@
     <td width="50%"><img src="rqyexm.jpg" width="100%"/></td>
   </tr>
   <tr>
-    <td width="50%"><img src="1jl6gw.png.png" width="100%"/></td>
+    <td width="50%"><img src="1jl6gw.png" width="100%"/></td>
     <td width="50%"><img src="0pvpoj.png" width="100%"/></td>
   </tr>
   <tr>
     <td width="50%"><img src="qzl1rd.jpg" width="100%"/></td>
-    <td width="50%"><img src="qzqwmr.png" width="100%"/></td>
+    <td width="50%"><img src="qzpwmr.png" width="100%"/></td>
   </tr>
   <tr>
     <td width="50%"><img src="3q3j6y.jpg" width="100%"/></td>
