@@ -24,7 +24,6 @@
     stack_duplicates = false
     notification_limit = 1
     indicate_hidden = yes
-    overlap_hide = no
     override_dbus_timeout = 3
 
 [urgency_critical]
