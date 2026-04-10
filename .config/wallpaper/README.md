@@ -44,5 +44,6 @@
   </tr>
   <tr>
     <td width="50%"><img src="q9m3tk.png" width="100%"/></td>
+    <td width="50%"><img src="n4c8qy.png" width="100%"/></td>
   </tr>
 </table>
