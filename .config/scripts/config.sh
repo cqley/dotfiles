@@ -9,7 +9,7 @@ configs=(
     "kitty:$HOME/.config/kitty/kitty.conf"
     "zed:$HOME/.config/zed/settings.json"
     "btop:$HOME/.config/btop/btop.conf"
-    "fastfetch:$HOME/.config/fastfetch/config.jsonc"
+    "neovim:$HOME/.config/nvim/"
     "csgo:$HOME/.local/share/Steam/steamapps/common/csgo legacy/csgo/cfg/autoexec.cfg"
     "cs2:$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg/autoexec.cfg"
 )
