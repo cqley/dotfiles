@@ -1,57 +1,38 @@
-* {
-    border: none;
-    border-radius: 0;
-    font-family: "JetBrainsMono Nerd Font 12";
-    font-size: 12px;
-    min-height: 0;
-    margin: 0;
-    padding: 0;
-}
+{
+    "layer": "top",
+    "position": "top",
+    "output": "HDMI-A-1",
+    "height": 22,
+    "spacing": 0,
+    "margin-top": 0,
+    "margin-bottom": 0,
+    "margin-left": 0,
+    "margin-right": 0,
+    "modules-left": ["hyprland/workspaces"],
+    "modules-center": [],
+    "modules-right": ["clock"],
 
-window#waybar {
-    background-color: #000000;
-    color: #ffffff;
-}
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+            "1": "一",
+            "2": "二",
+            "3": "三",
+            "4": "四",
+            "5": "五",
+            "6": "六",
+            "七": "七",
+            "8": "八",
+            "9": "九",
+            "10": "十"
+        },
+        "on-click": "activate",
+        "sort-by-number": true,
+        "all-outputs": true
+    },
 
-#workspaces {
-    background: #000000;
-    padding: 0 4px;
-}
-
-#workspaces button {
-    background: transparent;
-    color: #ffffff;
-    padding: 0 6px;
-    min-width: 0;
-    border-bottom: 1px solid transparent;
-    opacity: 0.25;
-}
-
-#workspaces button:hover {
-    background: transparent;
-    box-shadow: none;
-    opacity: 0.5;
-}
-
-#workspaces button.visible {
-    opacity: 0.45;
-    border-bottom: 1px solid #333333;
-}
-
-#workspaces button.active {
-    color: #ffffff;
-    opacity: 1;
-    border-bottom: 1px solid #ffffff;
-}
-
-#workspaces button.urgent {
-    opacity: 1;
-    color: #ffffff;
-}
-
-#clock {
-    background: #000000;
-    color: #ffffff;
-    padding: 0 8px;
-    opacity: 0.85;
+    "clock": {
+        "format": "{:%H:%M}",
+        "tooltip": false
+    }
 }
