@@ -163,10 +163,10 @@ require("lazy").setup({
       }
 
       dashboard.section.buttons.val = {
-        dashboard.button("f", "find file", "<cmd>Telescope find_files<cr>"),
-        dashboard.button("n", "new file", "<cmd>enew<cr>"),
-        dashboard.button("r", "recent files", "<cmd>Telescope oldfiles<cr>"),
-        dashboard.button("q", "quit", "<cmd>qa<cr>"),
+        dashboard.button("f", " > find file", "<cmd>Telescope find_files<cr>"),
+        dashboard.button("n", " > new file", "<cmd>enew<cr>"),
+        dashboard.button("r", " > recent files", "<cmd>Telescope oldfiles<cr>"),
+        dashboard.button("q", " > quit", "<cmd>qa<cr>"),
       }
 
       alpha.setup(dashboard.opts)
