@@ -10,7 +10,7 @@ abbr -a s sudo
 abbr -a update sudo pacman -Syu
 abbr -a pi sudo pacman -S
 abbr -a pr sudo pacman -Rns
-abbr -a pi paru -S
+abbr -a pp paru -S
 abbr -a ps paru -Ss
 abbr -a yi yay -S
 abbr -a ys yay -Ss
