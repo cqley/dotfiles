@@ -18,6 +18,7 @@ PACMAN_PKGS=(
     kitty
     rofi
     dunst
+    waybar
     btop
     fastfetch
     firefox
