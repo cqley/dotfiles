@@ -20,7 +20,6 @@ PACMAN_PKGS=(
     dunst
     waybar
     btop
-    fastfetch
     firefox
     neovim
     imv
@@ -113,7 +112,7 @@ install() {
 }
 
 sync() {
-    CONFIGS=(btop dunst fastfetch fish firefox gtk-3.0 gtk-4.0 hypr kitty rofi scripts wallpaper zed nvim)
+    CONFIGS=(btop dunst fish firefox gtk-3.0 gtk-4.0 hypr kitty rofi scripts wallpaper zed nvim)
 
     echo
     for name in "${CONFIGS[@]}"; do
