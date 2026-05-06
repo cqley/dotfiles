@@ -35,10 +35,6 @@
     <td width="50%"><img src="yqe81l.png" width="100%"/></td>
   </tr>
   <tr>
-    <td width="50%"><img src="zxr53y.png" width="100%"/></td>
-    <td width="50%"><img src="6dpvpx.jpg" width="100%"/></td>
-  </tr>
-  <tr>
     <td width="50%"><img src="k7m2qx.png" width="100%"/></td>
     <td width="50%"><img src="b4z9np.png" width="100%"/></td>
   </tr>
