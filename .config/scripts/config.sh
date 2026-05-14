@@ -5,6 +5,7 @@ configs=(
     "scripts:$HOME/.config/scripts/"
     "rofi:$HOME/.config/rofi/"
     "dunst:$HOME/.config/dunst/dunstrc"
+    "waybar:$HOME/.config/waybar/"
     "fish:$HOME/.config/fish/config.fish"
     "kitty:$HOME/.config/kitty/kitty.conf"
     "zed:$HOME/.config/zed/settings.json"
