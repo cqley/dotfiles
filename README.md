@@ -1,6 +1,6 @@
 # dotfiles
 
-- operating system: https://archlinux.org/
+- operating system: https://nixos.org/
 - window manager: https://hypr.land/
 - display manager: https://github.com/fairyglade/ly
 
