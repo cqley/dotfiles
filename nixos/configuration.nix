@@ -77,6 +77,7 @@ environment.systemPackages = with pkgs; [
     awww
     btop
     dunst
+    emacs
     fish
     git
     grim
