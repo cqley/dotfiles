@@ -1,1 +1,118 @@
+{ config, pkgs, ... }:
 
+{
+  imports = [ 
+    ./hardware-configuration.nix 
+  ];
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  boot.loader.grub = {
+    enable = true;
+    device = "/dev/nvme0n1";
+    useOSProber = true;
+  };
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  networking.hostName = "cat";
+  networking.networkmanager.enable = true;
+
+  time.timeZone = "Europe/Berlin";
+  i18n.defaultLocale = "en_US.UTF-8";
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS = "de_DE.UTF-8";
+    LC_IDENTIFICATION = "de_DE.UTF-8";
+    LC_MEASUREMENT = "de_DE.UTF-8";
+    LC_MONETARY = "de_DE.UTF-8";
+    LC_NAME = "de_DE.UTF-8";
+    LC_NUMERIC = "de_DE.UTF-8";
+    LC_PAPER = "de_DE.UTF-8";
+    LC_TELEPHONE = "de_DE.UTF-8";
+    LC_TIME = "de_DE.UTF-8";
+  };
+
+  nixpkgs.config.allowUnfree = true;
+
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement.enable = false;
+    nvidiaSettings = true;
+    open = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  };
+
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    jack.enable = true;
+  };
+
+  programs.fish.enable = true;
+  programs.hyprland.enable = true;
+  programs.steam.enable = true;
+  programs.dconf.enable = true;
+
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  };
+
+  users.users.silly = {
+    isNormalUser = true;
+    description = "silly";
+    extraGroups = [ "networkmanager" "wheel" ];
+    shell = pkgs.fish;
+  };
+
+environment.systemPackages = with pkgs; [
+    awww
+    btop
+    dunst
+    fish
+    git
+    grim
+    hyprlock
+    hyprpicker
+    hyprshade
+    imv
+    kitty
+    krita
+    libnotify
+    librewolf
+    lxqt.pavucontrol-qt
+    mpv
+    nautilus
+    neovim
+    obs-studio
+    obsidian
+    prismlauncher
+    pywal
+    rofi
+    slurp
+    vesktop
+    waybar
+    wl-clip-persist
+    zed-editor
+  ];
+
+  fonts.packages = with pkgs; [
+    corefonts
+    noto-fonts
+    noto-fonts-cjk-sans
+    google-fonts
+    nerd-fonts.jetbrains-mono
+    noto-fonts-color-emoji
+    twemoji-color-font
+  ];
+
+  system.stateVersion = "25.11";
+}
