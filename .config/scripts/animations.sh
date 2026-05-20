@@ -1,5 +1,3 @@
-#!/bin/bash
-
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 options="fade\nvertical\nhorizontal"
 
