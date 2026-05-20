@@ -380,5 +380,27 @@
     '';
   };
 
+home.packages = with pkgs; [
+    (writeShellScriptBin "power" ''
+      options="lock\nlogout\nshutdown\nreboot"
+      choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
+
+      case "$choice" in
+          lock)
+              ${pkgs.hyprlock}/bin/hyprlock
+              ;;
+          logout)
+              command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || ${pkgs.hyprland}/bin/hyprctl dispatch exit
+              ;;
+          shutdown)
+              shutdown now
+              ;;
+          reboot)
+              reboot
+              ;;
+      esac
+    '')
+  ];
+
   programs.home-manager.enable = true;
 }
