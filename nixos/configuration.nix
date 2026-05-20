@@ -6,6 +6,7 @@
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.auto-optimise-store = true;
 
   boot.loader.grub = {
     enable = true;
@@ -78,7 +79,6 @@ environment.systemPackages = with pkgs; [
     btop
     dunst
     emacs
-    fish
     git
     grim
     hyprlock
@@ -89,7 +89,6 @@ environment.systemPackages = with pkgs; [
     krita
     libnotify
     librewolf
-    lxqt.pavucontrol-qt
     mpv
     nautilus
     neovim
