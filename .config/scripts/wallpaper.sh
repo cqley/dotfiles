@@ -1,5 +1,3 @@
-#!/bin/bash
-
 WALLPAPER_DIR="$HOME/.config/wallpaper/"
 THUMBNAIL_DIR="$HOME/.cache/thumbnails/"
 CACHE_PATH="$HOME/.cache/wallpaper/wallpaper.*"
