@@ -1,5 +1,3 @@
-#!/bin/bash
-
 declare -A servers
 servers=(
     ["servername"]="user@ip"
