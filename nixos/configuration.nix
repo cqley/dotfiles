@@ -57,10 +57,10 @@
     jack.enable = true;
   };
 
-  programs.fish.enable = true;
   programs.hyprland.enable = true;
-  programs.steam.enable = true;
+  programs.fish.enable = true;
   programs.dconf.enable = true;
+  programs.steam.enable = true;
 
   xdg.portal = {
     enable = true;
