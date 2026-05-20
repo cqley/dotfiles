@@ -1,5 +1,3 @@
-#!/bin/bash
-
 SCRIPT_DIR="$HOME/.config/scripts"
 
 options="btop\nnetwork\nconfig\nsettings\nwallpaper\nssh"
