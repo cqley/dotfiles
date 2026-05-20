@@ -1,5 +1,3 @@
-#!/bin/bash
-
 configs=(
     "hypr:$HOME/.config/hypr/"
     "scripts:$HOME/.config/scripts/"
