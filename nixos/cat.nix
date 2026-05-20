@@ -5,6 +5,10 @@
   home.homeDirectory = "/home/silly";
   home.stateVersion = "25.11";
 
+  xdg.configFile."fish/config.fish".force = true;
+  xdg.configFile."kitty/kitty.conf".force = true;
+  xdg.configFile."dunst/dunstrc".force = true;
+
   programs.fish = {
     enable = true;
     shellAbbrs = {
