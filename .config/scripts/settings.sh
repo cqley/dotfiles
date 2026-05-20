@@ -1,5 +1,3 @@
-#!/bin/bash
-
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 ANIMATION_SCRIPT="$HOME/.config/scripts/animations.sh"
 
