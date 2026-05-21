@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./wm.nix
+    ./hypr.nix
     ./vim.nix
   ];
 
