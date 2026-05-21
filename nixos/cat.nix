@@ -207,5 +207,19 @@ home.packages = with pkgs; [
     '')
   ];
 
+home.pointerCursor = {
+  gtk.enable = true;
+  x11.enable = true;
+  package = pkgs.kdePackages.breeze;
+  name = "breeze_cursors";
+  size = 16;
+};
+
+home.sessionVariables = {
+  XCURSOR_THEME = "breeze_cursors";
+  XCURSOR_SIZE = "16";
+  QT_CURSOR_SIZE = "16";
+};
+
   programs.home-manager.enable = true;
 }
