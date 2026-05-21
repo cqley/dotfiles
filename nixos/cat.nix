@@ -6,7 +6,6 @@
     ./vim.nix
   ];
 
-{
   home.username = "silly";
   home.homeDirectory = "/home/silly";
   home.stateVersion = "25.11";
