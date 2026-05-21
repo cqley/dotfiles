@@ -5,178 +5,163 @@
 
   wayland.windowManager.hyprland = {
     enable = true;
-    
-    settings = {
-      source = [ "~/.cache/wal/colors-hyprland.conf" ];
+    configType = "hyprlang";
 
-      monitor = [
-        "HDMI-A-1, 1920x1080@200, 0x0, 1"
-        "DP-1, 1920x1080@144, -1080x-330, 1, transform, 3"
-      ];
+    extraConfig = ''
+      source = ~/.cache/wal/colors-hyprland.conf
 
-      "$terminal" = "kitty";
-      "$filemanager" = "nautilus";
-      "$menu" = "rofi -show drun";
-      "$browser" = "helium";
-      "$mod" = "super";
+      monitor = HDMI-A-1, 1920x1080@200, 0x0, 1
+      monitor = DP-1, 1920x1080@144, -1080x-330, 1, transform, 3
 
-      "exec-once" = [
-        "systemctl --user start hyprpolkitagent"
-        "awww-daemon & sleep 0.5 && awww clear --outputs DP-1"
-        "wl-paste --type text --watch cliphist store"
-        "wl-paste --type image --watch cliphist store"
-        "waybar"
-        "hyprctl setcursor breeze_cursors 16"
-      ];
+      $mod = super
+      $terminal = kitty
+      $filemanager = nautilus
+      $menu = rofi -show drun
+      $browser = helium
 
-      general = {
-        gaps_in = 5;
-        gaps_out = 10;
-        border_size = 0;
-        resize_on_border = 0;
-        "col.active_border" = "$color2";
-        allow_tearing = 0;
-        layout = "dwindle";
-      };
+      exec-once = systemctl --user start hyprpolkitagent
+      exec-once = awww-daemon & sleep 0.5 && awww clear --outputs DP-1
+      exec-once = wl-paste --type text --watch cliphist store
+      exec-once = wl-paste --type image --watch cliphist store
+      exec-once = waybar
 
-      decoration = {
-        rounding = 0;
-        rounding_power = 0;
-        active_opacity = 1;
-        inactive_opacity = 1;
-        shadow = {
-          enabled = 1;
-          range = 4;
-          render_power = 3;
-          color = "rgba(1a1a1aee)";
-        };
-        blur = {
-          enabled = 1;
-          size = 3;
-          passes = 3;
-          vibrancy = 0;
-        };
-      };
+      general {
+          gaps_in = 5 # @dynamic_gaps_in
+          gaps_out = 10 # @dynamic_gaps_out
+          border_size = 0 # @dynamic_border
+          resize_on_border = 0
+          col.active_border = $color2
+          allow_tearing = 0
+          layout = dwindle
+      }
 
-      animations = {
-        enabled = "yes";
-        bezier = [
-          "easeOutQuint, 0.20, 1, 0.30, 1"
-          "easeInOutCubic, 0.65, 0.05, 0.35, 1"
-          "linear, 0, 0, 1, 1"
-          "almostLinear, 0.5, 0.5, 0.75, 1"
-          "quick, 0.15, 0, 0.1, 1"
-          "hard, 0, 1, 0, 1"
-        ];
-        animation = [
-          "global, 1, 5, default"
-          "border, 1, 2.5, easeOutQuint"
-          "windows, 1, 2.5, easeOutQuint"
-          "windowsIn, 1, 2, easeOutQuint, popin 90%"
-          "windowsOut, 1, 1, linear, popin 90%"
-          "fadeIn, 1, 1, almostLinear"
-          "fadeOut, 1, 1, almostLinear"
-          "fade, 1, 1.5, quick"
-          "layers, 1, 2, easeOutQuint"
-          "layersIn, 1, 2, easeOutQuint, fade"
-          "layersOut, 1, 1, linear, fade"
-          "workspaces, 1, 1, almostLinear, fade"
-          "specialWorkspace, 1, 1, almostLinear, fade"
-        ];
-      };
+      decoration {
+          rounding = 0
+          rounding_power = 0
+          active_opacity = 1
+          inactive_opacity = 1
+          shadow {
+              enabled = 1
+              range = 4
+              render_power = 3
+              color = rgba(1a1a1aee)
+          }
+          blur {
+              enabled = 1
+              size = 3
+              passes = 3
+              vibrancy = 0
+          }
+      }
 
-      input = {
-        kb_layout = "us";
-        follow_mouse = 1;
-        sensitivity = 0;
-        force_no_accel = 0;
-        touchpad = {
-          natural_scroll = 0;
-        };
-      };
+      animations {
+          enabled = yes
+          bezier = easeOutQuint, 0.20, 1, 0.30, 1
+          bezier = easeInOutCubic, 0.65, 0.05, 0.35, 1
+          bezier = linear, 0, 0, 1, 1
+          bezier = almostLinear, 0.5, 0.5, 0.75, 1
+          bezier = quick, 0.15, 0, 0.1, 1
+          bezier = hard, 0, 1, 0, 1
+          animation = global, 1, 5, default
+          animation = border, 1, 2.5, easeOutQuint
+          animation = windows, 1, 2.5, easeOutQuint
+          animation = windowsIn, 1, 2, easeOutQuint, popin 90%
+          animation = windowsOut, 1, 1, linear, popin 90%
+          animation = fadeIn, 1, 1, almostLinear
+          animation = fadeOut, 1, 1, almostLinear
+          animation = fade, 1, 1.5, quick
+          animation = layers, 1, 2, easeOutQuint
+          animation = layersIn, 1, 2, easeOutQuint, fade
+          animation = layersOut, 1, 1, linear, fade
+          animation = workspaces, 1, 1, almostLinear, fade # @dynamic_workspaces
+          animation = specialWorkspace, 1, 1, almostLinear, fade # @dynamic_special
+      }
 
-      misc = {
-        force_default_wallpaper = 0;
-        disable_hyprland_logo = 1;
-        disable_splash_rendering = 1;
-        initial_workspace_tracking = 1;
-      };
+      input {
+          kb_layout = us
+          follow_mouse = 1
+          sensitivity = 0
+          force_no_accel = 0
+          touchpad {
+              natural_scroll = 0
+          }
+      }
 
-      dwindle = {
-        preserve_split = 1;
-      };
+      misc {
+          force_default_wallpaper = 0
+          disable_hyprland_logo = 1
+          disable_splash_rendering = 1
+          initial_workspace_tracking = 1
+      }
 
-      windowrule = [
-        "name:mv"
-        "match:initial_class:^(imv|mpv)$"
-        "float:on"
-        "center:on"
-        "size:600 600"
-      ];
+      dwindle {
+          preserve_split = 1
+      }
 
-      workspace = [
-        "w[t1], gapsout:0, gapsin:0, border:0, rounding:false"
-        "f[1], gapsout:0, gapsin:0, border:0, rounding:false"
-      ];
+      windowrule {
+          name = mv
+          match:initial_class = ^(imv|mpv)$
+          float = on
+          center = on
+          size = 600 600
+      }
 
-      bind = [
-        "$mod, Q, exec, $terminal"
-        "$mod, E, exec, $filemanager"
-        "$mod, B, exec, $browser"
-        "$mod, R, exec, $menu"
-        "$mod, C, killactive"
-        "$mod, V, togglefloating"
-        "$mod, F, fullscreen, 0"
-        "$mod, Tab, workspace, m+1"
-        "$mod, T, exec, ~/.config/scripts/master.sh"
-        "$mod, L, exec, ~/.config/scripts/power.sh"
-        "$mod, W, exec, pkill -SIGUSR1 waybar"
-        "$mod, P, exec, bash -c '[[ -f /tmp/hyprpickerlock ]] && exit; touch /tmp/hyprpickerlock; hyprpicker --no-zoom --autocopy; rm -f /tmp/hyprpickerlock'"
-        "alt, S, exec, bash -c '[[ -f /tmp/slurplock ]] && exit; touch /tmp/slurplock; mkdir -p /home/silly/Pictures/screenshots; f=\"/home/silly/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png\"; grim -g \"$(slurp)\" \"$f\" && wl-copy < \"$f\"; rm -f /tmp/slurplock'"
-        
-        "$mod, left, movefocus, l"
-        "$mod, right, movefocus, r"
-        "$mod, up, movefocus, u"
-        "$mod, down, movefocus, d"
+      workspace = w[t1], gapsout:0, gapsin:0, border:0, rounding:false # @dynamic_smartgaps
+      workspace = f[1], gapsout:0, gapsin:0, border:0, rounding:false # @dynamic_smartgaps
 
-        "shift, left, movewindow, l"
-        "shift, right, movewindow, r"
-        "shift, up, movewindow, u"
-        "shift, down, movewindow, d"
+      bind = $mod, Q, exec, $terminal
+      bind = $mod, E, exec, $filemanager
+      bind = $mod, B, exec, $browser
+      bind = $mod, R, exec, $menu
+      bind = $mod, C, killactive
+      bind = $mod, V, togglefloating
+      bind = $mod, F, fullscreen, 0
+      bind = $mod, Tab, workspace, m+1
+      bind = $mod, T, exec, ~/.config/scripts/master.sh
+      bind = $mod, L, exec, ~/.config/scripts/power.sh
+      bind = $mod, W, exec, pkill -SIGUSR1 waybar
+      bind = $mod, P, exec, bash -c '[[ -f /tmp/hyprpickerlock ]] && exit; touch /tmp/hyprpickerlock; hyprpicker --no-zoom --autocopy; rm -f /tmp/hyprpickerlock'
+      bind = alt, S, exec, bash -c '[[ -f /tmp/slurplock ]] && exit; touch /tmp/slurplock; mkdir -p /home/silly/Pictures/screenshots; f="/home/silly/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png"; grim -g "$(slurp)" "$f" && wl-copy < "$f"; rm -f /tmp/slurplock'
 
-        "$mod, 1, workspace, 1"
-        "$mod, 2, workspace, 2"
-        "$mod, 3, workspace, 3"
-        "$mod, 4, workspace, 4"
-        "$mod, 5, workspace, 5"
-        "$mod, 6, workspace, 6"
-        "$mod, 7, workspace, 7"
-        "$mod, 8, workspace, 8"
-        "$mod, 9, workspace, 9"
-        "$mod, 0, workspace, 10"
+      bind = $mod, left, movefocus, l
+      bind = $mod, right, movefocus, r
+      bind = $mod, up, movefocus, u
+      bind = $mod, down, movefocus, d
 
-        "$mod shift, 1, movetoworkspace, 1"
-        "$mod shift, 2, movetoworkspace, 2"
-        "$mod shift, 3, movetoworkspace, 3"
-        "$mod shift, 4, movetoworkspace, 4"
-        "$mod shift, 5, movetoworkspace, 5"
-        "$mod shift, 6, movetoworkspace, 6"
-        "$mod shift, 7, movetoworkspace, 7"
-        "$mod shift, 8, movetoworkspace, 8"
-        "$mod shift, 9, movetoworkspace, 9"
-        "$mod shift, 0, movetoworkspace, 10"
+      bind = shift, left, movewindow, l
+      bind = shift, right, movewindow, r
+      bind = shift, up, movewindow, u
+      bind = shift, down, movewindow, d
 
-        "$mod, S, togglespecialworkspace, magic"
-        "$mod shift, S, movetoworkspace, special:magic"
+      bind = $mod, 1, workspace, 1
+      bind = $mod, 2, workspace, 2
+      bind = $mod, 3, workspace, 3
+      bind = $mod, 4, workspace, 4
+      bind = $mod, 5, workspace, 5
+      bind = $mod, 6, workspace, 6
+      bind = $mod, 7, workspace, 7
+      bind = $mod, 8, workspace, 8
+      bind = $mod, 9, workspace, 9
+      bind = $mod, 0, workspace, 10
 
-        "$mod, mouse_down, workspace, e+1"
-        "$mod, mouse_up, workspace, e-1"
-      ];
+      bind = $mod shift, 1, movetoworkspace, 1
+      bind = $mod shift, 2, movetoworkspace, 2
+      bind = $mod shift, 3, movetoworkspace, 3
+      bind = $mod shift, 4, movetoworkspace, 4
+      bind = $mod shift, 5, movetoworkspace, 5
+      bind = $mod shift, 6, movetoworkspace, 7
+      bind = $mod shift, 7, movetoworkspace, 7
+      bind = $mod shift, 8, movetoworkspace, 8
+      bind = $mod shift, 9, movetoworkspace, 9
+      bind = $mod shift, 0, movetoworkspace, 10
 
-      bindm = [
-        "$mod, mouse:272, movewindow"
-        "$mod, mouse:273, resizewindow"
-      ];
-    };
+      bind = $mod, S, togglespecialworkspace, magic
+      bind = $mod shift, S, movetoworkspace, special:magic
+
+      bind = $mod, mouse_down, workspace, e+1
+      bind = $mod, mouse_up, workspace, e-1
+      bindm = $mod, mouse:272, movewindow
+      bindm = $mod, mouse:273, resizewindow
+    '';
   };
 }
