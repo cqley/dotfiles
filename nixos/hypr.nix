@@ -28,7 +28,7 @@
       general {
           gaps_in = 5 # @dynamic_gaps_in
           gaps_out = 10 # @dynamic_gaps_out
-          border_size = 1 # @dynamic_border
+          border_size = 2 # @dynamic_border
           resize_on_border = 0
           col.active_border = $color2
           allow_tearing = 0
