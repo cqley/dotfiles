@@ -99,7 +99,7 @@ environment.systemPackages = with pkgs; [
     slurp
     vesktop
     waybar
-    wl-clip-persist
+    wl-clipboard
     zed-editor
   ];
 
