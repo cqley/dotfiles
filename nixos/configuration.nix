@@ -88,7 +88,6 @@ environment.systemPackages = with pkgs; [
     kitty
     krita
     libnotify
-    librewolf
     mpv
     nautilus
     neovim
