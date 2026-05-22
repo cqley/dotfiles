@@ -18,9 +18,8 @@
   programs.fish = {
     enable = true;
     shellAbbrs = {
-      s = "sudo";
+      rebuild = "";
       update = "";
-      zed = "zeditor";
     };
     functions = {
       fish_greeting = { body = ""; };
