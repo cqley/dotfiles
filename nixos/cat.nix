@@ -185,26 +185,31 @@
   };
 
 home.packages = with pkgs; [
-    (writeShellScriptBin "power" ''
-      options="lock\nlogout\nshutdown\nreboot"
-      choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
+  (writeShellScriptBin "master" ''
+    options="config\nsettings\nwallpaper\nssh\npower"
+    choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
 
-      case "$choice" in
-          lock)
-              ${pkgs.hyprlock}/bin/hyprlock
-              ;;
-          logout)
-              command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || ${pkgs.hyprland}/bin/hyprctl dispatch exit
-              ;;
-          shutdown)
-              shutdown now
-              ;;
-          reboot)
-              reboot
-              ;;
-      esac
-    '')
-  ];
+    case "$choice" in
+        *config*)    exec "config" ;;
+        *settings*)  exec "settings" ;;
+        *wallpaper*) exec "wallpaper" ;;
+        *ssh*)       exec "ssh" ;;
+        *power*)     exec "power" ;;
+    esac
+  '')
+
+  (writeShellScriptBin "power" ''
+    options="lock\nlogout\nshutdown\nreboot"
+    choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
+
+    case "$choice" in
+        *lock*)     ${pkgs.hyprlock}/bin/hyprlock ;;
+        *logout*)   hyprctl dispatch exit ;;
+        *shutdown*) systemctl poweroff ;;
+        *reboot*)   systemctl reboot ;;
+    esac
+  '')
+];
 
 home.pointerCursor = {
   gtk.enable = true;
