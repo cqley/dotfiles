@@ -28,7 +28,7 @@
       general {
           gaps_in = 5 # @dynamic_gaps_in
           gaps_out = 10 # @dynamic_gaps_out
-          border_size = 0 # @dynamic_border
+          border_size = 1 # @dynamic_border
           resize_on_border = 0
           col.active_border = $color2
           allow_tearing = 0
@@ -117,8 +117,7 @@
       bind = $mod, V, togglefloating
       bind = $mod, F, fullscreen, 0
       bind = $mod, Tab, workspace, m+1
-      bind = $mod, T, exec, ~/.config/scripts/master.sh
-      bind = $mod, L, exec, ~/.config/scripts/power.sh
+      bind = $mod, T, exec, master
       bind = $mod, W, exec, pkill -SIGUSR1 waybar
       bind = $mod, P, exec, bash -c '[[ -f /tmp/hyprpickerlock ]] && exit; touch /tmp/hyprpickerlock; hyprpicker --no-zoom --autocopy; rm -f /tmp/hyprpickerlock'
       bind = alt, S, exec, bash -c '[[ -f /tmp/slurplock ]] && exit; touch /tmp/slurplock; mkdir -p /home/silly/Pictures/screenshots; f="/home/silly/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png"; grim -g "$(slurp)" "$f" && wl-copy < "$f"; rm -f /tmp/slurplock'
