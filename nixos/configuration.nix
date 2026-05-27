@@ -75,32 +75,24 @@
   };
 
 environment.systemPackages = with pkgs; [
-    awww
     btop
-    dunst
-    emacs
     git
-    grim
-    hyprlock
-    hyprpicker
-    hyprshade
-    imv
     kitty
-    krita
-    libnotify
-    mpv
-    nautilus
-    neovim
-    obs-studio
-    obsidian
-    prismlauncher
-    pywal
-    rofi
-    slurp
-    vesktop
-    waybar
     wl-clipboard
-    zed-editor
+    emacs
+    awww
+    dunst
+    libnotify
+    pywal
+    quickshell
+    rofi
+    grim
+    slurp
+    nautilus
+    imv
+    mpv
+    obs-studio
+    vesktop
   ];
 
   fonts.packages = with pkgs; [
@@ -112,6 +104,9 @@ environment.systemPackages = with pkgs; [
     noto-fonts-color-emoji
     twemoji-color-font
   ];
+
+documentation.enable = false;
+documentation.man.enable = false;
 
   system.stateVersion = "25.11";
 }
