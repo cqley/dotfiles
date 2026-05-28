@@ -1,166 +1,186 @@
 { pkgs, ... }:
 
 {
-  xdg.configFile."hypr/hyprland.conf".force = true;
+  xdg.configFile."hypr/hyprland.lua".force = true;
 
   wayland.windowManager.hyprland = {
     enable = true;
-    configType = "hyprlang";
+    configType = "lua";
 
     extraConfig = ''
-      source = ~/.cache/wal/colors-hyprland.conf
+      hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@200", position = "0x0", scale = 1 })
+      hl.monitor({ output = "DP-1", mode = "1920x1080@144", position = "-1080x-330", scale = 1, transform = 3 })
 
-      monitor = HDMI-A-1, 1920x1080@200, 0x0, 1
-      monitor = DP-1, 1920x1080@144, -1080x-330, 1, transform, 3
+      local mainMod = "SUPER"
+      local terminal = "kitty"
+      local filemanager = "nautilus"
+      local menu = "rofi -show drun"
+      local browser = "helium"
 
-      $mod = super
-      $terminal = kitty
-      $filemanager = nautilus
-      $menu = rofi -show drun
-      $browser = helium
+      hl.on("hyprland.start", function ()
+          hl.exec_cmd("systemctl --user start hyprpolkitagent")
+          hl.exec_cmd("bash -c 'awww-daemon & sleep 0.5 && awww clear --outputs DP-1'")
+          hl.exec_cmd("wl-paste --type text --watch cliphist store")
+          hl.exec_cmd("wl-paste --type image --watch cliphist store")
+          hl.exec_cmd("quickshell -c ~/.config/quickshell")
+      end)
 
-      exec-once = systemctl --user start hyprpolkitagent
-      exec-once = awww-daemon & sleep 0.5 && awww clear --outputs DP-1
-      exec-once = wl-paste --type text --watch cliphist store
-      exec-once = wl-paste --type image --watch cliphist store
-      exec-once = waybar
+      hl.config({
+          general = {
+              gaps_in = 5,
+              gaps_out = 10,
+              border_size = 2,
+              resize_on_border = false,
+              col = {
+                  active_border = color2 or "rgba(33ccffee)",
+              },
+              allow_tearing = false,
+              layout = "dwindle",
+          },
+      })
 
-      general {
-          gaps_in = 5 # @dynamic_gaps_in
-          gaps_out = 10 # @dynamic_gaps_out
-          border_size = 0 # @dynamic_border
-          resize_on_border = 0
-          col.active_border = $color2
-          allow_tearing = 0
-          layout = dwindle
-      }
+      hl.config({
+          decoration = {
+              rounding = 0,
+              rounding_power = 0,
+              active_opacity = 1.0,
+              inactive_opacity = 1.0,
+              shadow = {
+                  enabled = true,
+                  range = 4,
+                  render_power = 3,
+                  color = "rgba(1a1a1aee)",
+              },
+              blur = {
+                  enabled = true,
+                  size = 3,
+                  passes = 3,
+                  vibrancy = 0,
+              },
+          },
+      })
 
-      decoration {
-          rounding = 0
-          rounding_power = 0
-          active_opacity = 1
-          inactive_opacity = 1
-          shadow {
-              enabled = 1
-              range = 4
-              render_power = 3
-              color = rgba(1a1a1aee)
-          }
-          blur {
-              enabled = 1
-              size = 3
-              passes = 3
-              vibrancy = 0
-          }
-      }
+      hl.curve("easeOutQuint", { type = "bezier", points = { {0.20, 1}, {0.30, 1} } })
+      hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.35, 1} } })
+      hl.curve("linear", { type = "bezier", points = { {0, 0}, {1, 1} } })
+      hl.curve("almostLinear", { type = "bezier", points = { {0.5, 0.5}, {0.75, 1} } })
+      hl.curve("quick", { type = "bezier", points = { {0.15, 0}, {0.1, 1} } })
+      hl.curve("hard", { type = "bezier", points = { {0, 1}, {0, 1} } })
+      hl.animation({ leaf = "global", enabled = true, speed = 5, bezier = "default" })
+      hl.animation({ leaf = "border", enabled = true, speed = 2.5, bezier = "easeOutQuint" })
+      hl.animation({ leaf = "windows", enabled = true, speed = 2.5, bezier = "easeOutQuint" })
+      hl.animation({ leaf = "windowsIn", enabled = true, speed = 2, bezier = "easeOutQuint", style = "popin 90%" })
+      hl.animation({ leaf = "windowsOut", enabled = true, speed = 1, bezier = "linear", style = "popin 90%" })
+      hl.animation({ leaf = "fadeIn", enabled = true, speed = 1, bezier = "almostLinear" })
+      hl.animation({ leaf = "fadeOut", enabled = true, speed = 1, bezier = "almostLinear" })
+      hl.animation({ leaf = "fade", enabled = true, speed = 1.5, bezier = "quick" })
+      hl.animation({ leaf = "layers", enabled = true, speed = 2, bezier = "easeOutQuint" })
+      hl.animation({ leaf = "layersIn", enabled = true, speed = 2, bezier = "easeOutQuint", style = "fade" })
+      hl.animation({ leaf = "layersOut", enabled = true, speed = 1, bezier = "linear", style = "fade" })
+      hl.animation({ leaf = "workspaces", enabled = true, speed = 1, bezier = "almostLinear", style = "fade" })
+      hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 1, bezier = "almostLinear", style = "fade" })
 
-      animations {
-          enabled = yes
-          bezier = easeOutQuint, 0.20, 1, 0.30, 1
-          bezier = easeInOutCubic, 0.65, 0.05, 0.35, 1
-          bezier = linear, 0, 0, 1, 1
-          bezier = almostLinear, 0.5, 0.5, 0.75, 1
-          bezier = quick, 0.15, 0, 0.1, 1
-          bezier = hard, 0, 1, 0, 1
-          animation = global, 1, 5, default
-          animation = border, 1, 2.5, easeOutQuint
-          animation = windows, 1, 2.5, easeOutQuint
-          animation = windowsIn, 1, 2, easeOutQuint, popin 90%
-          animation = windowsOut, 1, 1, linear, popin 90%
-          animation = fadeIn, 1, 1, almostLinear
-          animation = fadeOut, 1, 1, almostLinear
-          animation = fade, 1, 1.5, quick
-          animation = layers, 1, 2, easeOutQuint
-          animation = layersIn, 1, 2, easeOutQuint, fade
-          animation = layersOut, 1, 1, linear, fade
-          animation = workspaces, 1, 1, almostLinear, fade # @dynamic_workspaces
-          animation = specialWorkspace, 1, 1, almostLinear, fade # @dynamic_special
-      }
+      hl.config({
+          input = {
+              kb_layout = "us",
+              follow_mouse = 1,
+              sensitivity = 0,
+              force_no_accel = false,
+              touchpad = {
+                  natural_scroll = false,
+              },
+          },
+      })
 
-      input {
-          kb_layout = us
-          follow_mouse = 1
-          sensitivity = 0
-          force_no_accel = 0
-          touchpad {
-              natural_scroll = 0
-          }
-      }
+      hl.config({
+          misc = {
+              force_default_wallpaper = 0,
+              disable_hyprland_logo = true,
+              disable_splash_rendering = true,
+              initial_workspace_tracking = true,
+          },
+      })
 
-      misc {
-          force_default_wallpaper = 0
-          disable_hyprland_logo = 1
-          disable_splash_rendering = 1
-          initial_workspace_tracking = 1
-      }
+      hl.config({
+          dwindle = {
+              preserve_split = true,
+          },
+      })
 
-      dwindle {
-          preserve_split = 1
-      }
+      hl.window_rule({
+          match = {
+              initial_class = "^(imv|mpv)$",
+          },
+          float = true,
+          center = true,
+          size = "600 600",
+      })
 
-      windowrule {
-          name = mv
-          match:initial_class = ^(imv|mpv)$
-          float = on
-          center = on
-          size = 600 600
-      }
+      hl.workspace_rule({ workspace = "w[tv1]", gaps_out = 10, gaps_in = 0 })
+      --hl.workspace_rule({ workspace = "f",   gaps_out = 10, gaps_in = 0 })
+      hl.window_rule({
+           name  = "no-gaps-wtv1",
+           match = { float = false, workspace = "w[tv1]" },
+           border_size = 2,
+           rounding    = 0,
+       })
+       hl.window_rule({
+           name  = "no-gaps-f1",
+           match = { float = false, workspace = "f" },
+           border_size = 2,
+           rounding    = 0,
+       })
 
-      workspace = w[t1], gapsout:0, gapsin:0, border:0, rounding:false # @dynamic_smartgaps
-      workspace = f[1], gapsout:0, gapsin:0, border:0, rounding:false # @dynamic_smartgaps
+      hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
+      hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(filemanager))
+      hl.bind(mainMod .. " + B", hl.dsp.exec_cmd(browser))
+      hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
+      hl.bind(mainMod .. " + C", hl.dsp.window.close())
+      hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
+      hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = 0 }))
+      hl.bind(mainMod .. " + Tab", hl.dsp.focus({ workspace = "m+1" }))
+      hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("master"))
+      hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("pkill -SIGUSR1 waybar"))
+      hl.bind(mainMod .. " + P", hl.dsp.exec_cmd("bash -c '[[ -f /tmp/hyprpickerlock ]] && exit; touch /tmp/hyprpickerlock; hyprpicker --no-zoom --autocopy; rm -f /tmp/hyprpickerlock'"))
+      hl.bind("ALT + S", hl.dsp.exec_cmd("bash -c '[[ -f /tmp/slurplock ]] && exit; touch /tmp/slurplock; mkdir -p /home/silly/Pictures/screenshots; f=\"/home/silly/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png\"; grim -g \"$(slurp)\" \"$f\" && wl-copy < \"$f\"; rm -f /tmp/slurplock'"))
 
-      bind = $mod, Q, exec, $terminal
-      bind = $mod, E, exec, $filemanager
-      bind = $mod, B, exec, $browser
-      bind = $mod, R, exec, $menu
-      bind = $mod, C, killactive
-      bind = $mod, V, togglefloating
-      bind = $mod, F, fullscreen, 0
-      bind = $mod, Tab, workspace, m+1
-      bind = $mod, T, exec, master
-      bind = $mod, W, exec, pkill -SIGUSR1 waybar
-      bind = $mod, P, exec, bash -c '[[ -f /tmp/hyprpickerlock ]] && exit; touch /tmp/hyprpickerlock; hyprpicker --no-zoom --autocopy; rm -f /tmp/hyprpickerlock'
-      bind = alt, S, exec, bash -c '[[ -f /tmp/slurplock ]] && exit; touch /tmp/slurplock; mkdir -p /home/silly/Pictures/screenshots; f="/home/silly/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png"; grim -g "$(slurp)" "$f" && wl-copy < "$f"; rm -f /tmp/slurplock'
+      hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
+      hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
+      hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
+      hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
 
-      bind = $mod, left, movefocus, l
-      bind = $mod, right, movefocus, r
-      bind = $mod, up, movefocus, u
-      bind = $mod, down, movefocus, d
+      hl.bind("SHIFT + left",  hl.dsp.window.move({ direction = "left" }))
+      hl.bind("SHIFT + right", hl.dsp.window.move({ direction = "right" }))
+      hl.bind("SHIFT + up",    hl.dsp.window.move({ direction = "up" }))
+      hl.bind("SHIFT + down",  hl.dsp.window.move({ direction = "down" }))
 
-      bind = shift, left, movewindow, l
-      bind = shift, right, movewindow, r
-      bind = shift, up, movewindow, u
-      bind = shift, down, movewindow, d
+      hl.bind(mainMod .. " + 1", hl.dsp.focus({ workspace = 1 }))
+      hl.bind(mainMod .. " + 2", hl.dsp.focus({ workspace = 2 }))
+      hl.bind(mainMod .. " + 3", hl.dsp.focus({ workspace = 3 }))
+      hl.bind(mainMod .. " + 4", hl.dsp.focus({ workspace = 4 }))
+      hl.bind(mainMod .. " + 5", hl.dsp.focus({ workspace = 5 }))
+      hl.bind(mainMod .. " + 6", hl.dsp.focus({ workspace = 6 }))
+      hl.bind(mainMod .. " + 7", hl.dsp.focus({ workspace = 7 }))
+      hl.bind(mainMod .. " + 8", hl.dsp.focus({ workspace = 8 }))
+      hl.bind(mainMod .. " + 9", hl.dsp.focus({ workspace = 9 }))
+      hl.bind(mainMod .. " + 0", hl.dsp.focus({ workspace = 10 }))
 
-      bind = $mod, 1, workspace, 1
-      bind = $mod, 2, workspace, 2
-      bind = $mod, 3, workspace, 3
-      bind = $mod, 4, workspace, 4
-      bind = $mod, 5, workspace, 5
-      bind = $mod, 6, workspace, 6
-      bind = $mod, 7, workspace, 7
-      bind = $mod, 8, workspace, 8
-      bind = $mod, 9, workspace, 9
-      bind = $mod, 0, workspace, 10
+      hl.bind(mainMod .. " + SHIFT + 1", hl.dsp.window.move({ workspace = 1 }))
+      hl.bind(mainMod .. " + SHIFT + 2", hl.dsp.window.move({ workspace = 2 }))
+      hl.bind(mainMod .. " + SHIFT + 3", hl.dsp.window.move({ workspace = 3 }))
+      hl.bind(mainMod .. " + SHIFT + 4", hl.dsp.window.move({ workspace = 4 }))
+      hl.bind(mainMod .. " + SHIFT + 5", hl.dsp.window.move({ workspace = 5 }))
+      hl.bind(mainMod .. " + SHIFT + 6", hl.dsp.window.move({ workspace = 6 }))
+      hl.bind(mainMod .. " + SHIFT + 7", hl.dsp.window.move({ workspace = 7 }))
+      hl.bind(mainMod .. " + SHIFT + 8", hl.dsp.window.move({ workspace = 8 }))
+      hl.bind(mainMod .. " + SHIFT + 9", hl.dsp.window.move({ workspace = 9 }))
+      hl.bind(mainMod .. " + SHIFT + 0", hl.dsp.window.move({ workspace = 10 }))
 
-      bind = $mod shift, 1, movetoworkspace, 1
-      bind = $mod shift, 2, movetoworkspace, 2
-      bind = $mod shift, 3, movetoworkspace, 3
-      bind = $mod shift, 4, movetoworkspace, 4
-      bind = $mod shift, 5, movetoworkspace, 5
-      bind = $mod shift, 6, movetoworkspace, 7
-      bind = $mod shift, 7, movetoworkspace, 7
-      bind = $mod shift, 8, movetoworkspace, 8
-      bind = $mod shift, 9, movetoworkspace, 9
-      bind = $mod shift, 0, movetoworkspace, 10
+      hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"))
+      hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 
-      bind = $mod, S, togglespecialworkspace, magic
-      bind = $mod shift, S, movetoworkspace, special:magic
-
-      bind = $mod, mouse_down, workspace, e+1
-      bind = $mod, mouse_up, workspace, e-1
-      bindm = $mod, mouse:272, movewindow
-      bindm = $mod, mouse:273, resizewindow
+      hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
+      hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
     '';
   };
 }
