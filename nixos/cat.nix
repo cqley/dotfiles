@@ -18,8 +18,8 @@
   programs.fish = {
     enable = true;
     shellAbbrs = {
-      rebuild = "";
-      update = "";
+      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#cat";
+      update = "nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#cat";
     };
     functions = {
       fish_greeting = { body = ""; };
@@ -210,6 +210,26 @@ home.packages = with pkgs; [
         *zed*)      ${pkgs.zed-editor}/bin/zeditor "$HOME/.config/zed/settings.json" ;;
         *csgo*)     ${pkgs.zed-editor}/bin/zeditor "$HOME/.local/share/Steam/steamapps/common/csgo legacy/csgo/cfg/autoexec.cfg" ;;
         *cs2*)      ${pkgs.zed-editor}/bin/zeditor "$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg/autoexec.cfg" ;;
+    esac
+  '')
+
+  (writeShellScriptBin "settings" ''
+    options="fade\nvertical\nhorizontal"
+    choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
+
+    case "$choice" in
+        fade)
+            hyprctl eval 'hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })' > /dev/null
+            hyprctl eval 'hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })' > /dev/null
+            ${pkgs.libnotify}/bin/notify-send "animations" "fade" ;;
+        vertical)
+            hyprctl eval 'hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "hard", style = "slidevert" })' > /dev/null
+            hyprctl eval 'hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "hard", style = "slidevert" })' > /dev/null
+            ${pkgs.libnotify}/bin/notify-send "animations" "vertical" ;;
+        horizontal)
+            hyprctl eval 'hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "hard", style = "slide" })' > /dev/null
+            hyprctl eval 'hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "hard", style = "slide" })' > /dev/null
+            ${pkgs.libnotify}/bin/notify-send "animations" "horizontal" ;;
     esac
   '')
 
