@@ -10,7 +10,6 @@
     withPython3 = false;
 
     extraPackages = with pkgs; [
-      git
       gcc
       ripgrep
     ];
