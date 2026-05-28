@@ -239,7 +239,7 @@ home.packages = with pkgs; [
 
     case "$choice" in
         *lock*)     ${pkgs.hyprlock}/bin/hyprlock ;;
-        *logout*)   hyprctl dispatch exit ;;
+        *logout*)   command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()' ;;
         *reboot*)   systemctl reboot ;;
         *shutdown*) systemctl poweroff ;;
     esac
