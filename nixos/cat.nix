@@ -193,6 +193,7 @@ home.packages = with pkgs; [
         *config*)    exec "config" ;;
         *settings*)  exec "settings" ;;
         *wallpaper*) exec "wallpaper" ;;
+        *ssh*)       exec "ssh" ;;
         *power*)     exec "power" ;;
     esac
   '')
@@ -202,15 +203,16 @@ home.packages = with pkgs; [
     choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
 
     case "$choice" in
-        *nix*)      kitty sudo nvim "/etc/nixos/configuration.nix" ;;
-        *cat*)      kitty sudo nvim "/etc/nixos/cat.nix" ;;
-        *hypr*)     kitty sudo nvim "/etc/nixos/hypr.nix" ;;
-        *vim*)      kitty sudo nvim "/etc/nixos/vim.nix" ;;
+        *nix*)      ${pkgs.kitty}/bin/kitty -e sudo nvim "/etc/nixos/configuration.nix" ;;
+        *cat*)      ${pkgs.kitty}/bin/kitty -e sudo nvim "/etc/nixos/cat.nix" ;;
+        *hypr*)     ${pkgs.kitty}/bin/kitty -e sudo nvim "/etc/nixos/hypr.nix" ;;
+        *vim*)      ${pkgs.kitty}/bin/kitty -e sudo nvim "/etc/nixos/vim.nix" ;;
         *rofi*)     ${pkgs.zed-editor}/bin/zeditor "$HOME/.config/rofi/" ;;
         *zed*)      ${pkgs.zed-editor}/bin/zeditor "$HOME/.config/zed/settings.json" ;;
         *csgo*)     ${pkgs.zed-editor}/bin/zeditor "$HOME/.local/share/Steam/steamapps/common/csgo legacy/csgo/cfg/autoexec.cfg" ;;
         *cs2*)      ${pkgs.zed-editor}/bin/zeditor "$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg/autoexec.cfg" ;;
     esac
+  '')
 
   (writeShellScriptBin "power" ''
     options="lock\nlogout\nreboot\nshutdown"
