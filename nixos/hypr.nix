@@ -32,7 +32,7 @@
               border_size = 2,
               resize_on_border = false,
               col = {
-                  active_border = color2 or "rgba(33ccffee)",
+                  active_border = "rgba(33ccffee)",
               },
               allow_tearing = false,
               layout = "dwindle",
