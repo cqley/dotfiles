@@ -1,14 +1,6 @@
 configs=(
-    "hypr:$HOME/.config/hypr/"
-    "scripts:$HOME/.config/scripts/"
     "rofi:$HOME/.config/rofi/"
-    "dunst:$HOME/.config/dunst/dunstrc"
-    "waybar:$HOME/.config/waybar/"
-    "fish:$HOME/.config/fish/config.fish"
-    "kitty:$HOME/.config/kitty/kitty.conf"
     "zed:$HOME/.config/zed/settings.json"
-    "btop:$HOME/.config/btop/btop.conf"
-    "neovim:$HOME/.config/nvim/"
     "csgo:$HOME/.local/share/Steam/steamapps/common/csgo legacy/csgo/cfg/autoexec.cfg"
     "cs2:$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg/autoexec.cfg"
 )
