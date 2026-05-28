@@ -186,14 +186,13 @@
 
 home.packages = with pkgs; [
   (writeShellScriptBin "master" ''
-    options="config\nsettings\nwallpaper\nssh\npower"
+    options="config\nsettings\nwallpaper\npower"
     choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
 
     case "$choice" in
         *config*)    exec "config" ;;
         *settings*)  exec "settings" ;;
         *wallpaper*) exec "wallpaper" ;;
-        *ssh*)       exec "ssh" ;;
         *power*)     exec "power" ;;
     esac
   '')
