@@ -213,7 +213,7 @@ home.packages = with pkgs; [
     esac
 
   (writeShellScriptBin "power" ''
-    options="lock\nlogout\nshutdown\nreboot"
+    options="lock\nlogout\nreboot\nshutdown"
     choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
 
     case "$choice" in
