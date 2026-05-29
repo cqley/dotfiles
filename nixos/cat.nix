@@ -35,6 +35,11 @@
           cat ~/.cache/wal/sequences
       end
     '';
+    loginShellInit = ''
+      if test -z "$DISPLAY" -a (tty) = "/dev/tty1"
+        exec start-hyprland
+      end
+    '';
   };
 
   programs.kitty = {
