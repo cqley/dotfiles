@@ -59,7 +59,7 @@
       confirm_os_window_close 0
       allow_remote_control yes
 
-      background_opacity 0.7
+      background_opacity 1
       background_blur 1
       dynamic_background_opacity 1
       scrollbar_handle_opacity 0
