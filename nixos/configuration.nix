@@ -15,6 +15,11 @@
   };
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  zramSwap = {
+    enable = true;
+    memoryPercent = 25;
+  };
+
   services.getty.autologinUser = "silly";
   
   networking.hostName = "cat";
@@ -81,7 +86,7 @@ environment.systemPackages = with pkgs; [
     git
     kitty
     wl-clipboard
-    emacs
+    neovim
     awww
     dunst
     libnotify
