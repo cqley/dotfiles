@@ -8,6 +8,12 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.auto-optimise-store = true;
 
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
+  
   boot.loader.grub = {
     enable = true;
     device = "/dev/nvme0n1";
@@ -21,6 +27,7 @@
   };
 
   services.getty.autologinUser = "silly";
+  services.fstrim.enable = true;
   
   networking.hostName = "cat";
   networking.networkmanager.enable = true;
