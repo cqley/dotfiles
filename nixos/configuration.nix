@@ -15,6 +15,8 @@
   };
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  services.getty.autologinUser = "silly";
+  
   networking.hostName = "cat";
   networking.networkmanager.enable = true;
 
