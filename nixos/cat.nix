@@ -8,7 +8,7 @@
 
   home.username = "silly";
   home.homeDirectory = "/home/silly";
-  home.stateVersion = "25.11";
+  home.stateVersion = "26.05";
 
   xdg.configFile."fish/config.fish".force = true;
   xdg.configFile."kitty/kitty.conf".force = true;
