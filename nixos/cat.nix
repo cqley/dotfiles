@@ -50,6 +50,9 @@
       shell fish
       shell_integration enabled
 
+      font_family Terminus (TTF)
+      font_size 11
+      
       cursor_trail 3
       cursor_trail_decay 0.1 0.4
       cursor_shape beam
