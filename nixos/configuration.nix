@@ -99,7 +99,6 @@ environment.systemPackages = with pkgs; [
     libnotify
     pywal
     quickshell
-    rofi
     grim
     slurp
     nautilus
@@ -107,6 +106,7 @@ environment.systemPackages = with pkgs; [
     mpv
     obs-studio
     vesktop
+    prismlauncher
   ];
 
   fonts.packages = with pkgs; [
@@ -117,6 +117,7 @@ environment.systemPackages = with pkgs; [
     nerd-fonts.jetbrains-mono
     noto-fonts-color-emoji
     twemoji-color-font
+    terminus_font_ttf
   ];
 
 documentation.enable = false;
