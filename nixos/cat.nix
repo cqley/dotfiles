@@ -191,19 +191,19 @@
 
 home.packages = with pkgs; [
   (writeShellScriptBin "master" ''
-    options="config\nsettings\nwallpaper\npower"
+    options="cg\nss\nwp\npw"
     choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
 
     case "$choice" in
-        *config*)    exec "config" ;;
-        *settings*)  exec "settings" ;;
-        *wallpaper*) exec "wallpaper" ;;
-        *power*)     exec "power" ;;
+        *cg*) exec "config" ;;
+        *ss*) exec "settings" ;;
+        *wp*) exec "wallpaper" ;;
+        *pw*) exec "power" ;;
     esac
   '')
 
   (writeShellScriptBin "config" ''
-    options="nix\ncat\nhypr\nvim\nrofi\nzed\ncsgo\ncs2"
+    options="nix\ncat\nhypr\nvim\nrofi\nzed"
     choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
 
     case "$choice" in
@@ -213,8 +213,6 @@ home.packages = with pkgs; [
         *vim*)      ${pkgs.kitty}/bin/kitty -e sudo nvim "/etc/nixos/vim.nix" ;;
         *rofi*)     ${pkgs.zed-editor}/bin/zeditor "$HOME/.config/rofi/" ;;
         *zed*)      ${pkgs.zed-editor}/bin/zeditor "$HOME/.config/zed/settings.json" ;;
-        *csgo*)     ${pkgs.zed-editor}/bin/zeditor "$HOME/.local/share/Steam/steamapps/common/csgo legacy/csgo/cfg/autoexec.cfg" ;;
-        *cs2*)      ${pkgs.zed-editor}/bin/zeditor "$HOME/.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/game/csgo/cfg/autoexec.cfg" ;;
     esac
   '')
 
