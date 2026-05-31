@@ -14,7 +14,6 @@
       local mod = "SUPER"
       local terminal = "kitty"
       local filemanager = "nautilus"
-      local menu = "rofi -show drun"
       local browser = "helium"
 
       hl.on("hyprland.start", function ()
@@ -117,15 +116,15 @@
       })
 
       hl.bind(mod .. " + Q", hl.dsp.exec_cmd(terminal))
+      hl.bind(mod .. " + R", hl.dsp.exec_cmd("quickshell ipc call menu toggle"))
+      hl.bind(mod .. " + T", hl.dsp.exec_cmd("quickshell ipc call master toggle"))
+      hl.bind(mod .. " + W", hl.dsp.exec_cmd("quickshell ipc call bar toggle"))
       hl.bind(mod .. " + E", hl.dsp.exec_cmd(filemanager))
       hl.bind(mod .. " + B", hl.dsp.exec_cmd(browser))
-      hl.bind(mod .. " + R", hl.dsp.exec_cmd(menu))
       hl.bind(mod .. " + C", hl.dsp.window.close())
       hl.bind(mod .. " + V", hl.dsp.window.float({ action = "toggle" }))
       hl.bind(mod .. " + F", hl.dsp.window.fullscreen({ mode = 0 }))
       hl.bind(mod .. " + Tab", hl.dsp.focus({ workspace = "m+1" }))
-      hl.bind(mod .. " + T", hl.dsp.exec_cmd("master"))
-      hl.bind(mod .. " + W", hl.dsp.exec_cmd("pkill -SIGUSR1 waybar"))
       hl.bind("ALT + S", hl.dsp.exec_cmd("bash -c '[[ -f /tmp/slurplock ]] && exit; touch /tmp/slurplock; mkdir -p /home/silly/Pictures/screenshots; f=\"/home/silly/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png\"; grim -g \"$(slurp)\" \"$f\" && wl-copy < \"$f\"; rm -f /tmp/slurplock'"))
 
       hl.bind(mod .. " + left",  hl.dsp.focus({ direction = "left" }))
