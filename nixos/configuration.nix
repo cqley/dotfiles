@@ -107,7 +107,6 @@ environment.systemPackages = with pkgs; [
     obs-studio
     vesktop
     prismlauncher
-    helium.packages.${pkgs.system}.default
   ];
 
   fonts.packages = with pkgs; [
