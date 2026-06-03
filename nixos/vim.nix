@@ -9,11 +9,6 @@
     withRuby = false;
     withPython3 = false;
 
-    extraPackages = with pkgs; [
-      gcc
-      ripgrep
-    ];
-
     initLua = ''
       vim.opt.number = true
       vim.opt.relativenumber = false
