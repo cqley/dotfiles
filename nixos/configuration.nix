@@ -95,7 +95,6 @@ environment.systemPackages = with pkgs; [
     wl-clipboard
     neovim
     awww
-    dunst
     libnotify
     pywal
     quickshell
