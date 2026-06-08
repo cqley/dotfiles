@@ -12,7 +12,6 @@
 
   xdg.configFile."fish/config.fish".force = true;
   xdg.configFile."kitty/kitty.conf".force = true;
-  xdg.configFile."dunst/dunstrc".force = true;
   xdg.configFile."btop/btop.conf".force = true;
 
   programs.fish = {
@@ -69,46 +68,6 @@
       scrollbar_track_opacity 0
       scrollbar_track_hover_opacity 0
     '';
-  };
-
-  services.dunst = {
-    enable = true;
-    settings = {
-      global = {
-        origin = "top-right";
-        offset = "15x15";
-        monitor = 1;
-        follow = "none";
-        width = 250;
-        height = "0x75";
-        frame_width = 2;
-        frame_color = "#ffffff";
-        corner_radius = 0;
-        background = "#000000";
-        foreground = "#ffffff";
-        separator_color = "frame";
-        separator_height = 2;
-        padding = 15;
-        horizontal_padding = 20;
-        icon_position = "left";
-        max_icon_size = 32;
-        markup = "full";
-        format = "<span foreground='#ffffff'><b>%s</b></span>\n%b";
-        alignment = "left";
-        word_wrap = "yes";
-        sort = "no";
-        stack_duplicates = "false";
-        notification_limit = 1;
-        indicate_hidden = "yes";
-        override_dbus_timeout = 3;
-      };
-      urgency_critical = {
-        background = "#ff0000";
-        foreground = "#ffffff";
-        frame_color = "#ffffff";
-        override_dbus_timeout = 5;
-      };
-    };
   };
 
   programs.btop = {
@@ -191,66 +150,6 @@
       rsmi_measure_pcie_speeds = true;
     };
   };
-
-home.packages = with pkgs; [
-  (writeShellScriptBin "master" ''
-    options="cg\nss\nwp\npw"
-    choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
-
-    case "$choice" in
-        *cg*) exec "config" ;;
-        *ss*) exec "settings" ;;
-        *wp*) exec "wallpaper" ;;
-        *pw*) exec "power" ;;
-    esac
-  '')
-
-  (writeShellScriptBin "config" ''
-    options="nix\ncat\nhypr\nvim\nrofi\nzed"
-    choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
-
-    case "$choice" in
-        *nix*)      ${pkgs.kitty}/bin/kitty -e sudo nvim "/etc/nixos/configuration.nix" ;;
-        *cat*)      ${pkgs.kitty}/bin/kitty -e sudo nvim "/etc/nixos/cat.nix" ;;
-        *hypr*)     ${pkgs.kitty}/bin/kitty -e sudo nvim "/etc/nixos/hypr.nix" ;;
-        *vim*)      ${pkgs.kitty}/bin/kitty -e sudo nvim "/etc/nixos/vim.nix" ;;
-        *rofi*)     ${pkgs.zed-editor}/bin/zeditor "$HOME/.config/rofi/" ;;
-        *zed*)      ${pkgs.zed-editor}/bin/zeditor "$HOME/.config/zed/settings.json" ;;
-    esac
-  '')
-
-  (writeShellScriptBin "settings" ''
-    options="fade\nvertical\nhorizontal"
-    choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
-
-    case "$choice" in
-        fade)
-            hyprctl eval 'hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })' > /dev/null
-            hyprctl eval 'hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })' > /dev/null
-            ${pkgs.libnotify}/bin/notify-send "animations" "fade" ;;
-        vertical)
-            hyprctl eval 'hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "hard", style = "slidevert" })' > /dev/null
-            hyprctl eval 'hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "hard", style = "slidevert" })' > /dev/null
-            ${pkgs.libnotify}/bin/notify-send "animations" "vertical" ;;
-        horizontal)
-            hyprctl eval 'hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "hard", style = "slide" })' > /dev/null
-            hyprctl eval 'hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "hard", style = "slide" })' > /dev/null
-            ${pkgs.libnotify}/bin/notify-send "animations" "horizontal" ;;
-    esac
-  '')
-
-  (writeShellScriptBin "power" ''
-    options="lock\nlogout\nreboot\nshutdown"
-    choice=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p ">")
-
-    case "$choice" in
-        *lock*)     ${pkgs.hyprlock}/bin/hyprlock ;;
-        *logout*)   command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()' ;;
-        *reboot*)   systemctl reboot ;;
-        *shutdown*) systemctl poweroff ;;
-    esac
-  '')
-];
 
 home.pointerCursor = {
   gtk.enable = true;
