@@ -50,7 +50,7 @@
       shell fish
       shell_integration enabled
 
-      font_family Terminus (TTF)
+      font_family JetBrainsMono Nerd Font
       font_size 12
       
       cursor_trail 3
