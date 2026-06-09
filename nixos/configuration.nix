@@ -106,6 +106,7 @@ environment.systemPackages = with pkgs; [
     obs-studio
     vesktop
     prismlauncher
+    obsidian
   ];
 
   fonts.packages = with pkgs; [
@@ -116,7 +117,6 @@ environment.systemPackages = with pkgs; [
     nerd-fonts.jetbrains-mono
     noto-fonts-color-emoji
     twemoji-color-font
-    terminus_font_ttf
   ];
 
 documentation.enable = false;
