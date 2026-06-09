@@ -883,9 +883,5 @@
         }
     }
 }
-  '';
-
-  wayland.windowManager.hyprland.settings.exec-once = [
-    "${pkgs.quickshell}/bin/quickshell"
-  ];
+'';
 }
