@@ -104,7 +104,6 @@ environment.systemPackages = with pkgs; [
     imv
     mpv
     obs-studio
-    vesktop
     prismlauncher
     obsidian
   ];
