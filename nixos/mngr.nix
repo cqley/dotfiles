@@ -9,8 +9,8 @@
   programs.fish = {
     enable = true;
     shellAbbrs = {
-      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#box";
-      update = "nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#box";
+      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#\$hostname";
+      update = "nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#\$hostname";
     };
     functions = {
       fish_greeting = { body = ""; };
