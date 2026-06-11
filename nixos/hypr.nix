@@ -13,7 +13,7 @@
 
       local mod = "SUPER"
       local terminal = "kitty"
-      local filemanager = "nautilus"
+      local filemanager = "dolphin"
       local browser = "helium"
 
       hl.on("hyprland.start", function ()
