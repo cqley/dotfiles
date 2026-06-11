@@ -22,7 +22,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.cat = {
-              imports = [ ./mngr.nix ./box.nix ./vim.nix ];
+              imports = [ ./mngr.nix ./hosts/box/box.nix ./mdls/vim.nix ];
             };
           }
         ];
@@ -38,7 +38,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.cat = {
-              imports = [ ./mngr.nix ./bin.nix ./vim.nix ];
+              imports = [ ./mngr.nix ./hosts/bin/bin.nix ./mdls/vim.nix ];
             };
           }
         ];
