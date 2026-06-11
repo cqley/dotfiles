@@ -26,10 +26,10 @@
     memoryPercent = 25;
   };
 
-  services.getty.autologinUser = "silly";
+  services.getty.autologinUser = "cat";
   services.fstrim.enable = true;
   
-  networking.hostName = "cat";
+  networking.hostName = "box";
   networking.networkmanager.enable = true;
 
   time.timeZone = "Europe/Berlin";
@@ -81,9 +81,9 @@
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
 
-  users.users.silly = {
+  users.users.cat = {
     isNormalUser = true;
-    description = "silly";
+    description = "cat";
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.fish;
   };
