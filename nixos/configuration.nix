@@ -100,7 +100,7 @@ environment.systemPackages = with pkgs; [
     quickshell
     grim
     slurp
-    nautilus
+    kdePackages.dolphin
     imv
     mpv
     obs-studio
