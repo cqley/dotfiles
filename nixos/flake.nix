@@ -25,7 +25,7 @@
               imports = [
                 ./mngr.nix
                 ./hypr.nix
-                ./shell.nix
+                ./qksh.nix
                 ./vim.nix
               ];
             };
