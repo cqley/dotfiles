@@ -15,7 +15,7 @@
       box = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          ./common.nix
+          ./default.nix
           ./hosts/box
           home-manager.nixosModules.home-manager
           {
@@ -35,7 +35,7 @@
       bin = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          ./common.nix
+          ./default.nix
           ./hosts/bin
           home-manager.nixosModules.home-manager
           {
