@@ -26,6 +26,7 @@
                 ./mngr.nix
                 ./hypr.nix
                 ./shell.nix
+                ./vim.nix
               ];
             };
           }
@@ -44,6 +45,7 @@
             home-manager.users.cat = {
               imports = [
                 ./mngr.nix
+                ./vim.nix
               ];
             };
           }
