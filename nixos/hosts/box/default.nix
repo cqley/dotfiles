@@ -5,7 +5,12 @@
 
   networking.hostName = "box";
   networking.networkmanager.enable = true;
-  users.users.cat.extraGroups = [ "networkmanager" ];
+
+  users.users.cat = {
+    isNormalUser = true;
+    extraGroups = [ "networkmanager" "wheel" ];
+    initialPassword = "password";
+  };
 
   boot.loader.grub = {
     enable = true;
