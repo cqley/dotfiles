@@ -1,5 +1,10 @@
 # dotfiles
 
+| system            | description                                                                     |
+|------------------ | ------------------------------------------------------------------------------- |
+| `box`             | desktop pc at my desk, its a box                                                |
+| `bin`             | server, cool server                                                             |
+
 - operating system: https://nixos.org/
 - window manager: https://hypr.land/
 
