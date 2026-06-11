@@ -4,7 +4,7 @@
   imports = [
     ./hypr.nix
     ./vim.nix
-    ./shell.nix
+    ./qksh.nix
   ];
 
   home.username = "cat";
