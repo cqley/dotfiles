@@ -1,1 +1,52 @@
+{ pkgs, ... }: {
+  imports = [
+    ../../mdls/hypr.nix
+    ../../mdls/qksh.nix
+  ];
 
+  xdg.configFile."kitty/kitty.conf".force = true;
+
+  programs.fish.loginShellInit = ''
+    if test -z "$DISPLAY" -a (tty) = "/dev/tty1"
+      exec start-hyprland
+    end
+  '';
+
+  programs.kitty = {
+    enable = true;
+    extraConfig = ''
+      include ~/.cache/wal/colors-kitty.conf
+      shell fish
+      shell_integration enabled
+      font_family JetBrainsMono Nerd Font
+      font_size 11
+      cursor_trail 3
+      cursor_trail_decay 0.1 0.4
+      cursor_shape beam
+      cursor_blink_interval 1
+      shell_integration no-cursor
+      confirm_os_window_close 0
+      allow_remote_control yes
+      background_opacity 1
+      background_blur 1
+      dynamic_background_opacity 1
+      scrollbar_handle_opacity 0
+      scrollbar_track_opacity 0
+      scrollbar_track_hover_opacity 0
+    '';
+  };
+
+  home.pointerCursor = {
+    gtk.enable = true;
+    x11.enable = true;
+    package = pkgs.kdePackages.breeze;
+    name = "breeze_cursors";
+    size = 16;
+  };
+
+  home.sessionVariables = {
+    XCURSOR_THEME = "breeze_cursors";
+    XCURSOR_SIZE = "16";
+    QT_CURSOR_SIZE = "16";
+  };
+}
