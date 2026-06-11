@@ -7,8 +7,8 @@
     ./shell.nix
   ];
 
-  home.username = "silly";
-  home.homeDirectory = "/home/silly";
+  home.username = "cat";
+  home.homeDirectory = "/home/cat";
   home.stateVersion = "26.05";
 
   xdg.configFile."fish/config.fish".force = true;
@@ -18,8 +18,8 @@
   programs.fish = {
     enable = true;
     shellAbbrs = {
-      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#cat";
-      update = "nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#cat";
+      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#box";
+      update = "nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#box";
     };
     functions = {
       fish_greeting = { body = ""; };
