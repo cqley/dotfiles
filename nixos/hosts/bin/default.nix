@@ -37,7 +37,9 @@
 
   users.users.cat = {
     isNormalUser = true;
+    description = "cat";
     extraGroups = [ "networkmanager" "wheel" ];
+    shell = pkgs.fish;
   };
 
   nixpkgs.config.allowUnfree = true;
