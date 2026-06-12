@@ -69,6 +69,7 @@
     grim
     slurp
     kdePackages.dolphin
+    kdePackages.ark
     imv
     mpv
     obs-studio
