@@ -43,7 +43,6 @@
   };
 
   nixpkgs.config.allowUnfree = true;
-  environment.systemPackages = with pkgs; [ neovim ];
 
   services.openssh = {
     enable = true;
@@ -52,6 +51,9 @@
       PasswordAuthentication = true;
     };
   };
+
+  environment.systemPackages = with pkgs; [
+  ];
 
   system.stateVersion = "26.05";
 }
