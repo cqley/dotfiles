@@ -8,8 +8,9 @@
 
   users.users.cat = {
     isNormalUser = true;
+    description = "cat";
     extraGroups = [ "networkmanager" "wheel" ];
-    initialPassword = "password";
+    shell = pkgs.fish;
   };
 
   boot.loader.grub = {
