@@ -217,6 +217,9 @@
       "webviewer" = true;
     };
 
+    ".documents/obsidian/.obsidian/community-plugins.json".text = builtins.toJSON [];
+  };
+
   systemd.user.services.obsidian = {
     Unit.Description = "obsidian git sync";
     Service = {
