@@ -7,7 +7,7 @@
     ./mdls/qksh.nix
   ];
 
-  home.username = "car";
+  home.username = "cat";
   home.homeDirectory = "/home/cat";
   home.stateVersion = "26.05";
 
@@ -51,7 +51,6 @@
       shell_integration enabled
 
       font_family JetBrainsMono Nerd Font
-      font_size 12
       font_size 11
       
       cursor_trail 3
