@@ -1,6 +1,11 @@
 { config, pkgs, ... }:
 
 {
+  imports = [
+    ../../mdls/vim.nix
+  ];
+
+{
   home.username = "cat";
   home.homeDirectory = "/home/cat";
   home.stateVersion = "26.05";
