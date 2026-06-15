@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -15,14 +14,13 @@
       box = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          ./default.nix
-          ./hosts/box
+          ./hosts/box/configuration.nix
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.cat = {
-              imports = [ ./mngr.nix ./hosts/box/box.nix ./mdls/vim.nix ];
+              imports = [ ./hosts/box/box.nix ./mdls/hypr.nix ./mdls/qksh.nix ./mdls/vim.nix ];
             };
           }
         ];
@@ -31,14 +29,13 @@
       bin = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          ./default.nix
-          ./hosts/bin
+          ./hosts/bin/configuration.nix
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.cat = {
-              imports = [ ./mngr.nix ./hosts/bin/bin.nix ./mdls/vim.nix ];
+              imports = [ ./hosts/bin/bin.nix ./mdls/vim.nix ];
             };
           }
         ];
