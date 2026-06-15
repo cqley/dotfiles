@@ -166,6 +166,12 @@
     QT_CURSOR_SIZE = "16";
   };
 
+  gtk = {
+    enable = true;
+    theme = { name = "Adwaita-dark"; package = pkgs.gnome-themes-extra; };
+    font = { name = "MonaspiceNe Nerd Font Mono"; size = 11; };
+  };
+
   home.file = {
     ".documents/obsidian/.obsidian/app.json".text = builtins.toJSON {
       readableLineLength = true;
