@@ -2,9 +2,9 @@
 
 {
   imports = [
-    ./mdls/hypr.nix
-    ./mdls/vim.nix
-    ./mdls/qksh.nix
+    ../../mdls/hypr.nix
+    ../../mdls/qksh.nix
+    ../../mdls/vim.nix
   ];
 
   home.username = "cat";
