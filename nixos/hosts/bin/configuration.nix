@@ -25,9 +25,6 @@
     enable = true;
     memoryPercent = 25;
   };
-
-  services.getty.autologinUser = "cat";
-  services.fstrim.enable = true;
   
   networking.hostName = "bin";
   networking.networkmanager.enable = true;
@@ -49,7 +46,6 @@
   nixpkgs.config.allowUnfree = true;
 
   programs.fish.enable = true;
-  programs.dconf.enable = true;
 
   users.users.cat = {
     isNormalUser = true;
@@ -60,7 +56,6 @@
 
 environment.systemPackages = with pkgs; [
     git
-    kitty
     neovim
     btop
   ];
