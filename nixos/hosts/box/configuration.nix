@@ -102,6 +102,8 @@ environment.systemPackages = with pkgs; [
     slurp
     kdePackages.dolphin
     kdePackages.ark
+    kdePackages.breeze
+    kdePackages.qtsvg
     imv
     mpv
     obs-studio
