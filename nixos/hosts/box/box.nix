@@ -32,7 +32,7 @@
     };
     interactiveShellInit = ''
       if status is-interactive
-          cat ~/.cache/wal/sequences
+          cat ~/.cls/sequences
       end
     '';
     loginShellInit = ''
@@ -45,7 +45,7 @@
   programs.kitty = {
     enable = true;
     extraConfig = ''
-      include ~/.cache/wal/colors-kitty.conf
+      include ~/.cls/kitty.conf
 
       shell fish
       shell_integration enabled
