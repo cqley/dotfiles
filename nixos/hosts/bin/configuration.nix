@@ -59,10 +59,10 @@
   };
 
 environment.systemPackages = with pkgs; [
-    btop
     git
     kitty
     neovim
+    btop
   ];
 
 documentation.enable = false;
