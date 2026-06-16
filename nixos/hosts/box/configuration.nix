@@ -96,7 +96,7 @@ environment.systemPackages = with pkgs; [
     neovim
     awww
     libnotify
-    pywal
+    imagemagick
     quickshell
     grim
     slurp
