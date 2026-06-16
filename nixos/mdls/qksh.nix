@@ -24,8 +24,9 @@
         id: barSettings
         location: Qt.resolvedUrl("state")
         property string position: "top"
-        property string layout: "min"
+        property string layout: "minimal"
         property string look: "float"
+        property string centerMode: "default"
     }
 
     NotificationServer {
@@ -59,8 +60,7 @@
 
         property var launcherTopApp: null
 
-        property string centerMode: "default"
-        property string sysStats:   "cpu --% | mem --%"
+        property string sysStats: "cpu --% | mem --%"
 
         function removeNotif(nid) {
             for (let i = 0; i < notifModel.count; i++) {
@@ -111,7 +111,7 @@
         property var masterRootItems: [
             { label: "cfg", sub: "cfg" },
             { label: "sts", sub: "sts" },
-            { label: "wp",  sub: "wp"  },
+            { label: "wp",  sub: "wallpapers"  },
             { label: "pw",  sub: "pw"  }
         ]
         property var masterCfgItems: [
@@ -122,10 +122,10 @@
             { label: "vim",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/vim.nix"]          }
         ]
         property var masterStsItems: [
-            { label: "ams", sub: "ams" },
+            { label: "animations", sub: "animations" },
             { label: "bar", sub: "bar" }
         ]
-        property var masterAmsItems: [
+        property var masterAnimationsItems: [
             { label: "fade",
               cmd:    ["hyprctl", "eval", "hl.animation({ leaf = \"workspaces\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })"],
               cmd2:   ["hyprctl", "eval", "hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })"],
@@ -139,10 +139,10 @@
               cmd2:   ["hyprctl", "eval", "hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" })"],
               notify: ["notify-send", "animations", "horizontal"] }
         ]
-        property var masterBarItems:     [{ label: "pos", sub: "barPos" }, { label: "lyt", sub: "barLyt" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }]
-        property var masterBarPosItems:  [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }]
-        property var masterBarLytItems:  [{ label: "min", barLyt: "min" }, { label: "ful", barLyt: "ful" }]
-        property var masterBarModeItems: [{ label: "pfm", centerLyt: "pfm" }, { label: "default", centerLyt: "default" }]
+        property var masterBarItems:     [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }]
+        property var masterBarPositionItems:  [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }]
+        property var masterBarLayoutItems:  [{ label: "minimal", barLyt: "minimal" }, { label: "full", barLyt: "full" }]
+        property var masterBarModeItems: [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }]
         property var masterBarLookItems: [{ label: "float", barLook: "float" }, { label: "fill", barLook: "fill" }]
         property var masterWpItems:      []
         property string masterWpBuf:    ""
@@ -154,7 +154,7 @@
         ]
 
         function masterItemsForLevel(l) {
-            let lookup = { cfg: masterCfgItems, sts: masterStsItems, ams: masterAmsItems, bar: masterBarItems, barPos: masterBarPosItems, barLyt: masterBarLytItems, barMode: masterBarModeItems, barLook: masterBarLookItems, wp: masterWpItems, pw: masterPwItems }
+            let lookup = { cfg: masterCfgItems, sts: masterStsItems, animations: masterAnimationsItems, bar: masterBarItems, barPosition: masterBarPositionItems, barLayout: masterBarLayoutItems, barMode: masterBarModeItems, barLook: masterBarLookItems, wallpapers: masterWpItems, pw: masterPwItems }
             return lookup[l] ?? masterRootItems
         }
 
@@ -167,7 +167,7 @@
         function masterGoTo(l) {
             masterLevel    = l
             masterSelected = 0
-            if (l === "wp") {
+            if (l === "wallpapers") {
                 masterWpItems  = []; masterWpBuf = ""
                 masterCurrent  = []; masterFiltered = []
                 wpLsProc.running = true
@@ -215,14 +215,14 @@
                 return
             }
             if (item.wp !== undefined) {
-                mProc.command = ["bash", "-c", "f=\"$HOME/.wp/" + item.wp + "\"; awww img -o HDMI-A-1 \"$f\" --transition-type grow --transition-duration 1.5 --transition-fps 120; awww clear --outputs DP-1; wal -i \"$f\" -n -q"]
+                mProc.command = ["bash", "-c", "f=\"$HOME/.wallpapers/" + item.wp + "\"; awww img -o HDMI-A-1 \"$f\" --transition-type grow --transition-duration 1.5 --transition-fps 120; awww clear --outputs DP-1; wal -i \"$f\" -n -q"]
                 mProc.running = true
                 masterClose(); return
             }
             if (item.barPos  !== undefined) { barSettings.position = item.barPos;  masterClose(); return }
             if (item.barLyt  !== undefined) { barSettings.layout   = item.barLyt;  masterClose(); return }
             if (item.barLook !== undefined) { barSettings.look     = item.barLook; masterClose(); return }
-            if (item.centerLyt !== undefined) { root.centerMode = item.centerLyt; masterClose(); return }
+            if (item.centerLyt !== undefined) { barSettings.centerMode = item.centerLyt; masterClose(); return }
             if (item.cmd    !== undefined) { mProc.command  = item.cmd;   mProc.running  = true }
             if (item.cmd2   !== undefined) { mProc2.command = item.cmd2;  mProc2.running = true }
             if (item.notify !== undefined) { mProc3.command = item.notify; mProc3.running = true }
@@ -242,7 +242,7 @@
         anchors.bottom: position === "bottom"
 
         implicitWidth:  look === "fill" ? (root.screen?.width ?? 1920)
-                      : layout === "ful" ? (root.screen?.width ?? 1920) - 12
+                      : layout === "full" ? (root.screen?.width ?? 1920) - 12
                       : 820
         implicitHeight: 22
 
@@ -292,7 +292,7 @@
 
         Process {
             id: wpLsProc
-            command: ["bash", "-c", "ls $HOME/.wp/"]
+            command: ["bash", "-c", "ls $HOME/.wallpapers/"]
             running: false
             stdout: SplitParser {
                 splitMarker: ""
@@ -303,7 +303,7 @@
                     let lines = root.masterWpBuf.trim().split("\n").filter(l => l.length > 0)
                     root.masterWpItems  = lines.map(l => ({ label: l, wp: l }))
                     root.masterWpBuf    = ""
-                    if (root.activeMode === "master" && root.masterLevel === "wp") {
+                    if (root.activeMode === "master" && root.masterLevel === "wallpapers") {
                         root.masterCurrent  = root.masterWpItems
                         root.masterFiltered = root.masterWpItems
                     }
@@ -312,7 +312,7 @@
         }
 
         Timer {
-            interval: 2000; running: root.centerMode === "pfm"; repeat: true; triggeredOnStart: true
+            interval: 2000; running: barSettings.centerMode === "performance"; repeat: true; triggeredOnStart: true
             onTriggered: { if (!sysProc.running) sysProc.running = true }
         }
 
@@ -344,7 +344,7 @@
                 font.weight:    Font.Normal
                 renderType:     Text.NativeRendering
                 color:          "#aaaaaa"
-                text:           root.centerMode === "pfm" ? root.sysStats : ""
+                text:           barSettings.centerMode === "performance" ? root.sysStats : ""
             }
 
             RowLayout {
@@ -520,7 +520,7 @@
         margins.bottom: root.position === "bottom" ? (root.look === "fill" ? 0 : 6) : 0
 
         implicitWidth:  root.implicitWidth
-        implicitHeight: root.masterFiltered.length * (root.masterLevel === "wp" ? 38 : 22)
+        implicitHeight: root.masterFiltered.length * (root.masterLevel === "wallpapers" ? 38 : 22)
 
         exclusiveZone: 0
         color: "transparent"
@@ -547,31 +547,31 @@
 
                     Rectangle {
                         width:  parent.width
-                        height: root.masterLevel === "wp" ? 38 : 22
+                        height: root.masterLevel === "wallpapers" ? 38 : 22
                         color:  root.masterSelected === index ? "#2a2a2a" : "transparent"
 
                         Image {
-                            visible: root.masterLevel === "wp"
+                            visible: root.masterLevel === "wallpapers"
                             anchors.left: parent.left
                             anchors.leftMargin: 8
                             anchors.verticalCenter: parent.verticalCenter
                             width: 46; height: 26
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
-                            source: visible ? "file:///home/silly/.wp/" + modelData.wp : ""
+                            source: visible ? "file:///home/silly/.wallpapers/" + modelData.wp : ""
                         }
 
                         Rectangle {
                             visible:                root.masterSelected === index
                             anchors.left:           parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            width: 2; height: root.masterLevel === "wp" ? 22 : 12
+                            width: 2; height: root.masterLevel === "wallpapers" ? 22 : 12
                             color: "#dddddd"
                         }
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            x:                      root.masterLevel === "wp" ? 64 : 14
+                            x:                      root.masterLevel === "wallpapers" ? 64 : 14
                             text:                   modelData?.label ?? ""
                             font.family:    "JetBrainsMono Nerd Font"
                             font.pixelSize: 12
@@ -711,7 +711,7 @@
 
         margins.top:    root.position === "top"    ? (root.look === "fill" ? 0 : 6) : 0
         margins.bottom: root.position === "bottom" ? (root.look === "fill" ? 0 : 6) : 0
-        margins.right:  root.look === "fill" ? 0 : root.layout === "ful" ? 6 : Math.round(((root.screen?.width ?? 1920) - 820) / 2)
+        margins.right:  root.look === "fill" ? 0 : root.layout === "full" ? 6 : Math.round(((root.screen?.width ?? 1920) - 820) / 2)
 
         implicitWidth: 216
         implicitHeight: 186
