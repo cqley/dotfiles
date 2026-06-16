@@ -164,12 +164,33 @@
     XCURSOR_THEME = "breeze_cursors";
     XCURSOR_SIZE = "16";
     QT_CURSOR_SIZE = "16";
+    QT_QPA_PLATFORMTHEME = "kde";
   };
 
   gtk = {
     enable = true;
     theme = { name = "Adwaita-dark"; package = pkgs.gnome-themes-extra; };
     font = { name = "MonaspiceNe Nerd Font Mono"; size = 11; };
+  };
+
+  qt = {
+    enable = true;
+    platformTheme.name = "kde";
+    style.name = "breeze";
+  };
+
+  xdg.configFile = {
+  "dolphinrc".text = ''
+    [General]
+    ShowPreview=true
+    ViewMode=1
+
+    [MainWindow]
+    MenuBar=Disabled
+    ToolBarsMovable=Disabled
+  '';
+
+  "kdeglobals".source = "${pkgs.kdePackages.breeze}/share/color-schemes/BreezeDark.colors";
   };
 
   home.packages = [
