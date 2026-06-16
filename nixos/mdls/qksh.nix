@@ -215,9 +215,9 @@
                 return
             }
             if (item.wp !== undefined) {
-                mProc.command = ["bash", "-c", "f=\"$HOME/.wallpapers/" + item.wp + "\"; awww img -o HDMI-A-1 \"$f\" --transition-type grow --transition-duration 1.5 --transition-fps 120; awww clear --outputs DP-1; wal -i \"$f\" -n -q"]
-                mProc.running = true
-                masterClose(); return
+    		      mProc.command = ["bash", "-c", "cls \"$HOME/.wallpapers/" + item.wp + "\""]
+    		      mProc.running = true
+    		      masterClose(); return
             }
             if (item.barPos  !== undefined) { barSettings.position = item.barPos;  masterClose(); return }
             if (item.barLyt  !== undefined) { barSettings.layout   = item.barLyt;  masterClose(); return }
