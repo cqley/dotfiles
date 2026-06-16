@@ -11,8 +11,6 @@
   home.homeDirectory = "/home/cat";
   home.stateVersion = "26.05";
 
-  home.packages = [ cls ];
-
   xdg.configFile."fish/config.fish".force = true;
   xdg.configFile."kitty/kitty.conf".force = true;
   xdg.configFile."btop/btop.conf".force = true;
@@ -173,6 +171,8 @@
     theme = { name = "Adwaita-dark"; package = pkgs.gnome-themes-extra; };
     font = { name = "MonaspiceNe Nerd Font Mono"; size = 11; };
   };
+
+home.packages = [ cls ];
 
 let
   cls = pkgs.writeShellScriptBin "cls" ''
