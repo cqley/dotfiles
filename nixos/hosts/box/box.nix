@@ -190,8 +190,14 @@
     ToolBarsMovable=Disabled
   '';
 
-  "kdeglobals".source = "${pkgs.kdePackages.breeze}/share/color-schemes/BreezeDark.colors";
-  };
+  "kdeglobals".source = pkgs.runCommand "breeze-dark-white" {} ''
+    sed -E \
+      -e 's/61,174,233/255,255,255/g' \
+      -e 's/24,115,204/255,255,255/g' \
+      -e 's/AccentColor=[0-9]+,[0-9]+,[0-9]+/AccentColor=255,255,255/' \
+      "${pkgs.kdePackages.breeze}/share/color-schemes/BreezeDark.colors" > $out
+  '';
+};
 
   home.packages = [
     (pkgs.writeShellScriptBin "cls" ''
