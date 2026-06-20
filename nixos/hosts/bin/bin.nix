@@ -16,7 +16,7 @@
   programs.fish = {
     enable = true;
     shellAbbrs = {
-      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#$hostname";
+      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#bin";
       update = "nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#$hostname";
     };
     functions = {
