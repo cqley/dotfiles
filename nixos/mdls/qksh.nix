@@ -116,7 +116,7 @@
         ]
         property var masterCfgItems: [
             { label: "nix",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/configuration.nix"] },
-            { label: "mngr",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/box.nix"]           },
+            { label: "box",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/box.nix"]            },
             { label: "hypr",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/hypr.nix"]               },
             { label: "shell", cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/qksh.nix"]               },
             { label: "vim",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/vim.nix"]                }
