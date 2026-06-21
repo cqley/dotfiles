@@ -50,14 +50,21 @@
     shell = pkgs.fish;
   };
 
-environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; [
     git
     neovim
     btop
   ];
 
-documentation.enable = false;
-documentation.man.enable = false;
+  services.openssh = {
+    enable = true;
+    settings = {
+	    PasswordAuthentication = true;
+    };
+  };
+
+  documentation.enable = false;
+  documentation.man.enable = false;
 
   system.stateVersion = "26.05";
 }
