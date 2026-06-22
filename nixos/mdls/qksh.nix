@@ -2,14 +2,14 @@
 
 {
   xdg.configFile."quickshell/shell.qml".text = ''
-      import Quickshell
-      import Quickshell.Wayland
-      import Quickshell.Hyprland
-      import Quickshell.Io
-      import Quickshell.Services.Notifications
-      import QtQuick
-      import QtQuick.Layouts
-      import QtCore
+    import Quickshell
+    import Quickshell.Wayland
+    import Quickshell.Hyprland
+    import Quickshell.Io
+    import Quickshell.Services.Notifications
+    import QtQuick
+    import QtQuick.Layouts
+    import QtCore
 
     Scope {
         id: configRoot
@@ -61,6 +61,7 @@
         property var launcherTopApp: null
 
         property string sysStats: "cpu --% | mem --%"
+        property string audioVol: "vol: --%"
 
         function removeNotif(nid) {
             for (let i = 0; i < notifModel.count; i++) {
@@ -75,9 +76,20 @@
             if (!DesktopEntries.applications?.values || q === "") {
                 launcherTopApp = null; return
             }
+            let ql = q.toLowerCase()
             let m = DesktopEntries.applications.values.filter(
-                a => a?.name && a.name.toLowerCase().includes(q.toLowerCase())
-            )
+                a => a?.name && a.name.toLowerCase().includes(ql)
+            ).sort((a, b) => {
+                let an = a.name.toLowerCase()
+                let bn = b.name.toLowerCase()
+                if (an === ql) return -1
+                if (bn === ql) return 1
+                if (an.startsWith(ql) && !bn.startsWith(ql)) return -1
+                if (!an.startsWith(ql) && bn.startsWith(ql)) return 1
+                if (an.includes("steam") && an !== "steam" && bn === "steam") return 1
+                if (bn.includes("steam") && bn !== "steam" && an === "steam") return -1
+                return an.localeCompare(bn)
+            })
             launcherTopApp = m.length > 0 ? m[0] : null
         }
 
@@ -96,7 +108,8 @@
 
         function launcherAccept() {
             if (launcherTopApp !== null) {
-                launchProc.command = ["systemd-run", "--user", "--scope", "bash", "-c", launcherTopApp.execString]
+                let exec = launcherTopApp.execString.replace(/%[fFuU]/g, "")
+                launchProc.command = ["systemd-run", "--user", "--scope", "bash", "-c", exec]
                 launchProc.running = true
             }
             launcherClose()
@@ -215,9 +228,9 @@
                 return
             }
             if (item.wp !== undefined) {
-    		      mProc.command = ["bash", "-c", "cls \"$HOME/.wallpapers/" + item.wp + "\""]
-    		      mProc.running = true
-    		      masterClose(); return
+                mProc.command = ["bash", "-c", "cls \"$HOME/.wallpapers/" + item.wp + "\""]
+                mProc.running = true
+                masterClose(); return
             }
             if (item.barPos  !== undefined) { barSettings.position = item.barPos;  masterClose(); return }
             if (item.barLyt  !== undefined) { barSettings.layout   = item.barLyt;  masterClose(); return }
@@ -312,8 +325,11 @@
         }
 
         Timer {
-            interval: 2000; running: barSettings.centerMode === "performance"; repeat: true; triggeredOnStart: true
-            onTriggered: { if (!sysProc.running) sysProc.running = true }
+            interval: 2000; running: true; repeat: true; triggeredOnStart: true
+            onTriggered: {
+                if (barSettings.centerMode === "performance" && !sysProc.running) sysProc.running = true
+                if (!audioProc.running) audioProc.running = true
+            }
         }
 
         Process {
@@ -323,6 +339,21 @@
             stdout: SplitParser {
                 onRead: data => { root.sysStats = data.trim() }
             }
+        }
+
+        Process {
+            id: audioProc
+            command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)\"%\" ($3==\"[MUTED]\"?\" (m)\":\"\")}'"]
+            running: false
+            stdout: SplitParser {
+                onRead: data => { root.audioVol = "vol: " + data.trim() }
+            }
+        }
+
+        Process {
+            id: volActProc
+            running: false
+            onRunningChanged: if (!running) audioProc.running = true
         }
 
         FontMetrics {
@@ -464,6 +495,35 @@
                             color: "#555555"
                             visible: root.activeMode === "launcher" ? root.launcherTopApp !== null : (root.activeMode === "master" ? root.masterFiltered.length > 0 : false)
                             text: root.activeMode === "launcher" ? (root.launcherTopApp?.name ?? "") : (root.activeMode === "master" && root.masterSelected < root.masterFiltered.length ? (root.masterFiltered[root.masterSelected]?.label ?? "") : "")
+                        }
+                    }
+                }
+
+                Item {
+                    Layout.fillHeight: true
+                    implicitWidth: audioText.implicitWidth + 20
+                    Text {
+                        id: audioText
+                        anchors.centerIn: parent
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        renderType: Text.NativeRendering
+                        color: "#aaaaaa"
+                        text: root.audioVol
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            volActProc.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "toggle"]
+                            volActProc.running = true
+                        }
+                        onWheel: (wheel) => {
+                            if (wheel.angleDelta.y > 0) {
+                                volActProc.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+"]
+                            } else {
+                                volActProc.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-"]
+                            }
+                            volActProc.running = true
                         }
                     }
                 }
@@ -883,6 +943,6 @@
             }
         }
     }
-}
-'';
+    }
+  '';
 }
