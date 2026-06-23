@@ -235,12 +235,12 @@
                 mProc.running = true
                 masterClose(); return
             }
-            if (item.barPos  !== undefined) { barSettings.position = item.barPos;  masterClose(); return }
-            if (item.barLyt  !== undefined) { barSettings.layout   = item.barLyt;  masterClose(); return }
+            if (item.barPos  !== undefined) { barSettings.position = item.barPos; masterClose(); return }
+            if (item.barLyt  !== undefined) { barSettings.layout   = item.barLyt; masterClose(); return }
             if (item.barLook !== undefined) { barSettings.look     = item.barLook; masterClose(); return }
             if (item.centerLyt !== undefined) { barSettings.centerMode = item.centerLyt; masterClose(); return }
-            if (item.cmd    !== undefined) { mProc.command  = item.cmd;   mProc.running  = true }
-            if (item.cmd2   !== undefined) { mProc2.command = item.cmd2;  mProc2.running = true }
+            if (item.cmd    !== undefined) { mProc.command  = item.cmd; mProc.running  = true }
+            if (item.cmd2   !== undefined) { mProc2.command = item.cmd2; mProc2.running = true }
             if (item.notify !== undefined) { mProc3.command = item.notify; mProc3.running = true }
             masterClose()
         }
@@ -297,6 +297,13 @@
                 else root.activeMode = "calendar"
             }
         }
+        IpcHandler {
+            target: "mic"
+            function toggle(): void {
+                micActProc.command = ["${pkgs.wireplumber}/bin/wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]
+                micActProc.running = true
+            }
+        }
 
         Connections {
             target: Hyprland
@@ -306,9 +313,9 @@
         }
 
         Process { id: launchProc; running: false }
-        Process { id: mProc;      running: false }
-        Process { id: mProc2;     running: false }
-        Process { id: mProc3;     running: false }
+        Process { id: mProc; running: false }
+        Process { id: mProc2; running: false }
+        Process { id: mProc3; running: false }
 
         Process {
             id: wpLsProc
@@ -688,12 +695,26 @@
         color: "transparent"
 
         WlrLayershell.layer: WlrLayershell.Overlay
+        WlrLayershell.keyboardFocus: visible ? WlrLayershell.Exclusive : WlrLayershell.None
+
+        onVisibleChanged: {
+            if (visible) mixerBox.forceActiveFocus()
+        }
 
         Rectangle {
+            id: mixerBox
             anchors.fill: parent
             color: "#1c1c1c"
             border.color: "#3c3c3c"
             border.width: 1
+            focus: true
+
+            Keys.onPressed: (event) => {
+                if (event.key === Qt.Key_Escape) {
+                    root.activeMode = "none"
+                    event.accepted = true
+                }
+            }
 
             Column {
                 width: parent.width
@@ -779,7 +800,7 @@
             color: "#1c1c1c"
 
             Column {
-                anchors.top:              parent.top
+                anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width
 
@@ -799,7 +820,7 @@
                             width: 46; height: 26
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
-                            source: visible ? "file:///home/silly/.wallpapers/" + modelData.wp : ""
+                            source: visible ? "file:///home/cat/.wallpapers/" + modelData.wp : ""
                         }
 
                         Rectangle {
@@ -858,7 +879,7 @@
         margins.top:    root.position === "top"    ? (root.look === "fill" ? 0 : 6) : 0
         margins.bottom: root.position === "bottom" ? (root.look === "fill" ? 0 : 6) : 0
 
-        implicitWidth:  Make.round(root.implicitWidth / 3)
+        implicitWidth:  Math.round(root.implicitWidth / 3)
         implicitHeight: notifModel.count * 34
 
         exclusiveZone: 0
