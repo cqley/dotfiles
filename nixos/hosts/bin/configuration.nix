@@ -21,6 +21,7 @@
   
   networking.hostName = "bin";
   networking.networkmanager.enable = true;
+  networking.firewall.allowedTCPPorts = [ 8080 5657 ];
 
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -57,6 +58,15 @@
     enable = true;
     settings = {
 	    PasswordAuthentication = true;
+    };
+  };
+
+  services.pufferpanel = {
+    enable = true;
+    extraPackages = [ pkgs.jdk25 ];
+    environment = {
+      PUFFER_WEB_HOST = ":8080";
+      PUFFER_DAEMON_SFTP_HOST = ":5657";
     };
   };
 
