@@ -21,7 +21,7 @@
   
   networking.hostName = "bin";
   networking.networkmanager.enable = true;
-  networking.firewall.allowedTCPPorts = [ 8080 5657 ];
+  networking.firewall.allowedTCPPorts = [ 8080 5657 25565 ];
 
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
