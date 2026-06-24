@@ -157,7 +157,7 @@
         ]
         property var masterBarItems:     [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }]
         property var masterBarPositionItems:  [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }]
-        property var masterBarLayoutItems:  [{ label: "minimal", barLyt: "minimal" }]
+        property var masterBarLayoutItems: [{ label: "minimal", barLyt: "minimal" }, { label: "full", barLyt: "full" }]
         property var masterBarModeItems: [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }]
         property var masterBarLookItems: [{ label: "float", barLook: "float" }, { label: "fill", barLook: "fill" }]
         property var masterWpItems:      []
