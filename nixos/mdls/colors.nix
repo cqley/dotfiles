@@ -1,15 +1,15 @@
 { pkgs, ... }:
 
 let
-  cls-script = pkgs.writeShellScriptBin "cls" ''
-    [ -z "$1" ] && echo "usage: cls <image>" >&2 && exit 1
-    [ ! -f "$1" ] && echo "cls: file not found: $1" >&2 && exit 1
+  colors-script = pkgs.writeShellScriptBin "colors" ''
+    [ -z "$1" ] && echo "usage: colors <image>" >&2 && exit 1
+    [ ! -f "$1" ] && echo "colors: file not found: $1" >&2 && exit 1
 
-    cls="$HOME/.cls"
-    mkdir -p "$cls"
+    colors="$HOME/.colors"
+    mkdir -p "$colors"
 
     awww_out=$(${pkgs.awww}/bin/awww img -o HDMI-A-1 "$1" --transition-type grow --transition-duration 1.5 --transition-fps 120 2>&1)
-    [ $? -ne 0 ] && echo "cls: awww: $awww_out" >&2
+    [ $? -ne 0 ] && echo "colors: awww: $awww_out" >&2
     ${pkgs.awww}/bin/awww clear --outputs DP-1 2>/dev/null
 
     raw=$(${pkgs.imagemagick}/bin/magick "$1" -thumbnail 50x50^ -colors 8 -unique-colors txt:- 2>&1)
@@ -26,7 +26,7 @@ let
         | ${pkgs.gawk}/bin/awk '{print $2}' \
         | ${pkgs.coreutils}/bin/head -8)
 
-    [ -z "$base" ] && echo "cls: magick failed" >&2 && echo "$raw" >&2 && exit 1
+    [ -z "$base" ] && echo "colors: magick failed" >&2 && echo "$raw" >&2 && exit 1
 
     n=$(printf '%s\n' "$base" | ${pkgs.coreutils}/bin/wc -l)
     last=$(printf '%s\n' "$base" | ${pkgs.coreutils}/bin/tail -1)
@@ -89,12 +89,12 @@ let
     ')
     cursor="$fg"
 
-    printf '%s' "$1" > "$cls/cls"
+    printf '%s' "$1" > "$colors/colors"
 
-    printf '%s\n' "$cols" | ${pkgs.gawk}/bin/awk '{printf "color%d=%s\n", NR-1, $0}' > "$cls/cls.sh"
-    printf 'background="%s"\nforeground="%s"\ncursor="%s"\n' "$bg" "$fg" "$cursor" >> "$cls/cls.sh"
+    printf '%s\n' "$cols" | ${pkgs.gawk}/bin/awk '{printf "color%d=%s\n", NR-1, $0}' > "$colors/colors.sh"
+    printf 'background="%s"\nforeground="%s"\ncursor="%s"\n' "$bg" "$fg" "$cursor" >> "$colors/colors.sh"
 
-    cat > "$cls/cls.json" << ENDJSON
+    cat > "$colors/colors.json" << ENDJSON
     {
         "wallpaper": "$1",
         "alpha": "100",
@@ -124,9 +124,9 @@ let
     }
     ENDJSON
 
-    printf '%s\n' "$cols" > "$cls/colors.txt"
+    printf '%s\n' "$cols" > "$colors/colors.txt"
 
-    cat > "$cls/kitty.conf" << ENDKITTY
+    cat > "$colors/kitty.conf" << ENDKITTY
     foreground         $fg
     background         $bg
     background_opacity 1.0
@@ -159,7 +159,7 @@ let
     color15      $c15
     ENDKITTY
 
-    cat > "$cls/colors.fish" << ENDFISH
+    cat > "$colors/colors.fish" << ENDFISH
     set fish_color_autosuggestion \$(echo "$c8" | sed 's/#//')
     set fish_color_cancel \$(echo "$c1" | sed 's/#//') '--reverse'
     set fish_color_command \$(echo "$c10" | sed 's/#//')
@@ -205,10 +205,10 @@ let
         printf '\033]10;%s\007' "$fg"
         printf '\033]11;%s\007' "$bg"
         printf '\033]12;%s\007' "$cursor"
-    } > "$cls/sequences"
+    } > "$colors/sequences"
 
     for pty in /proc/*/fd/0; do
-        [ -c "$pty" ] && [ -w "$pty" ] && ${pkgs.coreutils}/bin/cat "$cls/sequences" > "$pty" 2>/dev/null
+        [ -c "$pty" ] && [ -w "$pty" ] && ${pkgs.coreutils}/bin/cat "$colors/sequences" > "$pty" 2>/dev/null
     done
 
     printf '%s\n' "$base" | ${pkgs.gawk}/bin/awk '{
@@ -220,5 +220,5 @@ let
   '';
 in
 {
-  home.packages = [ cls-script ];
+  home.packages = [ colors-script ];
 }
