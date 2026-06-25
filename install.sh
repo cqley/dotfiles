@@ -8,7 +8,7 @@ rm -rf "$dir"
 sudo nixos-generate-config
 clear
 printf "host?\n"
-read -r host < /dev/tty
+read -r host
 
 sudo mv /etc/nixos/hardware-configuration.nix "/etc/nixos/hosts/$host/"
 sudo rm /etc/nixos/configuration.nix
