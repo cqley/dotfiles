@@ -5,7 +5,7 @@
     ../../mdls/hypr.nix
     ../../mdls/qksh.nix
     ../../mdls/vim.nix
-    ../../mdls/cls.nix
+    ../../mdls/colors.nix
   ];
 
   home.username = "cat";
