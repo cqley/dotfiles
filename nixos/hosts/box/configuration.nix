@@ -99,6 +99,7 @@ environment.systemPackages = with pkgs; [
     imagemagick
     quickshell
     hyprshot
+    hyprpolkitagent
     kdePackages.dolphin
     kdePackages.ark
     kdePackages.breeze
