@@ -231,7 +231,7 @@
                 return
             }
             if (item.wp !== undefined) {
-                mProc.command = ["bash", "-c", "cls \"$HOME/.wallpapers/" + item.wp + "\""]
+                mProc.command = ["bash", "-c", "colors \"$HOME/.wallpapers/" + item.wp + "\""]
                 mProc.running = true
                 masterClose(); return
             }
