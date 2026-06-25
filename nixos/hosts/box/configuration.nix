@@ -98,8 +98,7 @@ environment.systemPackages = with pkgs; [
     libnotify
     imagemagick
     quickshell
-    grim
-    slurp
+    hyprshot
     kdePackages.dolphin
     kdePackages.ark
     kdePackages.breeze
