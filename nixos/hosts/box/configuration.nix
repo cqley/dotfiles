@@ -75,6 +75,7 @@
   programs.fish.enable = true;
   programs.dconf.enable = true;
   programs.steam.enable = true;
+  services.udisks2.enable = true;
 
   xdg.portal = {
     enable = true;
