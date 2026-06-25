@@ -126,7 +126,7 @@
       hl.bind(mod .. " + V", hl.dsp.window.float({ action = "toggle" }))
       hl.bind(mod .. " + F", hl.dsp.window.fullscreen({ mode = 0 }))
       hl.bind(mod .. " + Tab", hl.dsp.focus({ workspace = "m+1" }))
-      hl.bind('ALT + S', hl.dsp.exec_cmd('hyprshot -s -m region'))
+      hl.bind('ALT + S', hl.dsp.exec_cmd('hyprshot -o .pictures/screenshots/ -f "$(date +%y-%m-%d_%H-%M-%S).png" -s -m region'))
 
       hl.bind(mod .. " + left",  hl.dsp.focus({ direction = "left" }))
       hl.bind(mod .. " + right", hl.dsp.focus({ direction = "right" }))
