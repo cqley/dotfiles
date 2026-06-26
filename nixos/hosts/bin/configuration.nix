@@ -26,7 +26,12 @@
   
   networking.hostName = "bin";
   networking.networkmanager.enable = true;
-  networking.firewall.allowedTCPPorts = [ 8080 5657 25565 ];
+
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 8080 5657 25565 ];
+    allowedUDPPorts = [ 51820 ];
+  };
 
   networking.useDHCP = false;
   networking.interfaces.ens18.ipv4.addresses = [{
@@ -38,6 +43,19 @@
     interface = "ens18";
   };
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
+
+  networking.wireguard.interfaces.wg0 = {
+    ips = [ "10.0.0.1/24" ];
+    listenPort = 51820;
+    privateKeyFile = "/var/lib/wireguard/privatekey";
+
+    peers = [
+      {
+        publicKey = "BdQ1JoAFU5XGFfZDNPEUk78zI8yLLReSWdVbeETwNX4=";
+        allowedIPs = [ "10.0.0.2/32" ];
+      }
+    ];
+  };
 
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -54,7 +72,6 @@
   };
 
   nixpkgs.config.allowUnfree = true;
-
   programs.fish.enable = true;
 
   users.users.cat = {
@@ -76,9 +93,9 @@
   services.openssh = {
     enable = true;
     settings = {
-	    PasswordAuthentication = false;
-		KbdInteractiveAuthentication = false;
-		PermitRootLogin = "no";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
     };
   };
 
