@@ -6,6 +6,7 @@
     ../../mdls/qksh.nix
     ../../mdls/vim.nix
     ../../mdls/colors.nix
+    ../../mdls/dayz.nix
   ];
 
   home.username = "cat";
