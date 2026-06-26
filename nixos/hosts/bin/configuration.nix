@@ -88,6 +88,7 @@
     git
     neovim
     btop
+    wireguard-tools
   ];
 
   services.openssh = {
