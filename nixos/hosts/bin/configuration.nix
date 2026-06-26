@@ -14,6 +14,11 @@
     options = "--delete-older-than 7d";
   };
 
+  boot.loader.grub = {
+    enable = true;
+    device = "/dev/sda";
+  };
+  
   zramSwap = {
     enable = true;
     memoryPercent = 25;
@@ -22,6 +27,17 @@
   networking.hostName = "bin";
   networking.networkmanager.enable = true;
   networking.firewall.allowedTCPPorts = [ 8080 5657 25565 ];
+
+  networking.useDHCP = false;
+  networking.interfaces.ens18.ipv4.addresses = [{
+    address = "5.231.118.254";
+    prefixLength = 24;
+  }];
+  networking.defaultGateway = {
+    address = "5.231.118.1";
+    interface = "ens18";
+  };
+  networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
 
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -46,6 +62,9 @@
     description = "cat";
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.fish;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILJq3Lw3QReo6e9S1jbt1AywvaLKfgTY/GagPsfReP+t cat@box"
+    ];
   };
 
   environment.systemPackages = with pkgs; [
@@ -57,7 +76,9 @@
   services.openssh = {
     enable = true;
     settings = {
-	    PasswordAuthentication = true;
+	    PasswordAuthentication = false;
+		KbdInteractiveAuthentication = false;
+		PermitRootLogin = "no";
     };
   };
 
