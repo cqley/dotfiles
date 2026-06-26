@@ -29,8 +29,9 @@
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 8080 5657 25565 ];
+    allowedTCPPorts = [ 25565 ];
     allowedUDPPorts = [ 51820 ];
+    trustedInterfaces = [ "wg0" ];
   };
 
   networking.useDHCP = false;
@@ -107,8 +108,8 @@
       (pkgs.writeShellScriptBin "java25" "exec ${pkgs.jdk25}/bin/java \"$@\"")
     ];
     environment = {
-      PUFFER_WEB_HOST = ":8080";
-      PUFFER_DAEMON_SFTP_HOST = ":5657";
+      PUFFER_WEB_HOST = "10.0.0.1:8080";
+      PUFFER_DAEMON_SFTP_HOST = "10.0.0.1:5657";
     };
   };
 
