@@ -31,6 +31,21 @@
   
   networking.hostName = "box";
   networking.networkmanager.enable = true;
+  networking.firewall.allowedUDPPorts = [ 51820 ];
+
+  networking.wireguard.interfaces.wg0 = {
+    ips = [ "10.0.0.2/24" ];
+    privateKeyFile = "/var/lib/wireguard/privatekey";
+
+    peers = [
+      {
+        publicKey = "P2LPLBq/6qXE5Mmv8DJUviU89Yu5s7vysbyWncnZchY=";
+        allowedIPs = [ "10.0.0.0/24" ];
+        endpoint = "5.231.118.254:51820";
+        persistentKeepalive = 25;
+      }
+    ];
+  };
 
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -101,6 +116,7 @@ environment.systemPackages = with pkgs; [
     quickshell
     hyprshot
     hyprpolkitagent
+    wireguard-tools
     kdePackages.dolphin
     kdePackages.ark
     kdePackages.breeze
