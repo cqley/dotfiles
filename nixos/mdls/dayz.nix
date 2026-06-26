@@ -13,7 +13,6 @@ in
     WinY=0;
     WindowWidth=1920;
     WindowHeight=1080;
-    Windowed=0;
     MSAA=0;
     PostFX=0;
     VSync=1;
