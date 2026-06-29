@@ -66,6 +66,13 @@ in
     uiBottomRightX=0.875;
     uiBottomRightY=1;
     IGUIScale=0.55000001;
+    showHUD=1;
+    hudBrightness=1.0;
+    showCrosshair=0;
+    showQuickbar=1;
+    showVehicleHUD=1;
+    showServerInfo=0;
+    showQuickbar=1;
   '';
 
   home.file."${dayzDir}/steamuser.dayz_preset_User.xml".text = ''
