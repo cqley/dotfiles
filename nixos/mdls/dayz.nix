@@ -72,7 +72,6 @@ in
     showQuickbar=1;
     showVehicleHUD=1;
     showServerInfo=0;
-    showQuickbar=1;
   '';
 
   home.file."${dayzDir}/steamuser.dayz_preset_User.xml".text = ''
