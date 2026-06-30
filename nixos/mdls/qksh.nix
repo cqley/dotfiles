@@ -46,7 +46,6 @@
     }
 
     ListModel { id: notifModel }
-    ListModel { id: mixerModel }
 
     PanelWindow {
         id: root
@@ -62,9 +61,7 @@
         property var launcherTopApp: null
 
         property string sysStats: "cpu --% | mem --%"
-        property string audioVol: "󰕿"
         property string micState: "󰍬"
-        property string mixerBuf: ""
 
         function removeNotif(nid) {
             for (let i = 0; i < notifModel.count; i++) {
@@ -246,17 +243,13 @@
         }
 
         onActiveModeChanged: {
-            if (activeMode !== "none" && activeMode !== "calendar" && activeMode !== "mixer" && typeof barInput !== "undefined") {
+            if (activeMode !== "none" && activeMode !== "calendar" && typeof barInput !== "undefined") {
                 barInput.text = ""
                 barInput.forceActiveFocus()
             }
-            if (activeMode === "mixer") {
-                root.mixerBuf = ""
-                mixerListProc.running = true
-            }
         }
 
-        WlrLayershell.keyboardFocus: activeMode !== "none" && activeMode !== "calendar" && activeMode !== "mixer" ? WlrLayershell.Exclusive : WlrLayershell.None
+        WlrLayershell.keyboardFocus: activeMode !== "none" && activeMode !== "calendar" ? WlrLayershell.Exclusive : WlrLayershell.None
 
         anchors.top:    position === "top"
         anchors.bottom: position === "bottom"
@@ -342,9 +335,7 @@
             interval: 2000; running: true; repeat: true; triggeredOnStart: true
             onTriggered: {
                 if (barSettings.centerMode === "performance" && !sysProc.running) sysProc.running = true
-                if (!audioProc.running) audioProc.running = true
                 if (!micProc.running) micProc.running = true
-                if (root.activeMode === "mixer" && !mixerListProc.running) mixerListProc.running = true
             }
         }
 
@@ -358,15 +349,6 @@
         }
 
         Process {
-            id: audioProc
-            command: ["sh", "-c", "${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{v=int($2*100); if(v>100)v=100; if($3==\"[MUTED]\") print \"󰕿\"; else if(v<=33) print \"󰕿\"; else if(v<=66) print \"󰖀\"; else print \"󰕾\"}'"]
-            running: false
-            stdout: SplitParser {
-                onRead: data => { root.audioVol = data.trim() }
-            }
-        }
-
-        Process {
             id: micProc
             command: ["sh", "-c", "${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | awk '{print ($3==\"[MUTED]\"?\"󰍭\":\"󰍬\")}'"]
             running: false
@@ -376,54 +358,9 @@
         }
 
         Process {
-            id: mixerListProc
-            command: ["${pkgs.pulseaudio}/bin/pactl", "-f", "json", "list", "sink-inputs"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => { root.mixerBuf += data }
-            }
-            onRunningChanged: {
-                if (!running && root.mixerBuf !== "") {
-                    try {
-                        let apps = JSON.parse(root.mixerBuf)
-                        mixerModel.clear()
-                        if (Array.isArray(apps)) {
-                            apps.forEach(app => {
-                                let name = app.properties["application.name"] || app.properties["media.name"] || "unknown"
-                                let vol = "0%"
-                                if (app.volume && app.volume["front-left"]) {
-                                    vol = app.volume["front-left"].value_percent
-                                }
-                                mixerModel.append({
-                                    idx: app.index,
-                                    name: name.toLowerCase(),
-                                    volume: vol
-                                })
-                            })
-                        }
-                    } catch(e) {}
-                    root.mixerBuf = ""
-                }
-            }
-        }
-
-        Process {
-            id: volActProc
-            running: false
-            onRunningChanged: if (!running) audioProc.running = true
-        }
-
-        Process {
             id: micActProc
             running: false
             onRunningChanged: if (!running) micProc.running = true
-        }
-
-        Process {
-            id: mixerActProc
-            running: false
-            onRunningChanged: if (!running) mixerListProc.running = true
         }
 
         FontMetrics {
@@ -439,7 +376,7 @@
 
             Text {
                 anchors.centerIn: parent
-                visible:        root.activeMode === "none" || root.activeMode === "calendar" || root.activeMode === "mixer"
+                visible:        root.activeMode === "none" || root.activeMode === "calendar"
                 font.family:    "JetBrainsMono Nerd Font"
                 font.pixelSize: 12
                 font.weight:    Font.Normal
@@ -571,48 +508,11 @@
 
                 Item {
                     Layout.fillHeight: true
-                    implicitWidth: 46
+                    implicitWidth: 26
 
                     Row {
                         anchors.centerIn: parent
                         spacing: 2
-
-                        Item {
-                            width: 20
-                            height: 22
-
-                            Text {
-                                id: audioText
-                                anchors.centerIn: parent
-                                font.family: "JetBrainsMono Nerd Font"
-                                font.pixelSize: 12
-                                renderType: Text.NativeRendering
-                                color: "#aaaaaa"
-                                text: root.audioVol
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                                onClicked: (mouse) => {
-                                    if (mouse.button === Qt.RightButton) {
-                                        volActProc.command = ["${pkgs.wireplumber}/bin/wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "toggle"]
-                                        volActProc.running = true
-                                    } else {
-                                        if (root.activeMode === "mixer") root.activeMode = "none"
-                                        else root.activeMode = "mixer"
-                                    }
-                                }
-                                onWheel: (wheel) => {
-                                    if (wheel.angleDelta.y > 0) {
-                                        volActProc.command = ["${pkgs.wireplumber}/bin/wpctl", "set-volume", "-l", "1.0", "@DEFAULT_AUDIO_SINK@", "5%+"]
-                                    } else {
-                                        volActProc.command = ["${pkgs.wireplumber}/bin/wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-"]
-                                    }
-                                    volActProc.running = true
-                                }
-                            }
-                        }
 
                         Item {
                             width: 20
@@ -669,97 +569,6 @@
                         onClicked: {
                             if (root.activeMode === "calendar") root.activeMode = "none"
                             else root.activeMode = "calendar"
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    PanelWindow {
-        id: mixerOverlay
-        visible: root.activeMode === "mixer"
-
-        screen: Quickshell.screens.find(s => s.name === "HDMI-A-1") ?? Quickshell.screens[0]
-
-        anchors.top:    root.position === "top"
-        anchors.bottom: root.position === "bottom"
-        anchors.right:  true
-
-        margins.top:    root.position === "top"    ? (root.look === "fill" ? 0 : 6) : 0
-        margins.bottom: root.position === "bottom" ? (root.look === "fill" ? 0 : 6) : 0
-        margins.right:  root.look === "fill" ? 0 : root.layout === "full" ? 6 : Math.round(((root.screen?.width ?? 1920) - 820) / 2) + 46
-
-        implicitWidth: 200
-        implicitHeight: Math.max(22, mixerModel.count * 22)
-        color: "transparent"
-
-        WlrLayershell.layer: WlrLayershell.Overlay
-        WlrLayershell.keyboardFocus: visible ? WlrLayershell.Exclusive : WlrLayershell.None
-
-        onVisibleChanged: {
-            if (visible) mixerBox.forceActiveFocus()
-        }
-
-        Rectangle {
-            id: mixerBox
-            anchors.fill: parent
-            color: "#1c1c1c"
-            border.color: "#3c3c3c"
-            border.width: 1
-            focus: true
-
-            Keys.onPressed: (event) => {
-                if (event.key === Qt.Key_Escape) {
-                    root.activeMode = "none"
-                    event.accepted = true
-                }
-            }
-
-            Column {
-                width: parent.width
-
-                Repeater {
-                    model: mixerModel
-
-                    Rectangle {
-                        width: parent.width
-                        height: 22
-                        color: "transparent"
-
-                        Text {
-                            anchors.left: parent.left
-                            anchors.leftMargin: 8
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 130
-                            elide: Text.ElideRight
-                            text: model.name
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 12
-                            color: "#aaaaaa"
-                        }
-
-                        Text {
-                            anchors.right: parent.right
-                            anchors.rightMargin: 8
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: model.volume
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 12
-                            color: "#c0c0c0"
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onWheel: (wheel) => {
-                                let cur = parseInt(model.volume)
-                                if (wheel.angleDelta.y > 0) {
-                                    mixerActProc.command = ["${pkgs.pulseaudio}/bin/pactl", "set-sink-input-volume", model.idx, Math.min(100, cur + 5) + "%"]
-                                } else {
-                                    mixerActProc.command = ["${pkgs.pulseaudio}/bin/pactl", "set-sink-input-volume", model.idx, Math.max(0, cur - 5) + "%"]
-                                }
-                                mixerActProc.running = true
-                            }
                         }
                     }
                 }
