@@ -142,7 +142,7 @@
             { label: "bar", sub: "bar" }
         ]
         property var masterAnimationsItems: [
-          { label: "fade",
+            { label: "fade",
               cmd:    ["hyprctl", "eval", "hl.animation({ leaf = \"workspaces\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })"],
               cmd2:   ["hyprctl", "eval", "hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })"],
               notify: ["notify-send", "animations", "fade"] },
