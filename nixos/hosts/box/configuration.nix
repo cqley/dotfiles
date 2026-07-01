@@ -123,7 +123,7 @@ environment.systemPackages = with pkgs; [
     kdePackages.qtsvg
     imv
     mpv
-    ncpamixer
+    lxqt.pavucontrol-qt
     obs-studio
     prismlauncher
     obsidian
