@@ -109,10 +109,8 @@ environment.systemPackages = with pkgs; [
     git
     kitty
     wl-clipboard
-    neovim
     awww
     libnotify
-    imagemagick
     quickshell
     hyprshot
     hyprpolkitagent
