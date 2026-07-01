@@ -4,7 +4,7 @@
   imports = [
     ../../mdls/hypr.nix
     ../../mdls/qksh.nix
-    ../../mdls/vim.nix
+    ../../mdls/vi.nix
     ../../mdls/colors.nix
     ../../mdls/dayz.nix
   ];
