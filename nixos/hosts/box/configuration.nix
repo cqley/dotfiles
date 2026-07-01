@@ -109,7 +109,6 @@ environment.systemPackages = with pkgs; [
     git
     kitty
     wl-clipboard
-    awww
     libnotify
     quickshell
     hyprshot
