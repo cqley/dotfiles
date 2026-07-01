@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ../../mdls/vim.nix
+    ../../mdls/vi.nix
   ];
 
   home.username = "cat";
