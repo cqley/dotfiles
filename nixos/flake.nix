@@ -20,7 +20,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.cat = {
-              imports = [ ./hosts/box/box.nix ./mdls/hypr.nix ./mdls/qksh.nix ./mdls/vim.nix ];
+              imports = [ ./hosts/box/box.nix ./mdls/hypr.nix ./mdls/qksh.nix ./mdls/vi.nix ./mdls/colors.nix ./mdls/dayz.nix ];
             };
           }
         ];
@@ -35,7 +35,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.cat = {
-              imports = [ ./hosts/bin/bin.nix ./mdls/vim.nix ];
+              imports = [ ./hosts/bin/bin.nix ./mdls/vi.nix ];
             };
           }
         ];
