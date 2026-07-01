@@ -132,7 +132,7 @@
             { label: "box",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/box.nix"]           },
             { label: "hypr",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/hypr.nix"]               },
             { label: "shell", cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/qksh.nix"]               },
-            { label: "vim",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/vim.nix"]                }
+            { label: "vi",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/vi.nix"]                 }
         ]
         property var masterStsItems: [
             { label: "animations", sub: "animations" },
