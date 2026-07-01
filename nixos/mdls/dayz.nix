@@ -989,6 +989,429 @@ in
     <input name="UAProne">
         <btn name="kV" />
     </input>
+    <input name="UABBPRotate">
+        <btn name="kUp" />
+    </input>
+    <input name="UACycleSize">
+        <btn name="kLeft" />
+    </input>
+    <input name="UANextSnap">
+        <btn name="mWheelUp" />
+    </input>
+    <input name="UAPrevSnap">
+        <btn name="mWheelDown" />
+    </input>
+    <input name="UASnapLook">
+        <btn name="kDown" />
+    </input>
+    <input name="UABBPTogInv" />
+    <input name="UASIBHeliForward">
+        <btn name="kW" />
+        <btn name="x1LeftThumbUp" />
+    </input>
+    <input name="UASIBHeliCyclicLeft">
+        <btn name="kA" />
+        <btn name="x1LeftThumbLeft" />
+    </input>
+    <input name="UASIBHeliBack">
+        <btn name="kS" />
+        <btn name="x1LeftThumbDown" />
+    </input>
+    <input name="UASIBHeliCyclicRight">
+        <btn name="kD" />
+        <btn name="x1LeftThumbRight" />
+    </input>
+    <input name="UASIBHeliForwardM">
+        <btn name="mDown" />
+        <btn name="x1RightThumbDown" />
+    </input>
+    <input name="UASIBHeliBackM">
+        <btn name="mUp" />
+        <btn name="x1RightThumbUp" />
+    </input>
+    <input name="UASIBHeliLeftM">
+        <btn name="mLeft" />
+        <btn name="x1RightThumbLeft" />
+    </input>
+    <input name="UASIBHeliRightM">
+        <btn name="mRight" />
+        <btn name="x1RightThumbRight" />
+    </input>
+    <input name="UASIBHeliEngine_new">
+        <btn name="kC" />
+        <btn name="x1B" />
+    </input>
+    <input name="UASIBHeliAutopilot">
+        <btn name="mBRight" />
+        <btn name="x1Y" />
+    </input>
+    <input name="UASIBHeliHide">
+        <btn name="kX" />
+        <btn name="x1X" />
+    </input>
+    <input name="UASIBHeliLeft">
+        <btn name="kQ" />
+        <btn name="x1ShoulderLeft" />
+    </input>
+    <input name="UASIBHeliRight">
+        <btn name="kE" />
+        <btn name="x1ShoulderRight" />
+    </input>
+    <input name="UASIBHeliUp">
+        <btn name="kLShift" />
+        <btn name="x1TriggerRight" />
+    </input>
+    <input name="UASIBHeliDown">
+        <btn name="kZ" />
+        <btn name="x1TriggerLeft" />
+    </input>
+    <input name="UABetterInspect">
+        <btn name="kB" />
+    </input>
+    <input name="UALBAdminMenuToggle">
+        <btn name="kU" />
+    </input>
+    <input name="UALBAdminMenuOpen">
+        <btn name="kI" />
+    </input>
+    <input name="UALBMEarPlugsToggle">
+        <btn name="kN" />
+    </input>
+    <input name="UALBMEarPlugsLouder">
+        <btn name="kEquals" />
+    </input>
+    <input name="UALBMEarPlugsQuieter">
+        <btn name="kMinus" />
+    </input>
+    <input name="UALBMGroupOpenMap">
+        <btn name="kM" />
+    </input>
+    <input name="UALBMGroupOpenMapGroup">
+        <btn name="kP" />
+    </input>
+    <input name="UALBMGroupTacticalPing">
+        <btn name="kT" />
+    </input>
+    <input name="UALBMGroupTacticalPingClear">
+        <btn name="kC" />
+    </input>
+    <input name="UALBMGroupDeleteMarker">
+        <btn name="kDelete" />
+    </input>
+    <input name="UALBMGroupToggleVisibility">
+        <btn name="kK" />
+    </input>
+    <input name="UALBMSwitchChatChannel">
+        <btn name="kComma" />
+    </input>
+    <input name="UALBMGroupToggleCompass">
+        <btn name="kH" />
+    </input>
+    <input name="UALBMGroupTogglePlayerList">
+        <btn name="kU" />
+    </input>
+    <input name="UALBMGroupToggleMiniMap">
+        <btn name="kB" />
+    </input>
+    <input name="UALBMGroupAcceptInvite">
+        <btn name="kLControl">
+            <btn name="kJ" />
+        </btn>
+        <btn name="kRControl">
+            <btn name="kJ" />
+        </btn>
+    </input>
+    <input name="UALBMHoverLoot">
+        <btn name="k0" />
+    </input>
+    <input name="UALBMOpenRestrictions">
+        <btn name="kLControl">
+            <btn name="kR" />
+        </btn>
+    </input>
+    <input name="Loaded_ToggleVisor">
+        <btn name="kL" />
+    </input>
+    <input name="UASchanaAutorunToggle">
+        <btn name="kF10" />
+    </input>
+    <input name="UATogglePlayerControls">
+        <btn name="kSpace" />
+    </input>
+    <input name="UAHealTargets">
+        <btn name="kJ" />
+    </input>
+    <input name="UAToggleFreeCam">
+        <btn name="kBackspace" />
+    </input>
+    <input name="UACopyPositionClipboard">
+        <btn name="kP" />
+    </input>
+    <input name="UARepairVehicleAtCrosshairs">
+        <btn name="kK" />
+    </input>
+    <input name="UAFocusOnGame">
+        <btn name="kTab" />
+    </input>
+    <input name="UACollapseESPDropDwn" />
+    <input name="UATogglePlayerDetailEsp" />
+    <input name="UAExitSpectate">
+        <btn name="kPrior" />
+    </input>
+    <input name="UASelectObject">
+        <btn name="mBLeft" />
+    </input>
+    <input name="UADeSelectObject">
+        <btn name="kLControl" />
+    </input>
+    <input name="UAExecuteCommand">
+        <btn name="kReturn" />
+        <btn name="kNumpadEnter" />
+    </input>
+    <input name="UAUPCommand">
+        <btn name="kUp" />
+    </input>
+    <input name="UADOWNCommand">
+        <btn name="kDown" />
+    </input>
+    <input name="UAToggleAdminTools">
+        <btn name="kEnd" />
+    </input>
+    <input name="UAToggleMeshEsp">
+        <btn name="kY" />
+    </input>
+    <input name="UAOpenAdminTools">
+        <btn name="kHome" />
+    </input>
+    <input name="UATeleportToCrosshair">
+        <btn name="kH" />
+    </input>
+    <input name="UADeleteObjCrosshair">
+        <btn name="kDelete" />
+    </input>
+    <input name="UAToggleGodMode">
+        <btn name="kInsert" />
+    </input>
+    <input name="UACamForward">
+        <btn name="kW" />
+    </input>
+    <input name="UACamBackward">
+        <btn name="kS" />
+    </input>
+    <input name="UACamRight">
+        <btn name="kD" />
+    </input>
+    <input name="UACamLeft">
+        <btn name="kA" />
+    </input>
+    <input name="UACamUp">
+        <btn name="kQ" />
+    </input>
+    <input name="UACamDown">
+        <btn name="kZ" />
+    </input>
+    <input name="UACamTurbo">
+        <btn name="kLShift" />
+    </input>
+    <input name="UACamFOV">
+        <btn name="kLControl" />
+    </input>
+    <input name="UARotateLeft">
+        <btn name="mLeft" />
+    </input>
+    <input name="UARotateRight">
+        <btn name="mRight" />
+    </input>
+    <input name="UACamShiftLeft">
+        <btn name="mLeft" />
+    </input>
+    <input name="UACamShiftRight">
+        <btn name="mRight" />
+    </input>
+    <input name="UACamShiftUp">
+        <btn name="mUp" />
+    </input>
+    <input name="UACamShiftDown">
+        <btn name="mDown" />
+    </input>
+    <input name="UACamSpeedAdd">
+        <btn name="mWheelUp" />
+    </input>
+    <input name="UACamSpeedDeduct">
+        <btn name="mWheelDown" />
+    </input>
+    <input name="UACamRelease">
+        <btn name="kLControl" />
+    </input>
+    <input name="UAToggleInvis">
+        <btn name="kI" />
+    </input>
+    <input name="UALBMADMCopyTarget">
+        <btn name="kLControl">
+            <btn name="kC" />
+        </btn>
+    </input>
+    <input name="UALBMADMUndo">
+        <btn name="kLControl">
+            <btn name="kZ" />
+        </btn>
+    </input>
+    <input name="UALBMADMRedo">
+        <btn name="kLControl">
+            <btn name="kY" />
+        </btn>
+    </input>
+    <input name="UALBMADMHealSelf">
+        <btn name="kLControl">
+            <btn name="kH" />
+        </btn>
+    </input>
+    <input name="UALBMADMOpenConsole">
+        <btn name="kRControl">
+            <btn name="kMinus" />
+        </btn>
+    </input>
+    <input name="UALBMADMRepairTarget">
+        <btn name="kLControl">
+            <btn name="kR" />
+        </btn>
+    </input>
+    <input name="UALBMADMPreset1">
+        <btn name="kLControl">
+            <btn name="k1" />
+        </btn>
+    </input>
+    <input name="UALBMADMPreset2">
+        <btn name="kLControl">
+            <btn name="k2" />
+        </btn>
+    </input>
+    <input name="UALBMADMPreset3">
+        <btn name="kLControl">
+            <btn name="k3" />
+        </btn>
+    </input>
+    <input name="UALBMADMPreset4">
+        <btn name="kLControl">
+            <btn name="k4" />
+        </btn>
+    </input>
+    <input name="UALBMADMPreset5">
+        <btn name="kLControl">
+            <btn name="k5" />
+        </btn>
+    </input>
+    <input name="UALBMADMPreset6">
+        <btn name="kLControl">
+            <btn name="k6" />
+        </btn>
+    </input>
+    <input name="UALBMADMPreset7">
+        <btn name="kLControl">
+            <btn name="k7" />
+        </btn>
+    </input>
+    <input name="UALBMADMPreset8">
+        <btn name="kLControl">
+            <btn name="k8" />
+        </btn>
+    </input>
+    <input name="UALBMADMPreset9">
+        <btn name="kLControl">
+            <btn name="k9" />
+        </btn>
+    </input>
+    <input name="UALBMADMOpenMenu">
+        <btn name="kLControl">
+            <btn name="kA" />
+        </btn>
+    </input>
+    <input name="UALBMADMTeleportToCursor">
+        <btn name="kH" />
+    </input>
+    <input name="UALBMADMCopyPos">
+        <btn name="kLControl">
+            <btn name="kP" />
+        </btn>
+        <btn name="kRControl">
+            <btn name="kP" />
+        </btn>
+    </input>
+    <input name="UALBMADMDeleteCursor">
+        <btn name="kLControl">
+            <btn name="kD" />
+        </btn>
+    </input>
+    <input name="UALBMADMDeleteCursorForce">
+        <btn name="kLMenu">
+            <btn name="kD" />
+        </btn>
+    </input>
+    <input name="UALBMADMSpectatorZoomIn">
+        <btn name="mWheelUp" />
+    </input>
+    <input name="UALBMADMSpectatorZoomOut">
+        <btn name="mWheelDown" />
+    </input>
+    <input name="UALBMADMDuplicate">
+        <btn name="kLControl">
+            <btn name="kD" />
+        </btn>
+    </input>
+    <input name="UALBMADMItemCopy">
+        <btn name="kLControl">
+            <btn name="kC" />
+        </btn>
+    </input>
+    <input name="UALBMADMItemPaste">
+        <btn name="kLControl">
+            <btn name="kV" />
+        </btn>
+    </input>
+    <input name="UALBMADMSpawnerGround">
+        <btn name="kLControl">
+            <btn name="kG" />
+        </btn>
+    </input>
+    <input name="UALBMADMSpawnerInventory">
+        <btn name="kLControl">
+            <btn name="kS" />
+        </btn>
+    </input>
+    <input name="UALBMADMSpawnerCursor">
+        <btn name="kLControl">
+            <btn name="kC" />
+        </btn>
+    </input>
+    <input name="UALBMADMSpawnerTarget">
+        <btn name="kLControl">
+            <btn name="kT" />
+        </btn>
+    </input>
+    <input name="UALBMADMToggleFreecam">
+        <btn name="kLControl">
+            <btn name="kF" />
+        </btn>
+    </input>
+    <input name="UALBMADMToggleGodmode">
+        <btn name="kLControl">
+            <btn name="kG" />
+        </btn>
+    </input>
+    <input name="UALBMADMToggleInvisible">
+        <btn name="kRControl">
+            <btn name="kI" />
+        </btn>
+    </input>
+    <input name="UALBMADMToggleESP">
+        <btn name="kLControl">
+            <btn name="kE" />
+        </btn>
+    </input>
+    <input name="UAExpansionConfirm">
+        <btn name="kReturn" />
+        <btn name="kNumpadEnter" />
+    </input>
     <controller name="PCKeyboard">
         <limit name="doubleclick" value="0.500000" />
         <limit name="hold" value="0.330000" />
