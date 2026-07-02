@@ -28,11 +28,11 @@
       local browser = "helium"
 
       hl.on("hyprland.start", function ()
-          exec("systemctl --user start hyprpolkitagent")
-          exec("bash -c 'awww-daemon & sleep 0.5 && awww clear --outputs DP-1'")
-          exec("wl-paste --type text --watch cliphist store")
-          exec("wl-paste --type image --watch cliphist store")
-          exec("quickshell -c ~/.config/quickshell")
+          hl.exec_cmd("systemctl --user start hyprpolkitagent")
+          hl.exec_cmd("bash -c 'awww-daemon & sleep 0.5 && awww clear --outputs DP-1'")
+          hl.exec_cmd("wl-paste --type text --watch cliphist store")
+          hl.exec_cmd("wl-paste --type image --watch cliphist store")
+          hl.exec_cmd("setpriv --ambient-caps -all quickshell -c ~/.config/quickshell")
       end)
 
       config({
