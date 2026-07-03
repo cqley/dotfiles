@@ -29,7 +29,7 @@
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 25565 ];
+    allowedTCPPorts = [ 25565 8090 ];
     allowedUDPPorts = [ 51820 ];
     trustedInterfaces = [ "wg0" ];
   };
@@ -110,6 +110,15 @@
     environment = {
       PUFFER_WEB_HOST = "10.0.0.1:8080";
       PUFFER_DAEMON_SFTP_HOST = "10.0.0.1:5657";
+    };
+  };
+
+  systemd.services.pocketbase = {
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.pocketbase}/bin/pocketbase serve --http=0.0.0.0:8090 --dir=/var/lib/pocketbase --publicDir=/var/lib/pocketbase/pb_public";
+      Restart = "no";
     };
   };
 
