@@ -24,7 +24,7 @@
 
       local mod = "SUPER"
       local terminal = "kitty"
-      local filemanager = "dolphin"
+      local filemanager = "kitty yazi"
       local browser = "helium"
 
       hl.on("hyprland.start", function ()
