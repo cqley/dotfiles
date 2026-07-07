@@ -111,6 +111,7 @@ environment.systemPackages = with pkgs; [
     wl-clipboard
     libnotify
     quickshell
+    awww
     hyprshot
     hyprpolkitagent
     wireguard-tools
