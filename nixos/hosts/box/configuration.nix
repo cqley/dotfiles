@@ -120,7 +120,6 @@ environment.systemPackages = with pkgs; [
     kdePackages.qtsvg
     imv
     mpv
-    lxqt.pavucontrol-qt
     wiremix
     obsidian
   ];
