@@ -114,15 +114,13 @@ environment.systemPackages = with pkgs; [
     hyprshot
     hyprpolkitagent
     wireguard-tools
-    kdePackages.dolphin
-    kdePackages.ark
+    yazi
     kdePackages.breeze
     kdePackages.qtsvg
     imv
     mpv
     lxqt.pavucontrol-qt
-    obs-studio
-    prismlauncher
+    wiremix
     obsidian
   ];
 
