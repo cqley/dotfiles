@@ -104,6 +104,14 @@
     shell = pkgs.fish;
   };
 
+  services.keyd = {
+    enable = true;
+    keyboards.default = {
+      ids = [ "*" ];
+      settings.main.capslock = "home";
+    };
+  };
+
 environment.systemPackages = with pkgs; [
     btop
     git
