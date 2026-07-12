@@ -3,8 +3,8 @@
     enable = true;
     
     settings = {
-      manager = {
-        layout = [ 1 4 3 ];
+      mgr = {
+        ratio = [ 1 4 3 ];
         sort_by = "alphabetical";
         sort_dir_first = true;
         linemode = "none";
