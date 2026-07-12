@@ -110,8 +110,8 @@
       animation({ leaf = "layers", enabled = true, speed = 2, bezier = "easeOutQuint" })
       animation({ leaf = "layersIn", enabled = true, speed = 2, bezier = "easeOutQuint", style = "fade" })
       animation({ leaf = "layersOut", enabled = true, speed = 1, bezier = "linear", style = "fade" })
-      animation({ leaf = "workspaces", enabled = true, speed = 1, bezier = "almostLinear", style = "fade" })
-      animation({ leaf = "specialWorkspace", enabled = true, speed = 1, bezier = "almostLinear", style = "fade" })
+      animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "hard", style = "slidevert" })
+      animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "hard", style = "slidevert" })
 
       hl.window_rule({
           match = { initial_class = "^(imv|mpv)$" },
