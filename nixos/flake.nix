@@ -30,7 +30,7 @@
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit pkgs-unstable; };
             home-manager.users.cat = {
-              imports = [ ./hosts/box/box.nix ./mdls/hypr.nix ./mdls/qksh.nix ./mdls/yazi.nix ./mdls/btop.nix ./mdls/vi.nix ./mdls/colors.nix ./mdls/obsidian.nix ./mdls/gms/dayz.nix ./mdls/gms/mc.nix ];
+              imports = [ ./hosts/box/box.nix ];
             };
           }
         ];
@@ -47,7 +47,7 @@
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit pkgs-unstable; };
             home-manager.users.cat = {
-              imports = [ ./hosts/bin/bin.nix ./mdls/vi.nix ./mdls/btop.nix ];
+              imports = [ ./hosts/bin/bin.nix ];
             };
           }
         ];
