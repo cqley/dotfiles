@@ -130,6 +130,7 @@ environment.systemPackages = with pkgs; [
     imv
     mpv
     wiremix
+    zathura
   ];
 
   fonts.packages = with pkgs; [
