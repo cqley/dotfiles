@@ -5,6 +5,7 @@
     ../../mdls/hypr.nix
     ../../mdls/qksh.nix
     ../../mdls/vi.nix
+    ../../mdls/yazi.nix
     ../../mdls/btop.nix
     ../../mdls/colors.nix
     ../../mdls/obsidian.nix
