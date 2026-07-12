@@ -129,7 +129,6 @@ environment.systemPackages = with pkgs; [
     imv
     mpv
     wiremix
-    obsidian
   ];
 
   fonts.packages = with pkgs; [
