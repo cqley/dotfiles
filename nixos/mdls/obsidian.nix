@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 
 {
+  home.packages = [ pkgs.obsidian ];
+
   home.file = {
     ".documents/obsidian/.obsidian/app.json".text = builtins.toJSON {
       readableLineLength = true;
@@ -49,28 +51,5 @@
       "bases" = false;
       "webviewer" = false;
     };
-  };
-
-  systemd.user.services.obsidian = {
-    Unit.Description = "obsidian git sync";
-    Service = {
-      ExecStart = "${pkgs.writeShellScript "obsidian" ''
-        while true; do
-          cd /home/cat/.documents/obsidian || exit 1
-          if [ ! -d .git ]; then
-            exit 1
-          fi
-          git add .
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "sync $(date +'%Y-%m-%d %H:%M:%S')"
-            git pull --rebase origin main
-            git push origin main
-          fi
-          sleep 60
-        done
-      ''}";
-      Restart = "always";
-    };
-    Install.WantedBy = [ "default.target" ];
   };
 }
