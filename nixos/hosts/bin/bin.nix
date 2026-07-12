@@ -3,6 +3,7 @@
 {
   imports = [
     ../../mdls/vi.nix
+    ../../mdls/btop.nix
   ];
 
   home.username = "cat";
