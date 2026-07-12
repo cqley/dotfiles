@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 
 {
+  home.packages = [ pkgs.prismlauncher ];
+
   home.file.".local/share/PrismLauncher/prismlauncher.cfg" = {
     text = pkgs.lib.generators.toINI {} {
       General = {
