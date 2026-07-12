@@ -113,7 +113,6 @@
   };
 
 environment.systemPackages = with pkgs; [
-    btop
     git
     kitty
     wl-clipboard
