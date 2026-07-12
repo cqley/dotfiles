@@ -47,7 +47,7 @@
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit pkgs-unstable; };
             home-manager.users.cat = {
-              imports = [ ./hosts/bin/bin.nix ./mdls/vi.nix ];
+              imports = [ ./hosts/bin/bin.nix ./mdls/vi.nix ./mdls/btop.nix ];
             };
           }
         ];
