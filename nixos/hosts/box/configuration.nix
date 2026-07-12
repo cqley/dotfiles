@@ -123,7 +123,6 @@ environment.systemPackages = with pkgs; [
     hyprshot
     hyprpolkitagent
     wireguard-tools
-    yazi
     kdePackages.breeze
     kdePackages.qtsvg
     imv
