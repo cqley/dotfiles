@@ -6,7 +6,7 @@ in
 {
   home.packages = [ (pkgs.writeShellApplication {
     name = "meowz";
-    runtimeInputs = with pkgs; [ curl jq fzf steam steamcmd ];
+    runtimeInputs = with pkgs; [ curl jq fzf steamcmd ];
     excludeShellChecks = [ "SC2155" "SC2162" "SC2207" "SC2086" "SC2178" "SC2128" ];
     text = ''
 
@@ -21,6 +21,9 @@ mkdir -p "$config"
 touch "$favfile"
 sed -i '/^[[:space:]]*$/d' "$favfile"
 awk -F"$d" 'NF==4' "$favfile" > "$favfile.tmp" && mv "$favfile.tmp" "$favfile"
+
+log() { printf '%s\n' "$*"; }
+err() { printf '%s\n' "$*" >&2; }
 
 api() {
     curl -sg -A "mozilla" "https://api.battlemetrics.com$1"
@@ -86,10 +89,10 @@ download_mods() {
         grep -qx "$mod" "$config/blacklist" && continue
         find "$workshop/$mod" -mindepth 1 2>/dev/null | grep -q . || missing+=("$mod")
     done
-    [ "''${#missing[@]}" -eq 0 ] && { echo "all mods already present, skipping steamcmd"; return 0; }
+    [ "''${#missing[@]}" -eq 0 ] && { log "mods already present"; return 0; }
 
     local runner="steamcmd"
-    command -v steamcmd >/dev/null 2>&1 || { echo "steamcmd not found" >&2; return 1; }
+    command -v steamcmd >/dev/null 2>&1 || { err "steamcmd not found"; return 1; }
 
     mods=("''${missing[@]}")
     local cmds=""
@@ -98,14 +101,15 @@ download_mods() {
     done
 
     if pgrep -x steam >/dev/null; then
-        echo "closing steam client"
+        log "closing steam..."
         steam -shutdown
         while pgrep -x steam >/dev/null; do sleep 1; done
     fi
 
+    log "downloading mods..."
     local attempt=1
     while [ "$attempt" -le 4 ]; do
-        echo "downloading ''${#mods[@]} mods, attempt $attempt"
+        [ "$attempt" -gt 1 ] && log "retry $attempt/4, ''${#mods[@]} mods"
         local out
         local login_args=("$steamuser")
         if [ ! -f "$loginmarker" ] && [ -n "$steampass" ]; then
@@ -121,7 +125,7 @@ download_mods() {
         fi
 
         if echo "$out" | grep -q "Invalid Password"; then
-            echo "cached password rejected, clearing cache" >&2
+            err "wrong password, clearing cache"
             rm -f "$config/steampass"
             steampass=""
         fi
@@ -132,42 +136,55 @@ download_mods() {
                 continue
             fi
             if echo "$out" | grep -qE "Download item $mod failed \((Access Denied|No match|File Not Found)\)"; then
-                echo "mod $mod unavailable, blacklisting" >&2
+                err "mod $mod unavailable, blacklisting"
                 grep -qx "$mod" "$config/blacklist" || echo "$mod" >> "$config/blacklist"
                 continue
             fi
             failed+=("$mod")
         done
 
-        [ "''${#failed[@]}" -eq 0 ] && return 0
+        [ "''${#failed[@]}" -eq 0 ] && { log "mods downloaded"; return 0; }
 
-        echo "retrying ''${#failed[@]} failed mods: ''${failed[*]}"
+        mods=("''${failed[@]}")
         cmds=""
-        for mod in "''${failed[@]}"; do
+        for mod in "''${mods[@]}"; do
             cmds="$cmds +workshop_download_item 221100 $mod"
         done
-        mods=("''${failed[@]}")
         attempt=$((attempt + 1))
         sleep 3
     done
 
-    echo "failed to download: ''${mods[*]}" >&2
+    err "failed to download: ''${mods[*]}"
     return 1
 }
 
 launch() {
     local ip="$1" port="$2" mods="$3" mod_arg=""
 
-    if [ -z "$mods" ]; then
-        echo "warning: no mod list found for this server, it may still require mods" >&2
+    if [ -z "$ip" ] || [ -z "$port" ]; then
+        err "invalid ip/port"
+        return 1
+    fi
+
+    log "verifying server..."
+    local verify
+    verify=$(api "/servers?filter[game]=dayz&filter[search]=$ip:$port" | jq -r --arg ip "$ip" --arg port "$port" '.data[]? | select(.attributes.ip == $ip and (.attributes.port | tostring) == $port) | "\(.attributes.name) [\(.attributes.players)/\(.attributes.maxPlayers)]"' | head -n 1)
+    if [ -n "$verify" ]; then
+        log "found: $verify"
     else
-        echo "server requires: $mods"
-        download_mods "$mods" || echo "warning: some mods failed to download, launching anyway" >&2
+        err "server not found on battlemetrics, connecting anyway"
+    fi
+
+    if [ -z "$mods" ]; then
+        log "no mod list found, may still require mods"
+    else
+        log "downloading mods..."
+        download_mods "$mods" || err "some mods failed, launching anyway"
         for m in $(echo "$mods" | tr ',' '\n'); do
             [ -z "$m" ] && continue
             local folder=$(find "$workshop/$m" -maxdepth 1 -type d -name "@*" 2>/dev/null | head -n 1)
             [ -z "$folder" ] && folder="$workshop/$m"
-            find "$folder" -iname "*.pbo" 2>/dev/null | grep -q . || { echo "missing pbo for $m, skipping" >&2; continue; }
+            find "$folder" -iname "*.pbo" 2>/dev/null | grep -q . || { err "missing pbo for $m, skipping"; continue; }
             mod_arg="$mod_arg;z:''${folder//\//\\}"
         done
         mod_arg="''${mod_arg#;}"
@@ -178,24 +195,25 @@ launch() {
     echo "$(date '+%F %T') connect=$ip:$port $mod_arg" >> "$logfile"
 
     if ! pgrep -x steam >/dev/null; then
-        echo "starting steam"
+        log "starting steam..."
         if [ ! -f "$loginmarker" ]; then
             if [ -n "$steampass" ]; then
-                steam -login "$steamuser" "$steampass" & disown
+                steam -login "$steamuser" "$steampass" >>"$config/steam.log" 2>&1 & disown
             else
-                steam -login "$steamuser" & disown
+                steam -login "$steamuser" >>"$config/steam.log" 2>&1 & disown
             fi
         else
-            steam & disown
+            steam >>"$config/steam.log" 2>&1 & disown
         fi
         while ! pgrep -x steam >/dev/null; do sleep 1; done
         sleep 5
     fi
 
+    log "connecting to $ip:$port..."
     if [ -n "$mod_arg" ]; then
-        steam -applaunch 221100 -noLauncher "-connect=$ip" "-port=$port" "$mod_arg"
+        steam -applaunch 221100 -noLauncher "-connect=$ip" "-port=$port" "$mod_arg" >>"$config/steam.log" 2>&1
     else
-        steam -applaunch 221100 -noLauncher "-connect=$ip" "-port=$port"
+        steam -applaunch 221100 -noLauncher "-connect=$ip" "-port=$port" >>"$config/steam.log" 2>&1
     fi
 }
 
@@ -209,12 +227,12 @@ pick_server() {
 save_favorite() {
     local ip="$1" port="$2" name="$3"
     if grep -qF "$ip$d$port$d" "$favfile"; then
-        echo "already saved" >&2
+        err "already saved"
         return
     fi
     local mods=$(get_mods "$ip" "$port")
     printf "%s%s%s%s%s%s%s\n" "$ip" "$d" "$port" "$d" "$mods" "$d" "$name" >> "$favfile"
-    echo "saved $name"
+    log "saved $name"
 }
 
 show_favorites() {
