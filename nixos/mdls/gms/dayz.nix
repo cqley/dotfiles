@@ -1,9 +1,253 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 let
   dayzDir = "${config.home.homeDirectory}/.local/share/Steam/steamapps/compatdata/221100/pfx/drive_c/users/steamuser/Documents/DayZ";
 in
 {
+  home.packages = [ (pkgs.writeShellApplication {
+    name = "meowz";
+    runtimeInputs = with pkgs; [ curl jq fzf steamcmd ];
+    excludeShellChecks = [ "SC2155" "SC2162" "SC2207" "SC2086" "SC2178" "SC2128" ];
+    text = ''
+
+config="$HOME/.config/dayz"
+favfile="$config/favorites"
+logfile="$config/last_launch.log"
+steamapps="$HOME/.local/share/Steam/steamapps"
+workshop="$steamapps/workshop/content/221100"
+d=$'\x1f'
+
+mkdir -p "$config"
+touch "$favfile"
+sed -i '/^[[:space:]]*$/d' "$favfile"
+awk -F"$d" 'NF==4' "$favfile" > "$favfile.tmp" && mv "$favfile.tmp" "$favfile"
+
+api() {
+    curl -sg -A "mozilla" "https://api.battlemetrics.com$1"
+}
+
+fetch_servers() {
+    local path="/servers?filter[game]=dayz&page[size]=100$1"
+    local pages=0
+    while [ -n "$path" ] && [ "$pages" -lt 4 ]; do
+        local resp=$(api "$path")
+        echo "$resp" | jq -e . >/dev/null 2>&1 || break
+        echo "$resp" | jq -r '.data[]? | "\(.id)|\(.attributes.ip):\(.attributes.port)|\(.attributes.name) [\(.attributes.players)/\(.attributes.maxPlayers)]"'
+        path=$(echo "$resp" | jq -r '.links.next // empty' | sed 's|.*battlemetrics.com||')
+        pages=$((pages + 1))
+    done
+}
+
+if [ "''${1:-}" = "--fetch" ]; then
+    fetch_servers "''${2:+&filter[search]=$2}"
+    exit 0
+fi
+
+steamuser=""
+[ -f "$config/steamuser" ] && steamuser=$(cat "$config/steamuser")
+if [ -z "$steamuser" ]; then
+    read -p "steam username: " steamuser
+    echo "$steamuser" > "$config/steamuser"
+fi
+
+get_mods_by_id() {
+    api "/servers/$1" | jq -r '.data?.attributes?.details?.modIds[]? // empty' | paste -sd, -
+}
+
+get_mods() {
+    local ip="$1" port="$2"
+    local m=$(curl -s "https://dayzsalauncher.com/api/v1/server/$ip:$port" | jq -r '.result?.mods[]?.steamWorkshopId // empty' | paste -sd, -)
+    if [ -z "$m" ]; then
+        local id=$(api "/servers?filter[game]=dayz&filter[search]=$ip:$port" | jq -r '.data[0]?.id // empty')
+        [ -n "$id" ] && m=$(get_mods_by_id "$id")
+    fi
+    echo "$m"
+}
+
+download_mods() {
+    local mods=($(echo "$1" | tr ',' '\n'))
+    [ "''${#mods[@]}" -eq 0 ] && return 0
+
+    touch "$config/blacklist"
+    local missing=()
+    for mod in "''${mods[@]}"; do
+        grep -qx "$mod" "$config/blacklist" && continue
+        find "$workshop/$mod" -iname "*.pbo" 2>/dev/null | grep -q . || missing+=("$mod")
+    done
+    [ "''${#missing[@]}" -eq 0 ] && { echo "all mods already present, skipping steamcmd"; return 0; }
+
+    local runner="steamcmd"
+    command -v steamcmd >/dev/null 2>&1 || { echo "steamcmd not found" >&2; return 1; }
+
+    mods=("''${missing[@]}")
+    local cmds=""
+    for mod in "''${mods[@]}"; do
+        cmds="$cmds +workshop_download_item 221100 $mod"
+    done
+
+    if pgrep -x steam >/dev/null; then
+        echo "closing steam client"
+        steam -shutdown
+        while pgrep -x steam >/dev/null; do sleep 1; done
+    fi
+
+    local attempt=1
+    while [ "$attempt" -le 4 ]; do
+        echo "downloading ''${#mods[@]} mods, attempt $attempt"
+        local out
+        out=$($runner +@sSteamCmdForcePlatformType linux -forceipv4 +login "$steamuser" $cmds +quit | tee /dev/tty)
+
+        local failed=()
+        for mod in "''${mods[@]}"; do
+            find "$workshop/$mod" -iname "*.pbo" 2>/dev/null | grep -q . && continue
+            if echo "$out" | grep -q "Download item $mod failed (Access Denied)"; then
+                echo "mod $mod access denied, not owned/available, skipping" >&2
+                grep -qx "$mod" "$config/blacklist" || echo "$mod" >> "$config/blacklist"
+                continue
+            fi
+            failed+=("$mod")
+        done
+
+        [ "''${#failed[@]}" -eq 0 ] && return 0
+
+        echo "retrying ''${#failed[@]} failed mods: ''${failed[*]}"
+        cmds=""
+        for mod in "''${failed[@]}"; do
+            cmds="$cmds +workshop_download_item 221100 $mod"
+        done
+        mods=("''${failed[@]}")
+        attempt=$((attempt + 1))
+        sleep 3
+    done
+
+    echo "failed to download: ''${mods[*]}" >&2
+    return 1
+}
+
+launch() {
+    local ip="$1" port="$2" mods="$3" mod_arg=""
+
+    if [ -z "$mods" ]; then
+        echo "warning: no mod list found for this server, it may still require mods" >&2
+    else
+        echo "server requires: $mods"
+        download_mods "$mods"
+        for m in $(echo "$mods" | tr ',' '\n'); do
+            [ -z "$m" ] && continue
+            local folder=$(find "$workshop/$m" -maxdepth 1 -type d -name "@*" 2>/dev/null | head -n 1)
+            [ -z "$folder" ] && folder="$workshop/$m"
+            find "$folder" -iname "*.pbo" 2>/dev/null | grep -q . || { echo "missing pbo for $m, skipping" >&2; continue; }
+            mod_arg="$mod_arg;z:''${folder//\//\\}"
+        done
+        mod_arg="''${mod_arg#;}"
+        [ -n "$mod_arg" ] && mod_arg="-mod=$mod_arg"
+        sleep 3
+    fi
+
+    echo "$(date '+%F %T') connect=$ip:$port $mod_arg" >> "$logfile"
+
+    if ! pgrep -x steam >/dev/null; then
+        echo "starting steam"
+        steam & disown
+        while ! pgrep -x steam >/dev/null; do sleep 1; done
+        sleep 5
+    fi
+
+    if [ -n "$mod_arg" ]; then
+        steam -applaunch 221100 -noLauncher "-connect=$ip" "-port=$port" "$mod_arg"
+    else
+        steam -applaunch 221100 -noLauncher "-connect=$ip" "-port=$port"
+    fi
+}
+
+pick_server() {
+    fzf --prompt="server> " --delimiter="|" --with-nth=3.. --layout=reverse \
+        --disabled --ansi \
+        --bind "start:reload:$0 --fetch" \
+        --bind "change:reload:sleep 0.4; $0 --fetch {q}"
+}
+
+save_favorite() {
+    local ip="$1" port="$2" name="$3"
+    if grep -qF "$ip$d$port$d" "$favfile"; then
+        echo "already saved" >&2
+        return
+    fi
+    local mods=$(get_mods "$ip" "$port")
+    printf "%s%s%s%s%s%s%s\n" "$ip" "$d" "$port" "$d" "$mods" "$d" "$name" >> "$favfile"
+    echo "saved $name"
+}
+
+show_favorites() {
+    grep -vE '^[[:space:]]*$' "$favfile" | fzf --prompt="fav> " --delimiter="$d" --with-nth=4 --layout=reverse
+}
+
+while true; do
+    action=$(printf "favorites\nbrowse\nadd manual\nremove\nrefresh mods\nquit\n" | fzf --prompt="dayz> " --layout=reverse)
+
+    case "$action" in
+        browse)
+            selection=$(pick_server)
+            [ -z "$selection" ] && continue
+            id=$(echo "$selection" | cut -d'|' -f1)
+            ip_port=$(echo "$selection" | cut -d'|' -f2)
+            name=$(echo "$selection" | cut -d'|' -f3- | sed 's/ \[[0-9]*\/[0-9]*\]$//')
+            ip=''${ip_port%%:*}
+            port=''${ip_port##*:}
+            confirm=$(printf "play\nsave to favorites\n" | fzf --prompt="$name> " --layout=reverse)
+            case "$confirm" in
+                play) mods=$(get_mods_by_id "$id"); launch "$ip" "$port" "$mods"; exit 0 ;;
+                "save to favorites") save_favorite "$ip" "$port" "$name"; show_favorites ;;
+            esac
+            ;;
+        favorites)
+            selection=$(show_favorites)
+            [ -z "$selection" ] && continue
+            ip=$(echo "$selection" | cut -d"$d" -f1)
+            port=$(echo "$selection" | cut -d"$d" -f2)
+            mods=$(echo "$selection" | cut -d"$d" -f3)
+            launch "$ip" "$port" "$mods"
+            exit 0
+            ;;
+        "add manual")
+            read -p "ip: " ip
+            read -p "port: " port
+            read -p "name: " name
+            save_favorite "$ip" "$port" "$name"
+            show_favorites
+            ;;
+        remove)
+            selection=$(show_favorites)
+            [ -z "$selection" ] && continue
+            grep -vF "$selection" "$favfile" | grep -vE '^[[:space:]]*$' > "$favfile.tmp" && mv "$favfile.tmp" "$favfile"
+            show_favorites
+            ;;
+        "refresh mods")
+            selection=$(show_favorites)
+            [ -z "$selection" ] && continue
+            ip=$(echo "$selection" | cut -d"$d" -f1)
+            port=$(echo "$selection" | cut -d"$d" -f2)
+            name=$(echo "$selection" | cut -d"$d" -f4)
+            mods=$(get_mods "$ip" "$port")
+            grep -vF "$selection" "$favfile" | grep -vE '^[[:space:]]*$' > "$favfile.tmp" && mv "$favfile.tmp" "$favfile"
+            printf "%s%s%s%s%s%s%s\n" "$ip" "$d" "$port" "$d" "$mods" "$d" "$name" >> "$favfile"
+            show_favorites
+            ;;
+        quit|"") break ;;
+    esac
+done
+    '';
+  }) ];
+
+  xdg.desktopEntries.meowz = {
+    name = "MeowZ";
+    comment = "dayz server launcher";
+    exec = "kitty -e meowz";
+    icon = "applications-games";
+    terminal = false;
+    categories = [ "Game" ];
+  };
+
   home.file."${dayzDir}/DayZ.cfg".text = ''
     language="English";
     adapter=-1;
