@@ -124,6 +124,7 @@
         property var masterRootItems: [
             { label: "cfg", sub: "cfg" },
             { label: "sts", sub: "sts" },
+            { label: "rcd", sub: "rcd" },
             { label: "wp",  sub: "wallpapers"  },
             { label: "pw",  sub: "pw"  }
         ]
@@ -159,6 +160,8 @@
         property var masterBarLookItems: [{ label: "float", barLook: "float" }, { label: "fill", barLook: "fill" }]
         property var masterWpItems:      []
         property string masterWpBuf:    ""
+        property var masterRcdOutItems: []
+        property string masterRcdOutBuf: ""
         property var masterPwItems: [
             { label: "lock",     cmd: ["hyprlock"]                                    },
             { label: "logout",   cmd: ["hyprctl", "dispatch", "hl.dsp.exit()"] },
@@ -166,8 +169,14 @@
             { label: "shutdown", cmd: ["systemctl", "poweroff"]                 }
         ]
 
+        function rcdItems() {
+            return recProc.running
+                ? [{ label: "stop", rcdStop: true }]
+                : [{ label: "start", sub: "rcdOutput" }]
+        }
+
         function masterItemsForLevel(l) {
-            let lookup = { cfg: masterCfgItems, sts: masterStsItems, animations: masterAnimationsItems, bar: masterBarItems, barPosition: masterBarPositionItems, barLayout: masterBarLayoutItems, barMode: masterBarModeItems, barLook: masterBarLookItems, wallpapers: masterWpItems, pw: masterPwItems }
+            let lookup = { cfg: masterCfgItems, sts: masterStsItems, animations: masterAnimationsItems, bar: masterBarItems, barPosition: masterBarPositionItems, barLayout: masterBarLayoutItems, barMode: masterBarModeItems, barLook: masterBarLookItems, wallpapers: masterWpItems, pw: masterPwItems, rcd: rcdItems(), rcdOutput: masterRcdOutItems }
             return lookup[l] ?? masterRootItems
         }
 
@@ -184,6 +193,10 @@
                 masterWpItems  = []; masterWpBuf = ""
                 masterCurrent  = []; masterFiltered = []
                 wpLsProc.running = true
+            } else if (l === "rcdOutput") {
+                masterRcdOutItems = []; masterRcdOutBuf = ""
+                masterCurrent     = []; masterFiltered = []
+                rcdMonProc.running = true
             } else {
                 masterCurrent  = masterItemsForLevel(l)
                 masterFiltered = masterCurrent
@@ -230,6 +243,19 @@
             if (item.wp !== undefined) {
                 mProc.command = ["bash", "-c", "colors \"$HOME/.wallpapers/" + item.wp + "\""]
                 mProc.running = true
+                masterClose(); return
+            }
+            if (item.rcdOut !== undefined) {
+                recProc.command = ["bash", "-c", "mkdir -p \"$HOME/videos\" && exec ${pkgs.gpu-screen-recorder}/bin/gpu-screen-recorder -w " + item.rcdOut + " -f 60 -q ultra -k hevc -fm cfr -a default_output -o \"$HOME/videos/meow_$(date +%Y%m%d_%H%M%S).mp4\""]
+                recProc.running = true
+                mProc3.command  = ["${pkgs.libnotify}/bin/notify-send", "-t", "2000", "meow", "started on " + item.rcdOut]
+                mProc3.running  = true
+                masterClose(); return
+            }
+            if (item.rcdStop !== undefined) {
+                recProc.signal(2)
+                mProc3.command = ["${pkgs.libnotify}/bin/notify-send", "-t", "2000", "meow", "saved"]
+                mProc3.running = true
                 masterClose(); return
             }
             if (item.barPos  !== undefined) { barSettings.position = item.barPos; masterClose(); return }
@@ -309,6 +335,30 @@
         Process { id: mProc; running: false }
         Process { id: mProc2; running: false }
         Process { id: mProc3; running: false }
+
+        Process { id: recProc; running: false }
+
+        Process {
+            id: rcdMonProc
+            command: ["bash", "-c", "${pkgs.hyprland}/bin/hyprctl -j monitors | ${pkgs.jq}/bin/jq -r '.[].name'"]
+            running: false
+            stdout: SplitParser {
+                splitMarker: ""
+                onRead: data => { root.masterRcdOutBuf += data }
+            }
+            onRunningChanged: {
+                if (!running && root.masterRcdOutBuf !== "") {
+                    let lines = root.masterRcdOutBuf.trim().split("\n").filter(l => l.length > 0)
+                    lines.push("portal")
+                    root.masterRcdOutItems = lines.map(l => ({ label: l, rcdOut: l }))
+                    root.masterRcdOutBuf   = ""
+                    if (root.activeMode === "master" && root.masterLevel === "rcdOutput") {
+                        root.masterCurrent  = root.masterRcdOutItems
+                        root.masterFiltered = root.masterRcdOutItems
+                    }
+                }
+            }
+        }
 
         Process {
             id: wpLsProc
