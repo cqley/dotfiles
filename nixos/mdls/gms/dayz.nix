@@ -6,7 +6,7 @@ in
 {
   home.packages = [ (pkgs.writeShellApplication {
     name = "meowz";
-    runtimeInputs = with pkgs; [ curl jq fzf steamcmd ];
+    runtimeInputs = with pkgs; [ curl jq fzf steam steamcmd ];
     excludeShellChecks = [ "SC2155" "SC2162" "SC2207" "SC2086" "SC2178" "SC2128" ];
     text = ''
 
@@ -50,6 +50,18 @@ if [ -z "$steamuser" ]; then
     echo "$steamuser" > "$config/steamuser"
 fi
 
+steampass=""
+[ -f "$config/steampass" ] && steampass=$(cat "$config/steampass")
+if [ -z "$steampass" ]; then
+    read -rsp "steam password (stored in plaintext, blank to skip caching): " steampass
+    echo
+    if [ -n "$steampass" ]; then
+        (umask 177; echo "$steampass" > "$config/steampass")
+    fi
+fi
+
+loginmarker="$config/steam_authenticated"
+
 get_mods_by_id() {
     api "/servers/$1" | jq -r '.data?.attributes?.details?.modIds[]? // empty' | paste -sd, -
 }
@@ -72,7 +84,7 @@ download_mods() {
     local missing=()
     for mod in "''${mods[@]}"; do
         grep -qx "$mod" "$config/blacklist" && continue
-        find "$workshop/$mod" -iname "*.pbo" 2>/dev/null | grep -q . || missing+=("$mod")
+        find "$workshop/$mod" -mindepth 1 2>/dev/null | grep -q . || missing+=("$mod")
     done
     [ "''${#missing[@]}" -eq 0 ] && { echo "all mods already present, skipping steamcmd"; return 0; }
 
@@ -95,13 +107,32 @@ download_mods() {
     while [ "$attempt" -le 4 ]; do
         echo "downloading ''${#mods[@]} mods, attempt $attempt"
         local out
-        out=$($runner +@sSteamCmdForcePlatformType linux -forceipv4 +login "$steamuser" $cmds +quit | tee /dev/tty)
+        local login_args=("$steamuser")
+        if [ ! -f "$loginmarker" ] && [ -n "$steampass" ]; then
+            login_args=("$steamuser" "$steampass")
+        fi
+        out=$($runner +@sSteamCmdForcePlatformType linux -forceipv4 +login "''${login_args[@]}" $cmds +quit | tee /dev/tty) || true
+
+        if echo "$out" | grep -q "Waiting for user info"; then
+            touch "$loginmarker"
+        fi
+        if echo "$out" | grep -q "FAILED"; then
+            rm -f "$loginmarker"
+        fi
+
+        if echo "$out" | grep -q "Invalid Password"; then
+            echo "cached password rejected, clearing cache" >&2
+            rm -f "$config/steampass"
+            steampass=""
+        fi
 
         local failed=()
         for mod in "''${mods[@]}"; do
-            find "$workshop/$mod" -iname "*.pbo" 2>/dev/null | grep -q . && continue
-            if echo "$out" | grep -q "Download item $mod failed (Access Denied)"; then
-                echo "mod $mod access denied, not owned/available, skipping" >&2
+            if echo "$out" | grep -q "Success. Downloaded item $mod "; then
+                continue
+            fi
+            if echo "$out" | grep -qE "Download item $mod failed \((Access Denied|No match|File Not Found)\)"; then
+                echo "mod $mod unavailable, blacklisting" >&2
                 grep -qx "$mod" "$config/blacklist" || echo "$mod" >> "$config/blacklist"
                 continue
             fi
@@ -131,7 +162,7 @@ launch() {
         echo "warning: no mod list found for this server, it may still require mods" >&2
     else
         echo "server requires: $mods"
-        download_mods "$mods"
+        download_mods "$mods" || echo "warning: some mods failed to download, launching anyway" >&2
         for m in $(echo "$mods" | tr ',' '\n'); do
             [ -z "$m" ] && continue
             local folder=$(find "$workshop/$m" -maxdepth 1 -type d -name "@*" 2>/dev/null | head -n 1)
@@ -148,7 +179,15 @@ launch() {
 
     if ! pgrep -x steam >/dev/null; then
         echo "starting steam"
-        steam & disown
+        if [ ! -f "$loginmarker" ]; then
+            if [ -n "$steampass" ]; then
+                steam -login "$steamuser" "$steampass" & disown
+            else
+                steam -login "$steamuser" & disown
+            fi
+        else
+            steam & disown
+        fi
         while ! pgrep -x steam >/dev/null; do sleep 1; done
         sleep 5
     fi
@@ -242,7 +281,7 @@ done
   xdg.desktopEntries.meowz = {
     name = "MeowZ";
     comment = "dayz server launcher";
-    exec = "kitty -e meowz";
+    exec = "kitty --hold -e meowz";
     icon = "applications-games";
     terminal = false;
     categories = [ "Game" ];
