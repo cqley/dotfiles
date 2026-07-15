@@ -64,6 +64,9 @@
 
             property string sysStats: "cpu --% | mem --%"
             property string micState: "󰍬"
+            
+            // Dynamic background color pulled from the colors script
+            property string bgColor:  "#1c1c1c" 
 
             function removeNotif(nid) {
                 for (let i = 0; i < notifModel.count; i++) {
@@ -322,8 +325,27 @@
                 }
             }
 
+            Process {
+                id: bgProc
+                command: ["sh", "-c", "grep '^background=' $HOME/.colors/colors.sh | cut -d'\"' -f2"]
+                running: true // Run once on startup to fetch the latest background
+                stdout: SplitParser {
+                    onRead: data => {
+                        let val = data.trim()
+                        if (val !== "") root.bgColor = val
+                    }
+                }
+            }
+
             Process { id: launchProc; running: false }
-            Process { id: mProc; running: false }
+            Process {
+                id: mProc
+                running: false
+                onRunningChanged: {
+                    // Refreshes the color automatically when a command (like your wallpaper script) completes
+                    if (!running) bgProc.running = true
+                }
+            }
             Process { id: recProc; running: false }
 
             Process {
@@ -410,7 +432,7 @@
 
             Rectangle {
                 anchors.fill: parent
-                color: "#1c1c1c"
+                color: root.bgColor // <-- Updated to use dynamic background
 
                 MText {
                     anchors.centerIn: parent
@@ -621,7 +643,7 @@
                 width:  root.implicitWidth
                 height: parent.height
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: "#1c1c1c"
+                color: root.bgColor // <-- Updated to use dynamic background
 
                 Column {
                     anchors.top: parent.top
@@ -716,7 +738,7 @@
                         id: toastRect
                         width:  Math.round(root.implicitWidth / 3)
                         height: 34
-                        color:  "#1c1c1c"
+                        color: root.bgColor // <-- Updated to use dynamic background
 
                         Rectangle {
                             visible: index > 0
@@ -848,7 +870,7 @@
             Rectangle {
                 id: calendarBox
                 anchors.fill: parent
-                color: "#1c1c1c"
+                color: root.bgColor // <-- Updated to use dynamic background
                 border.color: "#3c3c3c"
                 border.width: 1
                 focus: true
