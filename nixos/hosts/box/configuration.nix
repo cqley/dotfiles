@@ -100,19 +100,19 @@
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
 
+  services.keyd = {
+    enable = true;
+    keyboards.default = {
+      ids = [ "3554:fa09" ];
+      settings.main.capslock = "home";
+    };
+  };
+  
   users.users.cat = {
     isNormalUser = true;
     description = "cat";
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.fish;
-  };
-
-  services.keyd = {
-    enable = true;
-    keyboards.default = {
-      ids = [ "*" ];
-      settings.main.capslock = "home";
-    };
   };
 
 environment.systemPackages = with pkgs; [
