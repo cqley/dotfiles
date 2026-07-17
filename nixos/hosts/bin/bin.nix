@@ -24,7 +24,7 @@
       fish_prompt = {
         body = ''
           echo -n (prompt_pwd)
-          echo -n " > "
+          echo -n " $ "
         '';
       };
     };
