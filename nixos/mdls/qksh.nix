@@ -14,12 +14,23 @@
     Scope {
         id: configRoot
 
+        property string colorBuf: ""
+        property var colors: {
+            "special": { "background": "#1c1c1c", "foreground": "#c0c0c0", "cursor": "#c0c0c0" },
+            "colors": {
+                "color0": "#1c1c1c", "color1": "#cc2222", "color2": "#22cc22", "color3": "#cccc22",
+                "color4": "#2222cc", "color5": "#cc22cc", "color6": "#22cccc", "color7": "#aaaaaa",
+                "color8": "#555555", "color9": "#ff4444", "color10": "#44ff44", "color11": "#ffff44",
+                "color12": "#4444ff", "color13": "#ff44ff", "color14": "#44ffff", "color15": "#ffffff"
+            }
+        }
+
         component MText: Text {
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 12
             font.weight: Font.Normal
             renderType: Text.NativeRendering
-            color: "#aaaaaa"
+            color: root.colors.special.foreground
         }
 
         Settings {
@@ -64,9 +75,6 @@
 
             property string sysStats: "cpu --% | mem --%"
             property string micState: "󰍬"
-            
-            // Dynamic background color pulled from the colors script
-            property string bgColor:  "#1c1c1c" 
 
             function removeNotif(nid) {
                 for (let i = 0; i < notifModel.count; i++) {
@@ -127,17 +135,17 @@
             property int    masterSelected: 0
 
             property var masterRootItems: [
-                { label: "cfg", sub: "cfg" },
+                { label: "sys", sub: "sys" },
                 { label: "sts", sub: "sts" },
                 { label: "rcd", sub: "rcd" },
                 { label: "wp",  sub: "wallpapers"  },
                 { label: "pw",  sub: "pw"  }
             ]
-            property var masterCfgItems: [
+            property var masterSysItems: [
                 { label: "nix",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/configuration.nix"] },
                 { label: "box",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/box.nix"]           },
                 { label: "hypr",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/hypr.nix"]               },
-                { label: "shell", cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/qksh.nix"]               },
+                { label: "qksh",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/qksh.nix"]               },
                 { label: "vi",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/vi.nix"]                 }
             ]
             property var masterStsItems: [
@@ -172,7 +180,7 @@
             }
 
             function masterItemsForLevel(l) {
-                let lookup = { cfg: masterCfgItems, sts: masterStsItems, animations: masterAnimationsItems, bar: masterBarItems, barPosition: masterBarPositionItems, barLayout: masterBarLayoutItems, barMode: masterBarModeItems, barLook: masterBarLookItems, wallpapers: masterWpItems, pw: masterPwItems, rcd: rcdItems(), rcdOutput: masterRcdOutItems }
+                let lookup = { sys: masterSysItems, sts: masterStsItems, animations: masterAnimationsItems, bar: masterBarItems, barPosition: masterBarPositionItems, barLayout: masterBarLayoutItems, barMode: masterBarModeItems, barLook: masterBarLookItems, wallpapers: masterWpItems, pw: masterPwItems, rcd: rcdItems(), rcdOutput: masterRcdOutItems }
                 return lookup[l] ?? masterRootItems
             }
 
@@ -326,13 +334,19 @@
             }
 
             Process {
-                id: bgProc
-                command: ["sh", "-c", "grep '^background=' $HOME/.colors/colors.sh | cut -d'\"' -f2"]
-                running: true // Run once on startup to fetch the latest background
+                id: colorProc
+                command: ["sh", "-c", "cat $HOME/.colors/colors.json"]
+                running: true
                 stdout: SplitParser {
-                    onRead: data => {
-                        let val = data.trim()
-                        if (val !== "") root.bgColor = val
+                    splitMarker: ""
+                    onRead: data => { configRoot.colorBuf += data }
+                }
+                onRunningChanged: {
+                    if (!running && configRoot.colorBuf !== "") {
+                        try {
+                            configRoot.colors = JSON.parse(configRoot.colorBuf)
+                        } catch(e) { console.log("Failed to parse colors") }
+                        configRoot.colorBuf = ""
                     }
                 }
             }
@@ -341,10 +355,7 @@
             Process {
                 id: mProc
                 running: false
-                onRunningChanged: {
-                    // Refreshes the color automatically when a command (like your wallpaper script) completes
-                    if (!running) bgProc.running = true
-                }
+                onRunningChanged: if (!running) colorProc.running = true
             }
             Process { id: recProc; running: false }
 
@@ -432,12 +443,13 @@
 
             Rectangle {
                 anchors.fill: parent
-                color: root.bgColor // <-- Updated to use dynamic background
+                color: configRoot.colors.special.background
 
                 MText {
                     anchors.centerIn: parent
-                    visible:        root.activeMode === "none" || root.activeMode === "calendar"
-                    text:           barSettings.centerMode === "performance" ? root.sysStats : ""
+                    visible: root.activeMode === "none" || root.activeMode === "calendar"
+                    text: barSettings.centerMode === "performance" ? root.sysStats : ""
+                    color: configRoot.colors.special.foreground 
                 }
 
                 RowLayout {
@@ -465,17 +477,17 @@
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    color: parent.isUrgent ? "#cc2222"
-                                         : parent.isActive ? "#dddddd"
-                                         : parent.hovered  ? "#2a2a2a"
+                                    color: parent.isUrgent ? configRoot.colors.colors.color1 
+                                         : parent.isActive ? configRoot.colors.special.foreground 
+                                         : parent.hovered  ? configRoot.colors.colors.color8 
                                          : "transparent"
                                 }
                                 MText {
                                     anchors.centerIn: parent
-                                    color: parent.isUrgent ? "#ffffff"
-                                         : parent.isActive ? "#000000"
-                                         : parent.hovered  ? "#c0c0c0"
-                                         : "#888888"
+                                    color: parent.isUrgent ? configRoot.colors.special.background 
+                                         : parent.isActive ? configRoot.colors.special.background 
+                                         : parent.hovered  ? configRoot.colors.special.foreground 
+                                         : configRoot.colors.colors.color7 
                                     text: parent.kanji
                                 }
                                 MouseArea {
@@ -501,7 +513,7 @@
 
                             MText {
                                 Layout.alignment: Qt.AlignVCenter
-                                color: "#555555"
+                                color: configRoot.colors.colors.color7
                                 text: root.activeMode === "launcher" ? ">" : root.masterStack.concat([root.masterLevel]).join(" >")
                             }
 
@@ -513,7 +525,7 @@
                                 verticalAlignment: TextInput.AlignVCenter
                                 font.family:    "JetBrainsMono Nerd Font"
                                 font.pixelSize: 12
-                                color:          "#c0c0c0"
+                                color: configRoot.colors.special.foreground
                                 focus:          root.activeMode === "launcher" || root.activeMode === "master"
 
                                 onTextChanged: {
@@ -544,7 +556,7 @@
                             MText {
                                 Layout.alignment:   Qt.AlignVCenter
                                 Layout.rightMargin: 4
-                                color: "#555555"
+                                color: configRoot.colors.colors.color7
                                 visible: root.activeMode === "launcher" ? root.launcherTopApp !== null : (root.activeMode === "master" ? root.masterFiltered.length > 0 : false)
                                 text: root.activeMode === "launcher" ? (root.launcherTopApp?.name ?? "") : (root.activeMode === "master" && root.masterSelected < root.masterFiltered.length ? (root.masterFiltered[root.masterSelected]?.label ?? "") : "")
                             }
@@ -567,6 +579,7 @@
                                     id: micText
                                     anchors.centerIn: parent
                                     text: root.micState
+                                    color: configRoot.colors.special.foreground
                                 }
 
                                 MouseArea {
@@ -587,13 +600,13 @@
                         Rectangle {
                             anchors.horizontalCenter: parent.left
                             width: 1; height: parent.height
-                            color: "#3c3c3c"
+                            color: configRoot.colors.colors.color8
                         }
                         MText {
                             id: clockText
                             anchors.centerIn:   parent
                             font.letterSpacing: 0.02 * 11
-                            color: "#c0c0c0"
+                            color: configRoot.colors.special.foreground
                             text:  Qt.formatDateTime(new Date(), "dd/MM | HH:mm:ss")
 
                             Timer {
@@ -643,7 +656,7 @@
                 width:  root.implicitWidth
                 height: parent.height
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: root.bgColor // <-- Updated to use dynamic background
+                color: configRoot.colors.special.background
 
                 Column {
                     anchors.top: parent.top
@@ -656,7 +669,7 @@
                         Rectangle {
                             width:  parent.width
                             height: root.masterLevel === "wallpapers" ? 38 : 22
-                            color:  root.masterSelected === index ? "#2a2a2a" : "transparent"
+                            color:  root.masterSelected === index ? configRoot.colors.colors.color8 : "transparent"
 
                             Image {
                                 visible: root.masterLevel === "wallpapers"
@@ -674,14 +687,14 @@
                                 anchors.left:           parent.left
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 2; height: root.masterLevel === "wallpapers" ? 22 : 12
-                                color: "#dddddd"
+                                color: configRoot.colors.colors.color4
                             }
 
                             MText {
                                 anchors.verticalCenter: parent.verticalCenter
                                 x:                      root.masterLevel === "wallpapers" ? 64 : 14
                                 text:                   modelData?.label ?? ""
-                                color: root.masterSelected === index ? "#dddddd" : "#666666"
+                                color: root.masterSelected === index ? configRoot.colors.special.foreground : configRoot.colors.colors.color7
                             }
 
                             MText {
@@ -690,7 +703,7 @@
                                 anchors.rightMargin:    12
                                 visible:                modelData?.sub !== undefined
                                 text:                   "›"
-                                color: root.masterSelected === index ? "#888888" : "#333333"
+                                color: root.masterSelected === index ? configRoot.colors.special.foreground : configRoot.colors.colors.color8
                             }
 
                             MouseArea {
@@ -738,20 +751,20 @@
                         id: toastRect
                         width:  Math.round(root.implicitWidth / 3)
                         height: 34
-                        color: root.bgColor // <-- Updated to use dynamic background
+                        color: configRoot.colors.special.background
 
                         Rectangle {
                             visible: index > 0
                             anchors.top: parent.top
                             width: parent.width; height: 1
-                            color: "#2a2a2a"
+                            color: configRoot.colors.colors.color8
                         }
 
                         Rectangle {
                             anchors.left:           parent.left
                             anchors.verticalCenter: parent.verticalCenter
                             width: 2; height: 18
-                            color: "#dddddd"
+                            color: configRoot.colors.colors.color3
                         }
 
                         Column {
@@ -767,7 +780,7 @@
                                 text:           model.summary !== "" ? model.summary : model.app
                                 font.pixelSize: 11
                                 font.weight:    Font.Medium
-                                color:          "#dddddd"
+                                color:          configRoot.colors.special.foreground
                                 elide:          Text.ElideRight
                             }
 
@@ -776,7 +789,7 @@
                                 width:          parent.width
                                 text:           model.body
                                 font.pixelSize: 10
-                                color:          "#666666"
+                                color:          configRoot.colors.colors.color7
                                 elide:          Text.ElideRight
                             }
                         }
@@ -870,8 +883,8 @@
             Rectangle {
                 id: calendarBox
                 anchors.fill: parent
-                color: root.bgColor // <-- Updated to use dynamic background
-                border.color: "#3c3c3c"
+                color: configRoot.colors.special.background
+                border.color: configRoot.colors.colors.color8
                 border.width: 1
                 focus: true
 
@@ -892,7 +905,7 @@
 
                         MText {
                             text: calendarOverlay.title
-                            color: "#aaaaaa"
+                            color: configRoot.colors.special.foreground
                         }
 
                         Item { Layout.fillWidth: true }
@@ -902,7 +915,7 @@
 
                             MText {
                                 text: "<"
-                                color: prevMouse.containsMouse ? "#ffffff" : "#666666"
+                                color: prevMouse.containsMouse ? configRoot.colors.special.foreground : configRoot.colors.colors.color7
                                 MouseArea {
                                     id: prevMouse
                                     anchors.fill: parent
@@ -913,7 +926,7 @@
 
                             MText {
                                 text: ">"
-                                color: nextMouse.containsMouse ? "#ffffff" : "#666666"
+                                color: nextMouse.containsMouse ? configRoot.colors.special.foreground : configRoot.colors.colors.color7
                                 MouseArea {
                                     id: nextMouse
                                     anchors.fill: parent
@@ -935,7 +948,7 @@
                                 width: 22; height: 14
                                 horizontalAlignment: Text.AlignHCenter
                                 text: modelData
-                                color: "#666666"
+                                color: configRoot.colors.colors.color4
                             }
                         }
                     }
@@ -952,12 +965,14 @@
                                 width: 22; height: 22
                                 property bool isHovered: dayMouse.containsMouse
 
-                                color: modelData.today ? "#444444" : (isHovered ? "#333333" : "transparent")
+                                color: modelData.today ? configRoot.colors.special.foreground : (isHovered ? configRoot.colors.colors.color8 : "transparent")
 
                                 MText {
                                     anchors.centerIn: parent
                                     text: modelData.d
-                                    color: modelData.today ? "#ffffff" : (isHovered ? "#ffffff" : (modelData.cur ? "#aaaaaa" : "#444444"))
+                                    color: modelData.today ? configRoot.colors.special.background 
+                                         : (isHovered ? configRoot.colors.special.foreground 
+                                         : (modelData.cur ? configRoot.colors.special.foreground : configRoot.colors.colors.color8))
                                 }
 
                                 MouseArea {
