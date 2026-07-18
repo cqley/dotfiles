@@ -133,15 +133,13 @@ environment.systemPackages = with pkgs; [
     zathura
   ];
 
-  fonts.packages = with pkgs; [
-    corefonts
-    noto-fonts
-    noto-fonts-cjk-sans
-    google-fonts
-    nerd-fonts.jetbrains-mono
-    noto-fonts-color-emoji
-    twemoji-color-font
-  ];
+fonts.packages = with pkgs; [
+  cherry
+  noto-fonts
+  noto-fonts-cjk-sans
+  noto-fonts-color-emoji
+  nerd-fonts.jetbrains-mono
+];
 
 documentation.enable = false;
 documentation.man.enable = false;
