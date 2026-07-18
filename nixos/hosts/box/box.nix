@@ -95,7 +95,7 @@
   gtk = {
     enable = true;
     theme = { name = "Adwaita-dark"; package = pkgs.gnome-themes-extra; };
-    font = { name = "cherry"; size = 10; };
+    font = { name = "MonaspiceNe Nerd Font Mono"; size = 11; };
   };
 
   qt = {
