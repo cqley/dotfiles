@@ -144,9 +144,10 @@
             property var masterSysItems: [
                 { label: "nix",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/configuration.nix"] },
                 { label: "box",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/box.nix"]           },
-                { label: "wm",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/wm.nix"]                   },
+                { label: "wm",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/wm.nix"]                 },
                 { label: "qksh",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/qksh.nix"]               },
-                { label: "vi",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/vi.nix"]                 }
+                { label: "vi",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/vi.nix"]                 },
+                { label: "yazi",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/yazi.nix"]               },
             ]
             property var masterStsItems: [
                 { label: "animations", sub: "animations" },
@@ -167,8 +168,8 @@
             property var masterRcdOutItems: []
             property string masterRcdOutBuf: ""
             property var masterPwItems: [
-                { label: "lock",     cmd: ["hyprlock"]                                    },
-                { label: "logout",   cmd: ["hyprctl", "dispatch", "hl.dsp.exit()"] },
+                { label: "lock",     cmd: [""]                                      },
+                { label: "logout",   cmd: ["hyprctl", "dispatch", "hl.dsp.exit()"]  },
                 { label: "reboot",   cmd: ["systemctl", "reboot"]                   },
                 { label: "shutdown", cmd: ["systemctl", "poweroff"]                 }
             ]
