@@ -55,8 +55,8 @@
       shell fish
       shell_integration enabled
 
-      font_family JetBrainsMono Nerd Font
-      font_size 11
+      font_family cherry
+      font_size 10
       
       cursor_trail 3
       cursor_trail_decay 0.1 0.4
@@ -95,7 +95,7 @@
   gtk = {
     enable = true;
     theme = { name = "Adwaita-dark"; package = pkgs.gnome-themes-extra; };
-    font = { name = "MonaspiceNe Nerd Font Mono"; size = 11; };
+    font = { name = "cherry"; size = 10; };
   };
 
   qt = {
