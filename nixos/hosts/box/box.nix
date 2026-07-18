@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ../../mdls/hypr.nix
+    ../../mdls/wm.nix
     ../../mdls/qksh.nix
     ../../mdls/vi.nix
     ../../mdls/yazi.nix
