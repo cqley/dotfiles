@@ -144,7 +144,7 @@
             property var masterSysItems: [
                 { label: "nix",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/configuration.nix"] },
                 { label: "box",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/box.nix"]           },
-                { label: "hypr",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/hypr.nix"]               },
+                { label: "wm",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/wm.nix"]                   },
                 { label: "qksh",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/qksh.nix"]               },
                 { label: "vi",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/vi.nix"]                 }
             ]
