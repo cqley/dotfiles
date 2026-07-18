@@ -29,7 +29,7 @@
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 25565 ];
+    allowedTCPPorts = [ 25565 4533 ];
     allowedUDPPorts = [ 51820 ];
     trustedInterfaces = [ "wg0" ];
   };
@@ -130,6 +130,15 @@
     };
   };
 
+  services.navidrome = {
+    enable = true;
+    settings = {
+      Address = "0.0.0.0";
+      Port = 4533;
+      MusicFolder = "/var/lib/navidrome/music";
+    };
+  };
+  
   services.nginx = {
     enable = true;
     virtualHosts."5.231.118.254" = {
