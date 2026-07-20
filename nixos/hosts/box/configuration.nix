@@ -86,10 +86,11 @@
     jack.enable = true;
   };
 
+  services.mullvad-vpn.enable = true;
+  services.udisks2.enable = true;
   programs.hyprland.enable = true;
   programs.fish.enable = true;
   programs.dconf.enable = true;
-  services.udisks2.enable = true;
   programs.steam.enable = true;
   programs.steam.extraCompatPackages = with pkgs; [
     proton-ge-bin
