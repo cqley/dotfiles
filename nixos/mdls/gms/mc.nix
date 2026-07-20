@@ -45,7 +45,7 @@
         MinecraftWinWidth = 854;
         ModDependenciesDisabled = false;
         ModMetadataDisabled = false;
-        MoveModsFromDownloadsDir = false;
+        MoveModsFromDownloadsDir = true;
         NumberOfConcurrentDownloads = 6;
         NumberOfConcurrentTasks = 10;
         NumberOfManualRetries = 1;
@@ -66,9 +66,9 @@
         ShowModIncompat = false;
         SkinsDir = "skins";
         SkipModpackUpdatePrompt = false;
-        StatusBarVisible = true;
+        StatusBarVisible = false;
         TheCat = false;
-        ToolbarsLocked = false;
+        ToolbarsLocked = true;
         UseDiscreteGpu = false;
         UseNativeGLFW = false;
         UseNativeOpenAL = false;
