@@ -24,7 +24,6 @@
 
       local mod = "SUPER"
       local terminal = "kitty"
-      local filemanager = "kitty yazi"
       local browser = "helium"
 
       hl.on("hyprland.start", function ()
@@ -32,7 +31,7 @@
           hl.exec_cmd("bash -c 'awww-daemon & sleep 0.5 && awww clear --outputs DP-1'")
           hl.exec_cmd("wl-paste --type text --watch cliphist store")
           hl.exec_cmd("wl-paste --type image --watch cliphist store")
-          hl.exec_cmd("setpriv --ambient-caps -all quickshell -c ~/.config/quickshell")
+          hl.exec_cmd("quickshell -p ~/.config/quickshell/shell.qml")
       end)
 
       config({
@@ -125,7 +124,6 @@
       bind(mod .. " + T", exec("quickshell ipc call master toggle"))
       bind(mod .. " + W", exec("quickshell ipc call bar toggle"))
       bind(mod .. " + X", exec("quickshell ipc call mic toggle"))
-      bind(mod .. " + E", exec(filemanager))
       bind(mod .. " + B", exec(browser))
       bind(mod .. " + C", window.close())
       bind(mod .. " + V", window.float({ action = "toggle" }))
