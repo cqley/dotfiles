@@ -25,7 +25,7 @@
         EnableMangoHud = false;
         Env = "{}";
         FallbackMRBlockedMods = 2;
-        IconTheme = "pe_colored";
+        IconTheme = "OSX";
         IconsDir = "icons";
         IgnoreJavaCompatibility = false;
         IgnoreJavaWizard = false;
@@ -34,6 +34,7 @@
         InstanceDir = "instances";
         JavaArchitecture = "64";
         JavaDir = "java";
+        JavaPath = /nix/store/55mw2ly3dxh5008li72rx6ilc75hgvr0-openjdk-8u502-b01/bin/java
         Language = "en_US";
         LastHostname = "box";
         LaunchMaximized = false;
