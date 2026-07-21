@@ -3,7 +3,7 @@
 | system            | description                                                                     |
 |------------------ | ------------------------------------------------------------------------------- |
 | `box`             | desktop pc at my desk, its a box                                                |
-| `bed`             | laptop, portable bed [ config wip ]                                             |
+| `bed`             | laptop, portable bed                                                            |
 | `bin`             | server, cool server                                                             |
 
 - operating system: https://nixos.org/
