@@ -2,13 +2,13 @@
 
 {
   imports = [
-    ../../mdls/wm.nix
-    ../../mdls/qksh.nix
-    ../../mdls/vi.nix
-    ../../mdls/yazi.nix
-    ../../mdls/btop.nix
-    ../../mdls/colors.nix
-    ../../mdls/notes.nix
+    ../../modules/wm.nix
+    ../../modules/qksh.nix
+    ../../modules/vi.nix
+    ../../modules/yazi.nix
+    ../../modules/btop.nix
+    ../../modules/colors.nix
+    ../../modules/notes.nix
   ];
 
   home.username = "cat";
