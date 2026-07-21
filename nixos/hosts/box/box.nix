@@ -80,15 +80,15 @@
     enable = true;
     gtk.enable = true;
     x11.enable = true;
-    package = pkgs.kdePackages.breeze;
-    name = "breeze_cursors";
-    size = 16;
+    package = pkgs.apple-cursor;
+    name = "macOS";
+    size = 20;
   };
 
   home.sessionVariables = {
-    XCURSOR_THEME = "breeze_cursors";
-    XCURSOR_SIZE = "16";
-    QT_CURSOR_SIZE = "16";
+    XCURSOR_THEME = "macOS";
+    XCURSOR_SIZE = "20";
+    QT_CURSOR_SIZE = "20";
     QT_QPA_PLATFORMTHEME = "kde";
   };
 
@@ -103,15 +103,6 @@
     platformTheme.name = "kde";
     style.name = "breeze";
   };
-
-  "kdeglobals".source = pkgs.runCommand "breeze-dark-white" {} ''
-    sed -E \
-      -e 's/61,174,233/255,255,255/g' \
-      -e 's/24,115,204/255,255,255/g' \
-      -e 's/AccentColor=[0-9]+,[0-9]+,[0-9]+/AccentColor=255,255,255/' \
-      "${pkgs.kdePackages.breeze}/share/color-schemes/BreezeDark.colors" > $out
-  '';
-};
 
   programs.home-manager.enable = true;
 }
