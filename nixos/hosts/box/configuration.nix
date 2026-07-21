@@ -147,5 +147,3 @@ documentation.man.enable = false;
 
   system.stateVersion = "26.05";
 }
-
-hi
