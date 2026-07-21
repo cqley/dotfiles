@@ -8,7 +8,7 @@
     ../../mdls/yazi.nix
     ../../mdls/btop.nix
     ../../mdls/colors.nix
-    ../../mdls/obsidian.nix
+    ../../mdls/notes.nix
   ];
 
   home.username = "cat";
@@ -29,7 +29,7 @@
       fish_prompt = {
         body = ''
           echo -n (prompt_pwd)
-          echo -n " % "
+          echo -n ' & '
         '';
       };
     };
@@ -101,17 +101,6 @@
     platformTheme.name = "kde";
     style.name = "breeze";
   };
-
-  xdg.configFile = {
-  "dolphinrc".text = ''
-    [General]
-    ShowPreview=true
-    ViewMode=1
-
-    [MainWindow]
-    MenuBar=Disabled
-    ToolBarsMovable=Disabled
-  '';
 
   "kdeglobals".source = pkgs.runCommand "breeze-dark-white" {} ''
     sed -E \
