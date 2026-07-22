@@ -9,6 +9,7 @@
     ../../modules/btop.nix
     ../../modules/colors.nix
     ../../modules/notes.nix
+    ../../modules/layout.nix
     ../../modules/games/dayz.nix
     ../../modules/games/mc.nix
   ];
