@@ -2,15 +2,15 @@
 
 {
   imports = [
-    ../../mdls/wm.nix
-    ../../mdls/qksh.nix
-    ../../mdls/vi.nix
-    ../../mdls/yazi.nix
-    ../../mdls/btop.nix
-    ../../mdls/colors.nix
-    ../../mdls/notes.nix
-    ../../mdls/gms/dayz.nix
-    ../../mdls/gms/mc.nix
+    ../../modules/wm.nix
+    ../../modules/qksh.nix
+    ../../modules/vi.nix
+    ../../modules/yazi.nix
+    ../../modules/btop.nix
+    ../../modules/colors.nix
+    ../../modules/notes.nix
+    ../../modules/games/dayz.nix
+    ../../modules/games/mc.nix
   ];
 
   home.username = "cat";
