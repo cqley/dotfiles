@@ -2,8 +2,8 @@
 
 {
   imports = [
-    ../../mdls/vi.nix
-    ../../mdls/btop.nix
+    ../../modules/vi.nix
+    ../../modules/btop.nix
   ];
 
   home.username = "cat";
