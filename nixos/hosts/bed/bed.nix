@@ -4,6 +4,7 @@
   imports = [
     components/wm.nix
     components/qksh.nix
+    ../../modules/layout.nix
     ../../modules/vi.nix
     ../../modules/yazi.nix
     ../../modules/btop.nix
