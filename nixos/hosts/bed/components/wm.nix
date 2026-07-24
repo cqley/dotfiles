@@ -23,7 +23,7 @@
 
       local mod = "SUPER"
       local terminal = "kitty"
-      local browser = "helium"
+      local browser = "chromium"
 
       hl.on("hyprland.start", function ()
           hl.exec_cmd("systemctl --user start hyprpolkitagent")
