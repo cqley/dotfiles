@@ -19,7 +19,7 @@
       local window = dsp.window
       local workspace = dsp.workspace
 
-      hl.monitor({ output = "eDP-1", mode = "2560x1600@90", position = "0x0", scale = 1.50 })
+      hl.monitor({ output = "eDP-1", mode = "2560x1600@90", position = "0x0", scale = 1.60 })
 
       local mod = "SUPER"
       local terminal = "kitty"
