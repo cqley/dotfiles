@@ -143,7 +143,7 @@
             ]
             property var masterSysItems: [
                 { label: "nix",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/bed/configuration.nix"]   },
-                { label: "box",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/bed/bed.nix"]             },
+                { label: "bed",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/bed/bed.nix"]             },
                 { label: "wm",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/bed/components/wm.nix"]   },
                 { label: "qksh",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/bed/components/qksh.nix"] },
                 { label: "vi",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/modules/vi.nix"]                },
