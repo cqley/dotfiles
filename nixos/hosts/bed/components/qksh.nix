@@ -66,7 +66,7 @@
             property string layout:   barSettings.layout
             property string look:     barSettings.look
 
-            screen: Quickshell.screens.find(s => s.name === "HDMI-A-1") ?? Quickshell.screens[0]
+            screen: Quickshell.screens[0]
 
             property string activeMode:  "none"
             property bool   autoHideBar: false
@@ -75,6 +75,7 @@
 
             property string sysStats: "cpu --% | mem --%"
             property string micState: "󰍬"
+            property string batState: "--%"
 
             function removeNotif(nid) {
                 for (let i = 0; i < notifModel.count; i++) {
@@ -408,6 +409,7 @@
                 onTriggered: {
                     if (barSettings.centerMode === "performance" && !sysProc.running) sysProc.running = true
                     if (!micProc.running) micProc.running = true
+                    if (!batProc.running) batProc.running = true
                 }
             }
 
@@ -426,6 +428,15 @@
                 running: false
                 stdout: SplitParser {
                     onRead: data => { root.micState = data.trim() }
+                }
+            }
+
+            Process {
+                id: batProc
+                command: ["sh", "-c", "b=$(cat /sys/class/power_supply/BAT*/capacity 2>/dev/null | head -n1); echo \"''${b:-0}%\""]
+                running: false
+                stdout: SplitParser {
+                    onRead: data => { root.batState = data.trim() }
                 }
             }
 
@@ -596,6 +607,30 @@
 
                     Item {
                         Layout.fillHeight: true
+                        implicitWidth: 36
+
+                        Row {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: parent.right
+                            anchors.rightMargin: 6
+                            spacing: 2
+
+                            Item {
+                                width: 28
+                                height: 22
+
+                                MText {
+                                    id: batText
+                                    anchors.centerIn: parent
+                                    text: root.batState
+                                    color: configRoot.colors.special.foreground
+                                }
+                            }
+                        }
+                    }
+
+                    Item {
+                        Layout.fillHeight: true
                         implicitWidth: clockText.implicitWidth + 20
 
                         Rectangle {
@@ -631,7 +666,7 @@
             id: masterOverlay
             visible: root.activeMode === "master" && root.masterFiltered.length > 0
 
-            screen: Quickshell.screens.find(s => s.name === "HDMI-A-1") ?? Quickshell.screens[0]
+            screen: Quickshell.screens[0]
 
             anchors.top:    root.position === "top"
             anchors.bottom: root.position === "bottom"
@@ -723,7 +758,7 @@
             id: notifOverlay
             visible: notifModel.count > 0
 
-            screen: Quickshell.screens.find(s => s.name === "HDMI-A-1") ?? Quickshell.screens[0]
+            screen: Quickshell.screens[0]
 
             anchors.top:    root.position === "top"
             anchors.bottom: root.position === "bottom"
@@ -815,7 +850,7 @@
             id: calendarOverlay
             visible: root.activeMode === "calendar"
 
-            screen: Quickshell.screens.find(s => s.name === "HDMI-A-1") ?? Quickshell.screens[0]
+            screen: Quickshell.screens[0]
 
             anchors.top:    root.position === "top"
             anchors.bottom: root.position === "bottom"
