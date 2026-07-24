@@ -110,6 +110,7 @@
     neovim
     git
     kitty
+    ungoogled-chromium
     wl-clipboard
     libnotify
     quickshell
