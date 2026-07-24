@@ -57,8 +57,6 @@
       font_family cherry
       font_size 10
       
-      cursor_trail 3
-      cursor_trail_decay 0.1 0.4
       cursor_shape beam
       cursor_blink_interval 1
       shell_integration no-cursor
