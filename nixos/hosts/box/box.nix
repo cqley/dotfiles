@@ -2,8 +2,8 @@
 
 {
   imports = [
-    ../components/wm.nix
-    ../components/qksh.nix
+    components/wm.nix
+    components/qksh.nix
     ../../modules/vi.nix
     ../../modules/yazi.nix
     ../../modules/btop.nix
