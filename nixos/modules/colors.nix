@@ -8,9 +8,14 @@ let
     colors="$HOME/.colors"
     mkdir -p "$colors"
 
-    awww_out=$(${pkgs.awww}/bin/awww img -o HDMI-A-1 "$1" --transition-type grow --transition-duration 1.5 --transition-fps 120 2>&1)
-    [ $? -ne 0 ] && echo "colors: awww: $awww_out" >&2
-    ${pkgs.awww}/bin/awww clear --outputs DP-1 2>/dev/null
+    if hyprctl monitors 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q "HDMI-A-1"; then
+        awww_out=$(${pkgs.awww}/bin/awww img -o HDMI-A-1 "$1" --transition-type grow --transition-duration 1.5 --transition-fps 120 2>&1)
+        [ $? -ne 0 ] && echo "colors: awww: $awww_out" >&2
+        ${pkgs.awww}/bin/awww clear --outputs DP-1 2>/dev/null
+    else
+        awww_out=$(${pkgs.awww}/bin/awww img "$1" --transition-type grow --transition-duration 1.5 --transition-fps 120 2>&1)
+        [ $? -ne 0 ] && echo "colors: awww: $awww_out" >&2
+    fi
 
     raw=$(${pkgs.imagemagick}/bin/magick "$1" -thumbnail 50x50^ -colors 8 -unique-colors txt:- 2>&1)
 
