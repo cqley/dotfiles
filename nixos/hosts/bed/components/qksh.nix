@@ -142,12 +142,12 @@
                 { label: "pw",  sub: "pw"  }
             ]
             property var masterSysItems: [
-                { label: "nix",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/configuration.nix"] },
-                { label: "box",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/box.nix"]           },
-                { label: "wm",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/wm.nix"]                 },
-                { label: "qksh",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/qksh.nix"]               },
-                { label: "vi",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/vi.nix"]                 },
-                { label: "yazi",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/mdls/yazi.nix"]               },
+                { label: "nix",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/bed/configuration.nix"]   },
+                { label: "box",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/bed/bed.nix"]             },
+                { label: "wm",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/bed/components/wm.nix"]   },
+                { label: "qksh",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/bed/components/qksh.nix"] },
+                { label: "vi",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/modules/vi.nix"]                },
+                { label: "yazi",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/modules/yazi.nix"]              },
             ]
             property var masterStsItems: [
                 { label: "animations", sub: "animations" },
