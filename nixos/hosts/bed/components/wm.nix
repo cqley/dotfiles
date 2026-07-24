@@ -72,7 +72,14 @@
               follow_mouse = 1,
               sensitivity = 0,
               force_no_accel = false,
-              touchpad = { natural_scroll = false },
+              touchpad = {
+                  natural_scroll = true,
+                  tap_to_click = true,
+                  disable_while_typing = true,
+                  clickfinger_behavior = true,
+                  middle_button_emulation = true,
+                  tap_and_drag = true,
+              },
           },
       })
 
