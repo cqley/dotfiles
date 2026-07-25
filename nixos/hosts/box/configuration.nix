@@ -3,7 +3,7 @@
 {
   imports = [ 
     ./hardware-configuration.nix
-    ./modules/wireguard.nix
+    ./components/wireguard.nix
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
