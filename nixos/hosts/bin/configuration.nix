@@ -31,13 +31,6 @@
   networking.hostName = "bin";
   networking.networkmanager.enable = true;
 
-  networking.firewall = {
-    enable = true;
-    allowedTCPPorts = [ 25565 4533 ];
-    allowedUDPPorts = [ 51820 ];
-    trustedInterfaces = [ "wg0" ];
-  };
-
   networking.useDHCP = false;
   networking.interfaces.ens18.ipv4.addresses = [{
     address = "5.231.118.254";
@@ -48,19 +41,6 @@
     interface = "ens18";
   };
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
-
-  networking.wireguard.interfaces.wg0 = {
-    ips = [ "10.0.0.1/24" ];
-    listenPort = 51820;
-    privateKeyFile = "/var/lib/wireguard/privatekey";
-
-    peers = [
-      {
-        publicKey = "BdQ1JoAFU5XGFfZDNPEUk78zI8yLLReSWdVbeETwNX4=";
-        allowedIPs = [ "10.0.0.2/32" ];
-      }
-    ];
-  };
 
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
