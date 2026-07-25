@@ -2,7 +2,8 @@
 
 {
   imports = [ 
-    ./hardware-configuration.nix 
+    ./hardware-configuration.nix
+    ./components/pufferpanel.nix
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
