@@ -8,14 +8,12 @@
     privateKeyFile = "/var/lib/wireguard/privatekey";
 
     peers = [
-      # PC
       {
         publicKey = "BdQ1JoAFU5XGFfZDNPEUk78zI8yLLReSWdVbeETwNX4=";
         allowedIPs = [ "10.0.0.2/32" ];
       }
-      # Laptop
       {
-        publicKey = " ";
+        publicKey = "W4Je63gh8f6LsSZfIj8PT7x0ktp9+dyDkPNBqvAmBUs=";
         allowedIPs = [ "10.0.0.3/32" ];
       }
     ];
