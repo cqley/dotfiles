@@ -3,7 +3,9 @@
 {
   imports = [ 
     ./hardware-configuration.nix
+    ./components/cgit.nix
     ./components/pufferpanel.nix
+    ./components/music.nix
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
