@@ -2,7 +2,8 @@
 
 {
   imports = [ 
-    ./hardware-configuration.nix 
+    ./hardware-configuration.nix
+    components/wireguard.nix
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -29,21 +30,6 @@
   
   networking.hostName = "bed";
   networking.networkmanager.enable = true;
-  networking.firewall.allowedUDPPorts = [ 51820 ];
-
-  networking.wireguard.interfaces.wg0 = {
-    ips = [ "10.0.0.3/24" ];
-    privateKeyFile = "/var/lib/wireguard/privatekey";
-
-    peers = [
-      {
-        publicKey = "P2LPLBq/6qXE5Mmv8DJUviU89Yu5s7vysbyWncnZchY=";
-        allowedIPs = [ "10.0.0.0/24" ];
-        endpoint = "5.231.118.254:51820";
-        persistentKeepalive = 25;
-      }
-    ];
-  };
 
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
