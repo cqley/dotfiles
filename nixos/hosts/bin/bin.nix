@@ -2,8 +2,6 @@
 
 {
   imports = [
-    components/cgit.nix
-    components/music.nix
     ../../modules/vi.nix
     ../../modules/btop.nix
   ];
