@@ -4,7 +4,6 @@
   imports = [
     components/cgit.nix
     components/music.nix
-    components/pufferpanel.nix
     ../../modules/vi.nix
     ../../modules/btop.nix
   ];
