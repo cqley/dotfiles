@@ -99,61 +99,6 @@
     };
   };
 
-  services.pufferpanel = {
-    enable = true;
-    extraPackages = [
-      pkgs.jdk25
-      (pkgs.writeShellScriptBin "java25" "exec ${pkgs.jdk25}/bin/java \"$@\"")
-    ];
-    environment = {
-      PUFFER_WEB_HOST = "10.0.0.1:8080";
-      PUFFER_DAEMON_SFTP_HOST = "10.0.0.1:5657";
-    };
-  };
-
-  services.cgit.blind = {
-    enable = true;
-    scanPath = "/srv/git";
-    nginx.virtualHost = "5.231.118.254";
-    gitHttpBackend = {
-      enable = true;
-      checkExportOkFiles = false;
-    };
-    settings = {
-      root-title = "blind";
-      root-desc = "";
-      enable-index-owner = 0;
-      enable-commit-graph = 1;
-      enable-log-filecount = 1;
-      enable-log-linecount = 1;
-      clone-prefix = "http://5.231.118.254";
-    };
-  };
-
-  services.navidrome = {
-    enable = true;
-    settings = {
-      Address = "0.0.0.0";
-      Port = 4533;
-      MusicFolder = "/var/lib/navidrome/music";
-    };
-  };
-  
-  services.nginx = {
-    enable = true;
-    virtualHosts."5.231.118.254" = {
-    };
-  };
-
-  systemd.services.pocketbase = {
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    serviceConfig = {
-      ExecStart = "${pkgs.pocketbase}/bin/pocketbase serve --http=10.0.0.1:8090 --dir=/var/lib/pocketbase --publicDir=/var/lib/pocketbase/pb_public";
-      Restart = "no";
-    };
-  };
-
   documentation.enable = false;
   documentation.man.enable = false;
 
