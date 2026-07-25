@@ -3,6 +3,7 @@
 {
   imports = [ 
     ./hardware-configuration.nix
+    ./components/wireguard.nix
     ./components/cgit.nix
     ./components/pufferpanel.nix
     ./components/music.nix
