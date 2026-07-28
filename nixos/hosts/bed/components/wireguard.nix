@@ -5,7 +5,7 @@
 
     peers = [
       {
-        publicKey = "W4Je63gh8f6LsSZfIj8PT7x0ktp9+dyDkPNBqvAmBUs=";
+        publicKey = "P2LPLBq/6qXE5Mmv8DJUviU89Yu5s7vysbyWncnZchY=";
         endpoint = "5.231.118.254:51820";
         allowedIPs = [ "10.0.0.0/24" ];
         persistentKeepalive = 25;
