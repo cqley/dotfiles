@@ -12,7 +12,7 @@
         "bed" = { id = "HYGBY4A-MQBNOTJ-HDMRQ7K-YQZK3UC-UD2KEDH-TNTZMXE-67DWKQV-UTMFOA6"; };
       };
       folders = {
-        "air" = {
+        "shared" = {
           path = "/home/cat/shared";
           devices = [ "box" "bed" ];
         };
