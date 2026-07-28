@@ -4,6 +4,7 @@
   imports = [ 
     ./hardware-configuration.nix
     ./components/wireguard.nix
+    ../../modules/shared.nix
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
