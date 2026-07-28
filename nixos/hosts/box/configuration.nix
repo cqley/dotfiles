@@ -127,8 +127,6 @@ environment.systemPackages = with pkgs; [
     hyprshot
     hyprpolkitagent
     wireguard-tools
-    kdePackages.breeze
-    kdePackages.qtsvg
     imv
     mpv
     wiremix
