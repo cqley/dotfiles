@@ -78,7 +78,7 @@
                   disable_while_typing = true,
                   clickfinger_behavior = true,
                   middle_button_emulation = true,
-                  tap_and_drag = true,
+                  tap_and_drag = false,
                   scroll_factor = 0.2,
               },
           },
