@@ -104,12 +104,11 @@
     hyprshot
     hyprpolkitagent
     wireguard-tools
-    kdePackages.breeze
-    kdePackages.qtsvg
     imv
     mpv
     wiremix
     zathura
+    libreoffice
   ];
 
   fonts.packages = with pkgs; [
