@@ -79,6 +79,7 @@
                   clickfinger_behavior = true,
                   middle_button_emulation = true,
                   tap_and_drag = true,
+                  scroll_factor = 0.2,
               },
           },
       })
