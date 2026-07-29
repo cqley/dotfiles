@@ -76,6 +76,9 @@
     wireguard-tools
   ];
 
+  services.nscd.enable = false;
+  system.nssModules = lib.mkForce [];
+  
   services.openssh = {
     enable = true;
     settings = {
