@@ -7,6 +7,7 @@
     ./components/cgit.nix
     ./components/pufferpanel.nix
     ./components/music.nix
+    ./components/immich.nix
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
