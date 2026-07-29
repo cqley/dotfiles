@@ -129,7 +129,7 @@
       bind(mod .. " + V", window.float({ action = "toggle" }))
       bind(mod .. " + F", window.fullscreen({ mode = 0 }))
       bind(mod .. " + Tab", focus({ workspace = "m+1" }))
-      bind("ALT + S", exec('hyprshot -o .pictures/screenshots/ -f "$(date +%y-%m-%d_%H-%M-%S).png" -s -m region'))
+      bind("ALT + S", exec('hyprshot -o pictures/screenshots/ -f "$(date +%y-%m-%d_%H-%M-%S).png" -s -m region'))
 
       bind(mod .. " + left",  focus({ direction = "left" }))
       bind(mod .. " + right", focus({ direction = "right" }))
