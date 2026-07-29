@@ -4,7 +4,7 @@
     virtualHosts."5.231.118.254" = {};
   };
 
-  services.cgit.blind = {
+  services.cgit.tight = {
     enable = true;
     scanPath = "/srv/git";
     nginx.virtualHost = "5.231.118.254";
@@ -13,7 +13,7 @@
       checkExportOkFiles = false;
     };
     settings = {
-      root-title = "blind";
+      root-title = "tight";
       root-desc = "";
       enable-index-owner = 0;
       enable-commit-graph = 1;
