@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 {
   xdg.configFile."quickshell/shell.qml".text = ''
@@ -33,6 +33,28 @@
             color: root.colors.special.foreground
         }
 
+        component OverlayPanel: PanelWindow {
+            id: overlayPanel
+            property bool fullWidth: false
+            property bool keyboardExclusive: false
+
+            screen: Quickshell.screens.find(s => s.name === "HDMI-A-1") ?? Quickshell.screens[0]
+
+            anchors.top:    root.position === "top"
+            anchors.bottom: root.position === "bottom"
+            anchors.left:   fullWidth
+            anchors.right:  true
+
+            margins.top:    root.position === "top"    ? (root.look === "fill" ? 0 : 6) : 0
+            margins.bottom: root.position === "bottom" ? (root.look === "fill" ? 0 : 6) : 0
+            margins.right:  fullWidth ? 0 : (root.look === "fill" ? 0 : root.layout === "full" ? 6 : Math.round(((root.screen?.width ?? 1920) - 820) / 2))
+
+            exclusiveZone: 0
+            color: "transparent"
+            WlrLayershell.layer: WlrLayershell.Overlay
+            WlrLayershell.keyboardFocus: keyboardExclusive && visible ? WlrLayershell.Exclusive : WlrLayershell.None
+        }
+
         Settings {
             id: barSettings
             location: Qt.resolvedUrl("state")
@@ -47,7 +69,7 @@
             keepOnReload: true
 
             onNotification: (notif) => {
-                if (notifModel.count >= 3) notifModel.remove(0)
+                if (notifModel.count >= 5) notifModel.remove(0)
                 notifModel.append({
                     nid:     notif.id,
                     app:     notif.appName   ?? "",
@@ -75,6 +97,20 @@
 
             property string sysStats: "cpu --% | mem --%"
             property string micState: "󰍬"
+            property string wifiState: "󰤪"
+            property bool   wifiRadioEnabled: true
+            property string wifiConnectedSSID: ""
+            property var    wifiNetworks: []
+            property string wifiBuf: ""
+            property string wifiConnectError: ""
+            property string wifiErrBuf: ""
+            property int    wifiSelectedIndex: -1
+            property bool   wifiConnecting: false
+
+            function wifiOpen() {
+                root.activeMode = "wifi"
+                if (!wifiListProc.running) wifiListProc.running = true
+            }
 
             function removeNotif(nid) {
                 for (let i = 0; i < notifModel.count; i++) {
@@ -85,24 +121,28 @@
                 }
             }
 
+            function clearAllNotifs() {
+                notifModel.clear()
+            }
+
             function launcherRefilter(q) {
                 if (!DesktopEntries.applications?.values || q === "") {
                     launcherTopApp = null; return
                 }
                 let ql = q.toLowerCase()
-                let m = DesktopEntries.applications.values.filter(
-                    a => a?.name && a.name.toLowerCase().includes(ql)
-                ).sort((a, b) => {
-                    let an = a.name.toLowerCase()
-                    let bn = b.name.toLowerCase()
-                    if (an === ql) return -1
-                    if (bn === ql) return 1
-                    if (an.startsWith(ql) && !bn.startsWith(ql)) return -1
-                    if (!an.startsWith(ql) && bn.startsWith(ql)) return 1
-                    if (an.includes("steam") && an !== "steam" && bn === "steam") return 1
-                    if (bn.includes("steam") && bn !== "steam" && an === "steam") return -1
-                    return an.localeCompare(bn)
-                })
+                let m = DesktopEntries.applications.values
+                    .map(a => ({ app: a, n: a?.name ? a.name.toLowerCase() : "" }))
+                    .filter(a => a.n.includes(ql))
+                    .sort((a, b) => {
+                        if (a.n === ql) return -1
+                        if (b.n === ql) return 1
+                        if (a.n.startsWith(ql) && !b.n.startsWith(ql)) return -1
+                        if (!a.n.startsWith(ql) && b.n.startsWith(ql)) return 1
+                        if (a.n.includes("steam") && a.n !== "steam" && b.n === "steam") return 1
+                        if (b.n.includes("steam") && b.n !== "steam" && a.n === "steam") return -1
+                        return a.n.localeCompare(b.n)
+                    })
+                    .map(a => a.app)
                 launcherTopApp = m.length > 0 ? m[0] : null
             }
 
@@ -122,7 +162,7 @@
             function launcherAccept() {
                 if (launcherTopApp !== null) {
                     let exec = launcherTopApp.execString.replace(/%[fFuU]/g, "")
-                    launchProc.command = ["systemd-run", "--user", "--scope", "bash", "-c", exec]
+                    launchProc.command = ["${pkgs.systemd}/bin/systemd-run", "--user", "--scope", "${pkgs.bash}/bin/bash", "-c", exec]
                     launchProc.running = true
                 }
                 launcherClose()
@@ -134,45 +174,47 @@
             property var    masterFiltered: []
             property int    masterSelected: 0
 
-            property var masterRootItems: [
-                { label: "sys", sub: "sys" },
-                { label: "sts", sub: "sts" },
-                { label: "rcd", sub: "rcd" },
-                { label: "wp",  sub: "wallpapers"  },
-                { label: "pw",  sub: "pw"  }
-            ]
-            property var masterSysItems: [
-                { label: "nix",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/configuration.nix"]   },
-                { label: "box",   cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/box.nix"]             },
-                { label: "wm",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/components/wm.nix"]   },
-                { label: "qksh",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/hosts/box/components/qksh.nix"] },
-                { label: "vi",    cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/modules/vi.nix"]                },
-                { label: "yazi",  cmd: ["kitty", "-e", "sudo", "nvim", "/etc/nixos/modules/yazi.nix"]              },
-            ]
-            property var masterStsItems: [
-                { label: "animations", sub: "animations" },
-                { label: "bar", sub: "bar" }
-            ]
-            property var masterAnimationsItems: [
-                { label: "fade", cmd: ["sh", "-c", "hyprctl eval 'hl.animation({ leaf = \"workspaces\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })' && hyprctl eval 'hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })' && ${pkgs.libnotify}/bin/notify-send animations fade"] },
-                { label: "vertical", cmd: ["sh", "-c", "hyprctl eval 'hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" })' && hyprctl eval 'hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" })' && ${pkgs.libnotify}/bin/notify-send animations vertical"] },
-                { label: "horizontal", cmd: ["sh", "-c", "hyprctl eval 'hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" })' && hyprctl eval 'hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" })' && ${pkgs.libnotify}/bin/notify-send animations horizontal"] }
-            ]
-            property var masterBarItems:     [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }]
-            property var masterBarPositionItems:  [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }]
-            property var masterBarLayoutItems: [{ label: "minimal", barLyt: "minimal" }, { label: "full", barLyt: "full" }]
-            property var masterBarModeItems: [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }]
-            property var masterBarLookItems: [{ label: "float", barLook: "float" }, { label: "fill", barLook: "fill" }]
+            property var masterTree: {
+                "root": [
+                    { label: "sys", sub: "sys" },
+                    { label: "sts", sub: "sts" },
+                    { label: "rcd", sub: "rcd" },
+                    { label: "wp",  sub: "wallpapers"  },
+                    { label: "pw",  sub: "pw"  }
+                ],
+                "sys": [
+                    { label: "nix",   cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/box/configuration.nix"]   },
+                    { label: "box",   cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/box/box.nix"]             },
+                    { label: "wm",    cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/box/components/wm.nix"]   },
+                    { label: "qksh",  cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/box/components/qksh.nix"] },
+                    { label: "vi",    cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/modules/vi.nix"]                },
+                    { label: "yazi",  cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/modules/yazi.nix"]              }
+                ],
+                "sts": [
+                    { label: "animations", sub: "animations" },
+                    { label: "bar", sub: "bar" }
+                ],
+                "animations": [
+                    { label: "fade", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"workspaces\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })' && ${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })' && ${pkgs.libnotify}/bin/notify-send animations fade"] },
+                    { label: "vertical", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" })' && ${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" })' && ${pkgs.libnotify}/bin/notify-send animations vertical"] },
+                    { label: "horizontal", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" })' && ${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" })' && ${pkgs.libnotify}/bin/notify-send animations horizontal"] }
+                ],
+                "bar":         [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }],
+                "barPosition": [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }],
+                "barLayout":   [{ label: "minimal", barLyt: "minimal" }, { label: "full", barLyt: "full" }],
+                "barMode":     [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }],
+                "barLook":     [{ label: "float", barLook: "float" }, { label: "fill", barLook: "fill" }],
+                "pw": [
+                    { label: "lock",     cmd: [""]                                      },
+                    { label: "logout",   cmd: ["${pkgs.hyprland}/bin/hyprctl", "dispatch", "hl.dsp.exit()"]  },
+                    { label: "reboot",   cmd: ["${pkgs.systemd}/bin/systemctl", "reboot"]                   },
+                    { label: "shutdown", cmd: ["${pkgs.systemd}/bin/systemctl", "poweroff"]                 }
+                ]
+            }
             property var masterWpItems:      []
             property string masterWpBuf:    ""
             property var masterRcdOutItems: []
             property string masterRcdOutBuf: ""
-            property var masterPwItems: [
-                { label: "lock",     cmd: [""]                                      },
-                { label: "logout",   cmd: ["hyprctl", "dispatch", "hl.dsp.exit()"]  },
-                { label: "reboot",   cmd: ["systemctl", "reboot"]                   },
-                { label: "shutdown", cmd: ["systemctl", "poweroff"]                 }
-            ]
 
             function rcdItems() {
                 return recProc.running
@@ -181,8 +223,10 @@
             }
 
             function masterItemsForLevel(l) {
-                let lookup = { sys: masterSysItems, sts: masterStsItems, animations: masterAnimationsItems, bar: masterBarItems, barPosition: masterBarPositionItems, barLayout: masterBarLayoutItems, barMode: masterBarModeItems, barLook: masterBarLookItems, wallpapers: masterWpItems, pw: masterPwItems, rcd: rcdItems(), rcdOutput: masterRcdOutItems }
-                return lookup[l] ?? masterRootItems
+                if (l === "wallpapers") return masterWpItems
+                if (l === "rcdOutput")  return masterRcdOutItems
+                if (l === "rcd")        return rcdItems()
+                return masterTree[l] ?? masterTree["root"]
             }
 
             function masterRefilter(q) {
@@ -197,11 +241,11 @@
                 if (l === "wallpapers") {
                     masterWpItems  = []; masterWpBuf = ""
                     masterCurrent  = []; masterFiltered = []
-                    wpLsProc.running = true
+                    if (!wpLsProc.running) wpLsProc.running = true
                 } else if (l === "rcdOutput") {
                     masterRcdOutItems = []; masterRcdOutBuf = ""
                     masterCurrent     = []; masterFiltered = []
-                    rcdMonProc.running = true
+                    if (!rcdMonProc.running) rcdMonProc.running = true
                 } else {
                     masterCurrent  = masterItemsForLevel(l)
                     masterFiltered = masterCurrent
@@ -246,12 +290,12 @@
                     return
                 }
                 if (item.wp !== undefined) {
-                    mProc.command = ["bash", "-c", "colors \"$HOME/.wallpapers/" + item.wp + "\""]
+                    mProc.command = ["${pkgs.bash}/bin/bash", "-c", "colors \"${config.home.homeDirectory}/pictures/wallpapers/" + item.wp + "\""]
                     mProc.running = true
                     masterClose(); return
                 }
                 if (item.rcdOut !== undefined) {
-                    recProc.command = ["bash", "-c", "mkdir -p \"$HOME/videos\" && exec ${pkgs.gpu-screen-recorder}/bin/gpu-screen-recorder -w " + item.rcdOut + " -f 60 -q ultra -k hevc -fm cfr -a default_output -o \"$HOME/videos/meow_$(date +%Y%m%d_%H%M%S).mp4\""]
+                    recProc.command = ["${pkgs.bash}/bin/bash", "-c", "${pkgs.coreutils}/bin/mkdir -p \"$HOME/videos\" && exec ${pkgs.gpu-screen-recorder}/bin/gpu-screen-recorder -w " + item.rcdOut + " -f 60 -q ultra -k hevc -fm cfr -a default_output -o \"$HOME/videos/meow_$(${pkgs.coreutils}/bin/date +%Y%m%d_%H%M%S).mp4\""]
                     recProc.running = true
                     mProc.command  = ["${pkgs.libnotify}/bin/notify-send", "-t", "2000", "meow", "started on " + item.rcdOut]
                     mProc.running  = true
@@ -272,13 +316,13 @@
             }
 
             onActiveModeChanged: {
-                if (activeMode !== "none" && activeMode !== "calendar" && typeof barInput !== "undefined") {
+                if (activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" && typeof barInput !== "undefined") {
                     barInput.text = ""
                     barInput.forceActiveFocus()
                 }
             }
 
-            WlrLayershell.keyboardFocus: activeMode !== "none" && activeMode !== "calendar" ? WlrLayershell.Exclusive : WlrLayershell.None
+            WlrLayershell.keyboardFocus: activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" ? WlrLayershell.Exclusive : WlrLayershell.None
 
             anchors.top:    position === "top"
             anchors.bottom: position === "bottom"
@@ -320,6 +364,13 @@
                 }
             }
             IpcHandler {
+                target: "wifi"
+                function toggle(): void {
+                    if (root.activeMode === "wifi") root.activeMode = "none"
+                    else root.wifiOpen()
+                }
+            }
+            IpcHandler {
                 target: "mic"
                 function toggle(): void {
                     micActProc.command = ["${pkgs.wireplumber}/bin/wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]
@@ -336,7 +387,7 @@
 
             Process {
                 id: colorProc
-                command: ["sh", "-c", "cat $HOME/.colors/colors.json"]
+                command: ["${pkgs.coreutils}/bin/cat", "${config.home.homeDirectory}/.colors/colors.json"]
                 running: true
                 stdout: SplitParser {
                     splitMarker: ""
@@ -346,7 +397,9 @@
                     if (!running && configRoot.colorBuf !== "") {
                         try {
                             configRoot.colors = JSON.parse(configRoot.colorBuf)
-                        } catch(e) { console.log("Failed to parse colors") }
+                        } catch(e) {
+                            console.error("failed to parse colors.json: " + e.message)
+                        }
                         configRoot.colorBuf = ""
                     }
                 }
@@ -362,7 +415,7 @@
 
             Process {
                 id: rcdMonProc
-                command: ["bash", "-c", "${pkgs.hyprland}/bin/hyprctl -j monitors | ${pkgs.jq}/bin/jq -r '.[].name'"]
+                command: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl -j monitors | ${pkgs.jq}/bin/jq -r '.[].name'"]
                 running: false
                 stdout: SplitParser {
                     splitMarker: ""
@@ -384,7 +437,7 @@
 
             Process {
                 id: wpLsProc
-                command: ["bash", "-c", "ls $HOME/.wallpapers/"]
+                command: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.coreutils}/bin/ls ${config.home.homeDirectory}/pictures/wallpapers/"]
                 running: false
                 stdout: SplitParser {
                     splitMarker: ""
@@ -404,17 +457,17 @@
             }
 
             Timer {
-                interval: 2000; running: true; repeat: true; triggeredOnStart: true
+                interval: 10000; running: true; repeat: true; triggeredOnStart: true
                 onTriggered: {
-                    if (barSettings.centerMode === "performance" && !sysProc.running) sysProc.running = true
                     if (!micProc.running) micProc.running = true
+                    if (!wifiStatusProc.running) wifiStatusProc.running = true
                 }
             }
 
             Process {
                 id: sysProc
-                command: ["sh", "-c", "echo \"cpu $(grep 'cpu ' /proc/stat | awk '{print int(($2+$4)*100/($2+$4+$5))}')% | mem $(free | awk '/Mem:/ {print int($3/$2*100)}')%\""]
-                running: false
+                command: ["${pkgs.bash}/bin/bash", "-c", "while true; do echo \"cpu $(${pkgs.gnugrep}/bin/grep 'cpu ' /proc/stat | ${pkgs.gawk}/bin/awk '{print int(($2+$4)*100/($2+$4+$5))}')% | mem $(${pkgs.procps}/bin/free | ${pkgs.gawk}/bin/awk '/Mem:/ {print int($3/$2*100)}')%\"; ${pkgs.coreutils}/bin/sleep 10; done"]
+                running: barSettings.centerMode === "performance"
                 stdout: SplitParser {
                     onRead: data => { root.sysStats = data.trim() }
                 }
@@ -422,7 +475,7 @@
 
             Process {
                 id: micProc
-                command: ["sh", "-c", "${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | awk '{print ($3==\"[MUTED]\"?\"󰍭\":\"󰍬\")}'"]
+                command: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | ${pkgs.gawk}/bin/awk '{print ($3==\"[MUTED]\"?\"󰍭\":\"󰍬\")}'"]
                 running: false
                 stdout: SplitParser {
                     onRead: data => { root.micState = data.trim() }
@@ -433,6 +486,93 @@
                 id: micActProc
                 running: false
                 onRunningChanged: if (!running) micProc.running = true
+            }
+
+            Process {
+                id: wifiStatusProc
+                command: ["${pkgs.bash}/bin/bash", "-c", "r=$(${pkgs.networkmanager}/bin/nmcli -t radio wifi); s=$(${pkgs.networkmanager}/bin/nmcli -t -f active,ssid dev wifi | ${pkgs.gnugrep}/bin/grep '^yes:' | ${pkgs.coreutils}/bin/cut -d: -f2-); echo \"$r:$s\""]
+                running: false
+                stdout: SplitParser {
+                    onRead: data => {
+                        let parts = data.trim().split(":")
+                        root.wifiRadioEnabled = (parts[0] === "enabled")
+                        let ssid = parts.length > 1 ? parts.slice(1).join(":") : ""
+                        if (ssid.length > 0) {
+                            root.wifiConnectedSSID = ssid
+                            root.wifiState = "󰤨"
+                        } else {
+                            root.wifiConnectedSSID = ""
+                            root.wifiState = "󰤭"
+                        }
+                    }
+                }
+            }
+
+            Process {
+                id: wifiToggleProc
+                running: false
+                onRunningChanged: {
+                    if (!running) {
+                        wifiStatusProc.running = true
+                        wifiListProc.running = true
+                    }
+                }
+            }
+
+            Process {
+                id: wifiListProc
+                command: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.networkmanager}/bin/nmcli -t -f ssid,signal,security dev wifi list | ${pkgs.gawk}/bin/awk -F: 'length($1)>0 {print $1\":\"$2\":\"($3?\"\":\" \")}'"]
+                running: false
+                stdout: SplitParser {
+                    splitMarker: ""
+                    onRead: data => { root.wifiBuf += data }
+                }
+                onRunningChanged: {
+                    if (!running && root.wifiBuf !== "") {
+                        let lines = root.wifiBuf.trim().split("\n").filter(l => l.length > 0)
+                        let seen = new Set()
+                        let items = []
+                        for (let l of lines) {
+                            let parts = l.split(":")
+                            let ssid = parts[0]
+                            let signal = parseInt(parts[1] || "0") || 0
+                            let sec = parts[2] || ""
+                            if (!seen.has(ssid)) {
+                                seen.add(ssid)
+                                items.push({ label: ssid, signal: signal, sec: sec, connected: ssid === root.wifiConnectedSSID })
+                            }
+                        }
+                        items.sort((a, b) => {
+                            if (a.connected !== b.connected) return a.connected ? -1 : 1
+                            return b.signal - a.signal
+                        })
+                        root.wifiNetworks = items
+                        root.wifiBuf = ""
+                    }
+                }
+            }
+
+            Process {
+                id: wifiConnectProc
+                running: false
+                stderr: SplitParser {
+                    splitMarker: ""
+                    onRead: data => { root.wifiErrBuf += data }
+                }
+                onRunningChanged: {
+                    root.wifiConnecting = running
+                    if (running) root.wifiErrBuf = ""
+                }
+                onExited: (exitCode, exitStatus) => {
+                    if (exitCode === 0) {
+                        root.wifiConnectError = ""
+                        root.activeMode = "none"
+                    } else {
+                        root.wifiConnectError = root.wifiErrBuf.trim() !== "" ? root.wifiErrBuf.trim() : "connection failed"
+                    }
+                    wifiStatusProc.running = true
+                    wifiListProc.running = true
+                }
             }
 
             FontMetrics {
@@ -448,7 +588,7 @@
 
                 MText {
                     anchors.centerIn: parent
-                    visible: root.activeMode === "none" || root.activeMode === "calendar"
+                    visible: root.activeMode === "none" || root.activeMode === "calendar" || root.activeMode === "wifi"
                     text: barSettings.centerMode === "performance" ? root.sysStats : ""
                     color: configRoot.colors.special.foreground 
                 }
@@ -566,14 +706,13 @@
 
                     Item {
                         Layout.fillHeight: true
-                        implicitWidth: 26
+                        implicitWidth: 16
 
                         Row {
                             anchors.centerIn: parent
-                            spacing: 2
 
                             Item {
-                                width: 20
+                                width: 16
                                 height: 22
 
                                 MText {
@@ -588,6 +727,38 @@
                                     onClicked: {
                                         micActProc.command = ["${pkgs.wireplumber}/bin/wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]
                                         micActProc.running = true
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Item {
+                        Layout.fillHeight: true
+                        implicitWidth: 16
+                        Layout.rightMargin: 6
+
+                        Row {
+                            anchors.centerIn: parent
+
+                            Item {
+                                width: 16
+                                height: 22
+
+                                MText {
+                                    id: wifiText
+                                    anchors.centerIn: parent
+                                    text: root.wifiState
+                                    color: root.wifiConnecting ? configRoot.colors.colors.color3
+                                         : root.wifiConnectedSSID !== "" ? configRoot.colors.colors.color2
+                                         : configRoot.colors.special.foreground
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        if (root.activeMode === "wifi") root.activeMode = "none"
+                                        else root.wifiOpen()
                                     }
                                 }
                             }
@@ -627,26 +798,13 @@
             }
         }
 
-        PanelWindow {
+        OverlayPanel {
             id: masterOverlay
             visible: root.activeMode === "master" && root.masterFiltered.length > 0
-
-            screen: Quickshell.screens.find(s => s.name === "HDMI-A-1") ?? Quickshell.screens[0]
-
-            anchors.top:    root.position === "top"
-            anchors.bottom: root.position === "bottom"
-            anchors.left:   true
-            anchors.right:  true
-
-            margins.top:    root.position === "top"    ? (root.look === "fill" ? 0 : 6) : 0
-            margins.bottom: root.position === "bottom" ? (root.look === "fill" ? 0 : 6) : 0
+            fullWidth: true
 
             implicitWidth:  root.implicitWidth
             implicitHeight: root.masterFiltered.length * (root.masterLevel === "wallpapers" ? 38 : 22)
-
-            exclusiveZone: 0
-            color: "transparent"
-            WlrLayershell.layer: WlrLayershell.Overlay
 
             MouseArea {
                 anchors.fill: parent
@@ -680,7 +838,7 @@
                                 width: 46; height: 26
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true
-                                source: visible ? "file:///home/cat/.wallpapers/" + modelData.wp : ""
+                                source: visible ? "file://${config.home.homeDirectory}/pictures/wallpapers/" + modelData.wp : ""
                             }
 
                             Rectangle {
@@ -719,31 +877,41 @@
             }
         }
 
-        PanelWindow {
+        OverlayPanel {
             id: notifOverlay
             visible: notifModel.count > 0
-
-            screen: Quickshell.screens.find(s => s.name === "HDMI-A-1") ?? Quickshell.screens[0]
-
-            anchors.top:    root.position === "top"
-            anchors.bottom: root.position === "bottom"
-            anchors.left:   true
-            anchors.right:  true
-
-            margins.top:    root.position === "top"    ? (root.look === "fill" ? 0 : 6) : 0
-            margins.bottom: root.position === "bottom" ? (root.look === "fill" ? 0 : 6) : 0
+            fullWidth: true
 
             implicitWidth:  Math.round(root.implicitWidth / 3)
-            implicitHeight: notifModel.count * 34
-
-            exclusiveZone: 0
-            color: "transparent"
-            WlrLayershell.layer: WlrLayershell.Overlay
+            implicitHeight: notifModel.count * 34 + (notifModel.count > 1 ? 20 : 0)
 
             Column {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: Math.round(root.implicitWidth / 3)
                 spacing: 0
+
+                Rectangle {
+                    visible: notifModel.count > 1
+                    width: parent.width
+                    height: 20
+                    color: configRoot.colors.special.background
+
+                    MText {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "clear all"
+                        font.pixelSize: 10
+                        color: clearAllMouse.containsMouse ? configRoot.colors.special.foreground : configRoot.colors.colors.color7
+                        MouseArea {
+                            id: clearAllMouse
+                            anchors.fill: parent
+                            anchors.margins: -6
+                            hoverEnabled: true
+                            onClicked: root.clearAllNotifs()
+                        }
+                    }
+                }
 
                 Repeater {
                     model: notifModel
@@ -811,26 +979,253 @@
             }
         }
 
-        PanelWindow {
+        OverlayPanel {
+            id: wifiOverlay
+            visible: root.activeMode === "wifi"
+            keyboardExclusive: true
+
+            implicitWidth: 240
+            implicitHeight: Math.min(240, (root.wifiNetworks.length * 26) + 40 + (root.wifiConnectError !== "" ? 16 : 0))
+
+            property string selectedSsid: ""
+
+            onVisibleChanged: {
+                if (visible) {
+                    selectedSsid = ""
+                    root.wifiConnectError = ""
+                    root.wifiSelectedIndex = root.wifiNetworks.length > 0 ? 0 : -1
+                    wifiBox.forceActiveFocus()
+                } else {
+                    wifiRefreshTimer.stop()
+                }
+            }
+
+            Timer {
+                id: wifiRefreshTimer
+                interval: 15000
+                repeat: true
+                running: wifiOverlay.visible && wifiOverlay.selectedSsid === ""
+                onTriggered: if (!wifiListProc.running) wifiListProc.running = true
+            }
+
+            function connectTo(ssid, password) {
+                let cmd = "${pkgs.networkmanager}/bin/nmcli dev wifi connect \"" + ssid + "\""
+                if (password !== undefined) cmd += " password \"" + password + "\""
+                wifiConnectProc.command = ["${pkgs.bash}/bin/bash", "-c", cmd]
+                wifiConnectProc.running = true
+            }
+
+            function disconnect() {
+                wifiConnectProc.command = ["${pkgs.networkmanager}/bin/nmcli", "con", "down", "id", root.wifiConnectedSSID]
+                wifiConnectProc.running = true
+            }
+
+            function activate(net) {
+                if (net.connected) {
+                    wifiOverlay.disconnect()
+                } else if (net.sec.trim() !== "") {
+                    wifiOverlay.selectedSsid = net.label
+                    wifiPasswordInput.text = ""
+                    root.wifiConnectError = ""
+                    wifiPasswordInput.forceActiveFocus()
+                } else {
+                    root.wifiConnectError = ""
+                    wifiOverlay.connectTo(net.label)
+                }
+            }
+
+            Rectangle {
+                id: wifiBox
+                anchors.fill: parent
+                color: configRoot.colors.special.background
+                border.color: configRoot.colors.colors.color8
+                border.width: 1
+                focus: true
+
+                Keys.onPressed: (event) => {
+                    if (event.key === Qt.Key_Escape) {
+                        if (wifiOverlay.selectedSsid !== "") {
+                            wifiOverlay.selectedSsid = ""
+                            wifiBox.forceActiveFocus()
+                        } else {
+                            root.activeMode = "none"
+                        }
+                        event.accepted = true
+                    } else if (wifiOverlay.selectedSsid === "" && !wifiConnectProc.running) {
+                        if (event.key === Qt.Key_Down) {
+                            if (root.wifiNetworks.length > 0)
+                                root.wifiSelectedIndex = (root.wifiSelectedIndex + 1) % root.wifiNetworks.length
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Up) {
+                            if (root.wifiNetworks.length > 0)
+                                root.wifiSelectedIndex = (root.wifiSelectedIndex - 1 + root.wifiNetworks.length) % root.wifiNetworks.length
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            if (root.wifiSelectedIndex >= 0 && root.wifiSelectedIndex < root.wifiNetworks.length)
+                                wifiOverlay.activate(root.wifiNetworks[root.wifiSelectedIndex])
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_R) {
+                            if (!wifiListProc.running) wifiListProc.running = true
+                            event.accepted = true
+                        }
+                    }
+                }
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 4
+
+                    RowLayout {
+                        Layout.fillWidth: true
+
+                        MText {
+                            Layout.fillWidth: true
+                            text: root.wifiConnecting
+                                  ? "connecting..."
+                                  : (root.wifiConnectedSSID !== "" ? root.wifiConnectedSSID : "disconnected")
+                            color: root.wifiConnecting ? configRoot.colors.colors.color3
+                                 : root.wifiConnectedSSID !== "" ? configRoot.colors.colors.color2
+                                 : configRoot.colors.special.foreground
+                            font.weight: Font.Medium
+                            elide: Text.ElideRight
+                        }
+
+                        MText {
+                            text: root.wifiRadioEnabled ? "on" : "off"
+                            color: wifiToggleMouse.containsMouse ? configRoot.colors.special.foreground : configRoot.colors.colors.color7
+
+                            MouseArea {
+                                id: wifiToggleMouse
+                                anchors.fill: parent
+                                anchors.margins: -4
+                                hoverEnabled: true
+                                onClicked: {
+                                    wifiToggleProc.command = ["${pkgs.bash}/bin/bash", "-c", root.wifiRadioEnabled ? "${pkgs.networkmanager}/bin/nmcli radio wifi off" : "${pkgs.networkmanager}/bin/nmcli radio wifi on"]
+                                    wifiToggleProc.running = true
+                                    root.wifiRadioEnabled = !root.wifiRadioEnabled
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 1
+                        color: configRoot.colors.colors.color8
+                    }
+
+                    MText {
+                        Layout.fillWidth: true
+                        visible: root.wifiConnectError !== ""
+                        text: root.wifiConnectError
+                        color: configRoot.colors.colors.color1
+                        font.pixelSize: 10
+                        elide: Text.ElideRight
+                    }
+
+                    ListView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        model: root.wifiNetworks
+                        visible: wifiOverlay.selectedSsid === ""
+                        enabled: !wifiConnectProc.running
+
+                        delegate: Rectangle {
+                            width: parent ? parent.width : 224
+                            height: 24
+                            color: index === root.wifiSelectedIndex
+                                   ? configRoot.colors.colors.color8
+                                   : (wifiMouse.containsMouse ? configRoot.colors.colors.color8 : "transparent")
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 4
+                                anchors.rightMargin: 4
+
+                                MText {
+                                    text: modelData.connected ? "*" : " "
+                                    color: configRoot.colors.colors.color2
+                                }
+
+                                MText {
+                                    Layout.fillWidth: true
+                                    text: modelData.label
+                                    color: configRoot.colors.special.foreground
+                                    elide: Text.ElideRight
+                                }
+
+                                MText {
+                                    text: modelData.sec + " " + modelData.signal + "%"
+                                    color: modelData.signal >= 70 ? configRoot.colors.colors.color2
+                                         : modelData.signal >= 40 ? configRoot.colors.colors.color3
+                                         : configRoot.colors.colors.color1
+                                    font.pixelSize: 10
+                                }
+                            }
+
+                            MouseArea {
+                                id: wifiMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: {
+                                    root.wifiSelectedIndex = index
+                                    wifiOverlay.activate(modelData)
+                                }
+                            }
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        visible: wifiOverlay.selectedSsid !== ""
+                        spacing: 6
+
+                        MText {
+                            text: wifiOverlay.selectedSsid
+                            color: configRoot.colors.special.foreground
+                            font.weight: Font.Medium
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 28
+                            color: configRoot.colors.colors.color0
+                            border.color: wifiPasswordInput.activeFocus ? configRoot.colors.colors.color4 : configRoot.colors.colors.color8
+                            border.width: 1
+
+                            TextInput {
+                                id: wifiPasswordInput
+                                anchors.fill: parent
+                                anchors.leftMargin: 8
+                                anchors.rightMargin: 8
+                                verticalAlignment: TextInput.AlignVCenter
+                                color: configRoot.colors.special.foreground
+                                echoMode: TextInput.Password
+                                passwordCharacter: "*"
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 12
+                                enabled: !wifiConnectProc.running
+
+                                onAccepted: wifiOverlay.connectTo(wifiOverlay.selectedSsid, text)
+                            }
+                        }
+
+                        Item { Layout.fillHeight: true }
+                    }
+                }
+            }
+        }
+
+        OverlayPanel {
             id: calendarOverlay
             visible: root.activeMode === "calendar"
-
-            screen: Quickshell.screens.find(s => s.name === "HDMI-A-1") ?? Quickshell.screens[0]
-
-            anchors.top:    root.position === "top"
-            anchors.bottom: root.position === "bottom"
-            anchors.right:  true
-
-            margins.top:    root.position === "top"    ? (root.look === "fill" ? 0 : 6) : 0
-            margins.bottom: root.position === "bottom" ? (root.look === "fill" ? 0 : 6) : 0
-            margins.right:  root.look === "fill" ? 0 : root.layout === "full" ? 6 : Math.round(((root.screen?.width ?? 1920) - 820) / 2)
+            keyboardExclusive: true
 
             implicitWidth: 216
             implicitHeight: 186
-            color: "transparent"
-
-            WlrLayershell.layer: WlrLayershell.Overlay
-            WlrLayershell.keyboardFocus: visible ? WlrLayershell.Exclusive : WlrLayershell.None
 
             property int selectedDay: new Date().getDate()
             property int viewYear: new Date().getFullYear()
@@ -892,6 +1287,12 @@
                 Keys.onPressed: (event) => {
                     if (event.key === Qt.Key_Escape) {
                         root.activeMode = "none"
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Left) {
+                        calendarOverlay.prevMonth()
+                        event.accepted = true
+                    } else if (event.key === Qt.Key_Right) {
+                        calendarOverlay.nextMonth()
                         event.accepted = true
                     }
                 }
