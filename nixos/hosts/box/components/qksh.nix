@@ -1,6 +1,9 @@
-{ pkgs, config, ... }:
-
-{
+{ pkgs, config, osConfig, ... }:
+let
+  host = osConfig.networking.hostName;
+  isbed = host == "bed";
+  wpdir = "pictures/wallpapers";
+in {
   xdg.configFile."quickshell/shell.qml".text = ''
     import Quickshell
     import Quickshell.Wayland
@@ -69,7 +72,7 @@
             keepOnReload: true
 
             onNotification: (notif) => {
-                if (notifModel.count >= 5) notifModel.remove(0)
+                if (notifModel.count >= 3) notifModel.remove(0)
                 notifModel.append({
                     nid:     notif.id,
                     app:     notif.appName   ?? "",
@@ -97,6 +100,8 @@
 
             property string sysStats: "cpu --% | mem --%"
             property string micState: "󰍬"
+            property string batState: "--%"
+            
             property string wifiState: "󰤪"
             property bool   wifiRadioEnabled: true
             property string wifiConnectedSSID: ""
@@ -107,9 +112,21 @@
             property int    wifiSelectedIndex: -1
             property bool   wifiConnecting: false
 
+            property string btState: "󰂯"
+            property string btConnectedName: ""
+            property bool   btPowered: false
+            property var    btDevices: []
+            property string btBuf: ""
+            property int    btSelectedIndex: -1
+
             function wifiOpen() {
                 root.activeMode = "wifi"
                 if (!wifiListProc.running) wifiListProc.running = true
+            }
+
+            function btOpen() {
+                root.activeMode = "bluetooth"
+                if (!btListProc.running) btListProc.running = true
             }
 
             function removeNotif(nid) {
@@ -183,10 +200,10 @@
                     { label: "pw",  sub: "pw"  }
                 ],
                 "sys": [
-                    { label: "nix",   cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/box/configuration.nix"]   },
-                    { label: "box",   cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/box/box.nix"]             },
-                    { label: "wm",    cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/box/components/wm.nix"]   },
-                    { label: "qksh",  cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/box/components/qksh.nix"] },
+                    { label: "nix",   cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/${host}/configuration.nix"]   },
+                    { label: "${host}", cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/${host}/${host}.nix"]             },
+                    { label: "wm",    cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/${host}/components/wm.nix"]   },
+                    { label: "qksh",  cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/${host}/components/qksh.nix"] },
                     { label: "vi",    cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/modules/vi.nix"]                },
                     { label: "yazi",  cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/modules/yazi.nix"]              }
                 ],
@@ -290,7 +307,7 @@
                     return
                 }
                 if (item.wp !== undefined) {
-                    mProc.command = ["${pkgs.bash}/bin/bash", "-c", "colors \"${config.home.homeDirectory}/pictures/wallpapers/" + item.wp + "\""]
+                    mProc.command = ["${pkgs.bash}/bin/bash", "-c", "colors \"${config.home.homeDirectory}/${wpdir}/" + item.wp + "\""]
                     mProc.running = true
                     masterClose(); return
                 }
@@ -316,13 +333,13 @@
             }
 
             onActiveModeChanged: {
-                if (activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" && activeMode !== "tray" && typeof barInput !== "undefined") {
+                if (activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" && activeMode !== "tray" && activeMode !== "bluetooth" && typeof barInput !== "undefined") {
                     barInput.text = ""
                     barInput.forceActiveFocus()
                 }
             }
 
-            WlrLayershell.keyboardFocus: activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" && activeMode !== "tray" ? WlrLayershell.Exclusive : WlrLayershell.None
+            WlrLayershell.keyboardFocus: activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" && activeMode !== "tray" && activeMode !== "bluetooth" ? WlrLayershell.Exclusive : WlrLayershell.None
 
             anchors.top:    position === "top"
             anchors.bottom: position === "bottom"
@@ -371,6 +388,13 @@
                 }
             }
             IpcHandler {
+                target: "bluetooth"
+                function toggle(): void {
+                    if (root.activeMode === "bluetooth") root.activeMode = "none"
+                    else root.btOpen()
+                }
+            }
+            IpcHandler {
                 target: "tray"
                 function toggle(): void {
                     if (root.activeMode === "tray") root.activeMode = "none"
@@ -404,9 +428,7 @@
                     if (!running && configRoot.colorBuf !== "") {
                         try {
                             configRoot.colors = JSON.parse(configRoot.colorBuf)
-                        } catch(e) {
-                            console.error("failed to parse colors.json: " + e.message)
-                        }
+                        } catch(e) {}
                         configRoot.colorBuf = ""
                     }
                 }
@@ -444,7 +466,7 @@
 
             Process {
                 id: wpLsProc
-                command: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.coreutils}/bin/ls ${config.home.homeDirectory}/pictures/wallpapers/"]
+                command: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.coreutils}/bin/ls ${config.home.homeDirectory}/${wpdir}/"]
                 running: false
                 stdout: SplitParser {
                     splitMarker: ""
@@ -468,6 +490,8 @@
                 onTriggered: {
                     if (!micProc.running) micProc.running = true
                     if (!wifiStatusProc.running) wifiStatusProc.running = true
+                    if (!btStatusProc.running) btStatusProc.running = true
+                    ${if isbed then "if (!batProc.running) batProc.running = true" else ""}
                 }
             }
 
@@ -493,6 +517,15 @@
                 id: micActProc
                 running: false
                 onRunningChanged: if (!running) micProc.running = true
+            }
+
+            Process {
+                id: batProc
+                command: ["${pkgs.bash}/bin/bash", "-c", "b=$(${pkgs.coreutils}/bin/cat /sys/class/power_supply/BAT*/capacity 2>/dev/null | ${pkgs.coreutils}/bin/head -n1); echo \"''${b:-0}%\""]
+                running: ${if isbed then "true" else "false"}
+                stdout: SplitParser {
+                    onRead: data => { root.batState = data.trim() }
+                }
             }
 
             Process {
@@ -582,6 +615,61 @@
                 }
             }
 
+            Process {
+                id: btStatusProc
+                command: ["${pkgs.bash}/bin/bash", "-c", "p=$(${pkgs.bluez}/bin/bluetoothctl show 2>/dev/null | ${pkgs.gnugrep}/bin/grep -c 'Powered: yes'); c=$(${pkgs.bluez}/bin/bluetoothctl devices Connected 2>/dev/null | ${pkgs.coreutils}/bin/cut -d' ' -f3-); echo \"$p|$c\""]
+                running: false
+                stdout: SplitParser {
+                    onRead: data => {
+                        let parts = data.trim().split("|")
+                        root.btPowered = parts[0] === "1"
+                        root.btConnectedName = parts.length > 1 ? parts.slice(1).join("|").trim() : ""
+                        root.btState = root.btConnectedName !== "" ? "󰂱" : (root.btPowered ? "󰂯" : "󰂲")
+                    }
+                }
+            }
+
+            Process {
+                id: btToggleProc
+                running: false
+                onRunningChanged: if (!running) btStatusProc.running = true
+            }
+
+            Process {
+                id: btListProc
+                command: ["${pkgs.bash}/bin/bash", "-c", "c=$(${pkgs.bluez}/bin/bluetoothctl devices Connected | ${pkgs.coreutils}/bin/cut -d' ' -f2); ${pkgs.bluez}/bin/bluetoothctl devices | while read -r _ mac name; do is_c=0; if echo \"$c\" | ${pkgs.gnugrep}/bin/grep -q \"$mac\"; then is_c=1; fi; echo \"$mac|$name|$is_c\"; done"]
+                running: false
+                stdout: SplitParser {
+                    splitMarker: ""
+                    onRead: data => { root.btBuf += data }
+                }
+                onRunningChanged: {
+                    if (!running && root.btBuf !== "") {
+                        let lines = root.btBuf.trim().split("\n").filter(l => l.length > 0)
+                        let items = []
+                        for (let l of lines) {
+                            let parts = l.split("|")
+                            if (parts.length >= 3) {
+                                items.push({ mac: parts[0], name: parts.slice(1, -1).join("|"), connected: parts[parts.length-1] === "1" })
+                            }
+                        }
+                        root.btDevices = items.sort((a, b) => b.connected - a.connected)
+                        root.btBuf = ""
+                    }
+                }
+            }
+
+            Process {
+                id: btConnectProc
+                running: false
+                onRunningChanged: {
+                    if (!running) {
+                        btStatusProc.running = true
+                        btListProc.running = true
+                    }
+                }
+            }
+
             FontMetrics {
                 id: fm
                 font.family:    "JetBrainsMono Nerd Font"
@@ -595,7 +683,7 @@
 
                 MText {
                     anchors.centerIn: parent
-                    visible: root.activeMode === "none" || root.activeMode === "calendar" || root.activeMode === "wifi" || root.activeMode === "tray"
+                    visible: root.activeMode === "none" || root.activeMode === "calendar" || root.activeMode === "wifi" || root.activeMode === "tray" || root.activeMode === "bluetooth"
                     text: barSettings.centerMode === "performance" ? root.sysStats : ""
                     color: configRoot.colors.special.foreground 
                 }
@@ -771,6 +859,31 @@
 
                     Item {
                         Layout.fillHeight: true
+                        implicitWidth: 36
+                        visible: ${if isbed then "true" else "false"}
+
+                        Row {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: parent.right
+                            anchors.rightMargin: 6
+                            spacing: 2
+
+                            Item {
+                                width: 28
+                                height: 22
+
+                                MText {
+                                    id: batText
+                                    anchors.centerIn: parent
+                                    text: root.batState
+                                    color: configRoot.colors.special.foreground
+                                }
+                            }
+                        }
+                    }
+
+                    Item {
+                        Layout.fillHeight: true
                         implicitWidth: clockText.implicitWidth + 20
 
                         Rectangle {
@@ -842,7 +955,7 @@
                                 width: 46; height: 26
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true
-                                source: visible ? "file://${config.home.homeDirectory}/pictures/wallpapers/" + modelData.wp : ""
+                                source: visible ? "file://${config.home.homeDirectory}/${wpdir}/" + modelData.wp : ""
                             }
 
                             Rectangle {
@@ -986,34 +1099,261 @@
         OverlayPanel {
             id: trayOverlay
             visible: root.activeMode === "tray"
-            keyboardExclusive: false
+            keyboardExclusive: true
 
-            implicitWidth: trayRow.implicitWidth + 24
-            implicitHeight: 34
+            implicitWidth: 210
+            implicitHeight: 70
+
+            onVisibleChanged: {
+                if (visible) trayBox.forceActiveFocus()
+            }
 
             Rectangle {
+                id: trayBox
                 anchors.fill: parent
                 color: configRoot.colors.special.background
                 border.color: configRoot.colors.colors.color8
                 border.width: 1
+                focus: true
 
-                Row {
-                    id: trayRow
-                    anchors.centerIn: parent
-                    spacing: 8
-                    MText {
-                        text: root.wifiState
-                        color: root.wifiConnecting ? configRoot.colors.colors.color3 : (root.wifiConnectedSSID !== "" ? configRoot.colors.colors.color2 : configRoot.colors.special.foreground)
-                    }
-                    MText {
-                        text: root.wifiConnecting ? "connecting..." : (root.wifiConnectedSSID !== "" ? root.wifiConnectedSSID : "disconnected")
-                        color: configRoot.colors.special.foreground
+                Keys.onPressed: (event) => {
+                    if (event.key === Qt.Key_Escape) {
+                        root.activeMode = "none"
+                        event.accepted = true
                     }
                 }
-                MouseArea {
+
+                ColumnLayout {
                     anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: root.wifiOpen()
+                    anchors.margins: 8
+                    spacing: 6
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 22
+
+                        RowLayout {
+                            anchors.fill: parent
+                            spacing: 12
+
+                            MText {
+                                Layout.preferredWidth: 16
+                                horizontalAlignment: Text.AlignHCenter
+                                text: root.wifiState
+                                color: configRoot.colors.special.foreground
+                            }
+                            MText {
+                                Layout.fillWidth: true
+                                text: root.wifiConnectedSSID !== "" ? root.wifiConnectedSSID : "wifi disconnected"
+                                color: configRoot.colors.special.foreground
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                root.activeMode = "none"
+                                root.wifiOpen()
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 1
+                        color: configRoot.colors.colors.color8
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 22
+
+                        RowLayout {
+                            anchors.fill: parent
+                            spacing: 12
+
+                            MText {
+                                Layout.preferredWidth: 16
+                                horizontalAlignment: Text.AlignHCenter
+                                text: root.btState
+                                color: configRoot.colors.special.foreground
+                            }
+                            MText {
+                                Layout.fillWidth: true
+                                text: root.btConnectedName !== "" ? root.btConnectedName : (root.btPowered ? "bluetooth ready" : "bluetooth off")
+                                color: configRoot.colors.special.foreground
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                root.activeMode = "none"
+                                root.btOpen()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        OverlayPanel {
+            id: bluetoothOverlay
+            visible: root.activeMode === "bluetooth"
+            keyboardExclusive: true
+
+            implicitWidth: 240
+            implicitHeight: Math.min(240, (root.btDevices.length * 26) + 40)
+
+            onVisibleChanged: {
+                if (visible) {
+                    root.btSelectedIndex = root.btDevices.length > 0 ? 0 : -1
+                    btBox.forceActiveFocus()
+                } else {
+                    btRefreshTimer.stop()
+                }
+            }
+
+            Timer {
+                id: btRefreshTimer
+                interval: 15000
+                repeat: true
+                running: bluetoothOverlay.visible
+                onTriggered: if (!btListProc.running) btListProc.running = true
+            }
+
+            function activate(dev) {
+                if (dev.connected) {
+                    btConnectProc.command = ["${pkgs.bluez}/bin/bluetoothctl", "disconnect", dev.mac]
+                } else {
+                    btConnectProc.command = ["${pkgs.bluez}/bin/bluetoothctl", "connect", dev.mac]
+                }
+                btConnectProc.running = true
+            }
+
+            Rectangle {
+                id: btBox
+                anchors.fill: parent
+                color: configRoot.colors.special.background
+                border.color: configRoot.colors.colors.color8
+                border.width: 1
+                focus: true
+
+                Keys.onPressed: (event) => {
+                    if (event.key === Qt.Key_Escape) {
+                        root.activeMode = "none"
+                        event.accepted = true
+                    } else if (!btConnectProc.running) {
+                        if (event.key === Qt.Key_Down) {
+                            if (root.btDevices.length > 0)
+                                root.btSelectedIndex = (root.btSelectedIndex + 1) % root.btDevices.length
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Up) {
+                            if (root.btDevices.length > 0)
+                                root.btSelectedIndex = (root.btSelectedIndex - 1 + root.btDevices.length) % root.btDevices.length
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            if (root.btSelectedIndex >= 0 && root.btSelectedIndex < root.btDevices.length)
+                                bluetoothOverlay.activate(root.btDevices[root.btSelectedIndex])
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_R) {
+                            if (!btListProc.running) btListProc.running = true
+                            event.accepted = true
+                        }
+                    }
+                }
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 4
+
+                    RowLayout {
+                        Layout.fillWidth: true
+
+                        MText {
+                            Layout.fillWidth: true
+                            text: btConnectProc.running
+                                  ? "connecting..."
+                                  : (root.btConnectedName !== "" ? root.btConnectedName : "disconnected")
+                            color: btConnectProc.running ? configRoot.colors.colors.color3
+                                 : root.btConnectedName !== "" ? configRoot.colors.colors.color2
+                                 : configRoot.colors.special.foreground
+                            font.weight: Font.Medium
+                            elide: Text.ElideRight
+                        }
+
+                        MText {
+                            text: root.btPowered ? "on" : "off"
+                            color: btToggleMouse.containsMouse ? configRoot.colors.special.foreground : configRoot.colors.colors.color7
+
+                            MouseArea {
+                                id: btToggleMouse
+                                anchors.fill: parent
+                                anchors.margins: -4
+                                hoverEnabled: true
+                                onClicked: {
+                                    btToggleProc.command = ["${pkgs.bash}/bin/bash", "-c", root.btPowered ? "${pkgs.bluez}/bin/bluetoothctl power off" : "${pkgs.bluez}/bin/bluetoothctl power on"]
+                                    btToggleProc.running = true
+                                    root.btPowered = !root.btPowered
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 1
+                        color: configRoot.colors.colors.color8
+                    }
+
+                    ListView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        model: root.btDevices
+                        enabled: !btConnectProc.running
+
+                        delegate: Rectangle {
+                            width: parent ? parent.width : 224
+                            height: 24
+                            color: index === root.btSelectedIndex
+                                   ? configRoot.colors.colors.color8
+                                   : (btMouse.containsMouse ? configRoot.colors.colors.color8 : "transparent")
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 4
+                                anchors.rightMargin: 4
+
+                                MText {
+                                    text: modelData.connected ? "*" : " "
+                                    color: configRoot.colors.colors.color2
+                                }
+
+                                MText {
+                                    Layout.fillWidth: true
+                                    text: modelData.name
+                                    color: configRoot.colors.special.foreground
+                                    elide: Text.ElideRight
+                                }
+                            }
+
+                            MouseArea {
+                                id: btMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: {
+                                    root.btSelectedIndex = index
+                                    bluetoothOverlay.activate(modelData)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
