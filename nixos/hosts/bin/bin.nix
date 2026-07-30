@@ -4,6 +4,7 @@
   imports = [
     ../../modules/vi.nix
     ../../modules/btop.nix
+    ../../modules/yazi.nix
   ];
 
   home.username = "cat";
