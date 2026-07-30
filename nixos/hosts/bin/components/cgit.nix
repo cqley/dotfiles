@@ -1,13 +1,13 @@
 {
   services.nginx = {
     enable = true;
-    virtualHosts."5.231.118.254" = {};
+    virtualHosts."5.231.118.153" = {};
   };
 
   services.cgit.tight = {
     enable = true;
     scanPath = "/srv/git";
-    nginx.virtualHost = "5.231.118.254";
+    nginx.virtualHost = "5.231.118.153";
     gitHttpBackend = {
       enable = true;
       checkExportOkFiles = false;
@@ -19,7 +19,7 @@
       enable-commit-graph = 1;
       enable-log-filecount = 1;
       enable-log-linecount = 1;
-      clone-prefix = "http://5.231.118.254";
+      clone-prefix = "http://5.231.118.153";
     };
   };
 }
