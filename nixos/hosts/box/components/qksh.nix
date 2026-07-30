@@ -316,13 +316,13 @@
             }
 
             onActiveModeChanged: {
-                if (activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" && typeof barInput !== "undefined") {
+                if (activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" && activeMode !== "tray" && typeof barInput !== "undefined") {
                     barInput.text = ""
                     barInput.forceActiveFocus()
                 }
             }
 
-            WlrLayershell.keyboardFocus: activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" ? WlrLayershell.Exclusive : WlrLayershell.None
+            WlrLayershell.keyboardFocus: activeMode !== "none" && activeMode !== "calendar" && activeMode !== "wifi" && activeMode !== "tray" ? WlrLayershell.Exclusive : WlrLayershell.None
 
             anchors.top:    position === "top"
             anchors.bottom: position === "bottom"
@@ -368,6 +368,13 @@
                 function toggle(): void {
                     if (root.activeMode === "wifi") root.activeMode = "none"
                     else root.wifiOpen()
+                }
+            }
+            IpcHandler {
+                target: "tray"
+                function toggle(): void {
+                    if (root.activeMode === "tray") root.activeMode = "none"
+                    else root.activeMode = "tray"
                 }
             }
             IpcHandler {
@@ -588,7 +595,7 @@
 
                 MText {
                     anchors.centerIn: parent
-                    visible: root.activeMode === "none" || root.activeMode === "calendar" || root.activeMode === "wifi"
+                    visible: root.activeMode === "none" || root.activeMode === "calendar" || root.activeMode === "wifi" || root.activeMode === "tray"
                     text: barSettings.centerMode === "performance" ? root.sysStats : ""
                     color: configRoot.colors.special.foreground 
                 }
@@ -716,17 +723,16 @@
                                 height: 22
 
                                 MText {
-                                    id: micText
                                     anchors.centerIn: parent
-                                    text: root.micState
+                                    text: "󰇘"
                                     color: configRoot.colors.special.foreground
                                 }
 
                                 MouseArea {
                                     anchors.fill: parent
                                     onClicked: {
-                                        micActProc.command = ["${pkgs.wireplumber}/bin/wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]
-                                        micActProc.running = true
+                                        if (root.activeMode === "tray") root.activeMode = "none"
+                                        else root.activeMode = "tray"
                                     }
                                 }
                             }
@@ -746,19 +752,17 @@
                                 height: 22
 
                                 MText {
-                                    id: wifiText
+                                    id: micText
                                     anchors.centerIn: parent
-                                    text: root.wifiState
-                                    color: root.wifiConnecting ? configRoot.colors.colors.color3
-                                         : root.wifiConnectedSSID !== "" ? configRoot.colors.colors.color2
-                                         : configRoot.colors.special.foreground
+                                    text: root.micState
+                                    color: configRoot.colors.special.foreground
                                 }
 
                                 MouseArea {
                                     anchors.fill: parent
                                     onClicked: {
-                                        if (root.activeMode === "wifi") root.activeMode = "none"
-                                        else root.wifiOpen()
+                                        micActProc.command = ["${pkgs.wireplumber}/bin/wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]
+                                        micActProc.running = true
                                     }
                                 }
                             }
@@ -975,6 +979,41 @@
                             onClicked:    root.removeNotif(model.nid)
                         }
                     }
+                }
+            }
+        }
+
+        OverlayPanel {
+            id: trayOverlay
+            visible: root.activeMode === "tray"
+            keyboardExclusive: false
+
+            implicitWidth: trayRow.implicitWidth + 24
+            implicitHeight: 34
+
+            Rectangle {
+                anchors.fill: parent
+                color: configRoot.colors.special.background
+                border.color: configRoot.colors.colors.color8
+                border.width: 1
+
+                Row {
+                    id: trayRow
+                    anchors.centerIn: parent
+                    spacing: 8
+                    MText {
+                        text: root.wifiState
+                        color: root.wifiConnecting ? configRoot.colors.colors.color3 : (root.wifiConnectedSSID !== "" ? configRoot.colors.colors.color2 : configRoot.colors.special.foreground)
+                    }
+                    MText {
+                        text: root.wifiConnecting ? "connecting..." : (root.wifiConnectedSSID !== "" ? root.wifiConnectedSSID : "disconnected")
+                        color: configRoot.colors.special.foreground
+                    }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: root.wifiOpen()
                 }
             }
         }
