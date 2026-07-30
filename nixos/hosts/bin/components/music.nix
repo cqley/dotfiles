@@ -38,4 +38,20 @@
     };
     startAt = "*:0/3";
   };
+
+  systemd.services.unfassbar = {
+    script = ''
+      cd /var/lib/navidrome/music || exit 1
+      yt-dlp -x --audio-format mp3 --embed-metadata --embed-thumbnail \
+        --playlist-items 1 \
+        -o "%(title)s.%(ext)s" \
+        "https://music.youtube.com/playlist?list=PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp"
+    '';
+    path = [ pkgs.yt-dlp pkgs.ffmpeg ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = "navidrome";
+    };
+    startAt = "*:0/3";
+  };
 }
