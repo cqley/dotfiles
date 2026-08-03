@@ -73,6 +73,7 @@
 
   environment.systemPackages = with pkgs; [
     git
+    kitty
     wireguard-tools
   ];
 
