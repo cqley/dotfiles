@@ -94,7 +94,6 @@
   };
 
   environment.systemPackages = with pkgs; [
-    neovim
     git
     kitty
     ungoogled-chromium
