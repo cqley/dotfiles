@@ -219,7 +219,7 @@ in {
                 "bar":         [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }],
                 "barPosition": [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }],
                 "barLayout":   [{ label: "minimal", barLyt: "minimal" }, { label: "full", barLyt: "full" }],
-                "barMode":     [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }],
+                "barMode":     [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }, { label: "pile", centerLyt: "pile" }],
                 "barLook":     [{ label: "float", barLook: "float" }, { label: "fill", barLook: "fill" }],
                 "pw": [
                     { label: "lock",     cmd: [""]                                      },
@@ -695,6 +695,7 @@ in {
                     Row {
                         spacing: 0
                         Layout.fillHeight: true
+                        visible: barSettings.centerMode !== "pile"
 
                         Repeater {
                             model: 10
@@ -731,6 +732,39 @@ in {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     onClicked: Hyprland.dispatch('hl.dsp.focus({ workspace = "' + parent.wsId + '" })')
+                                }
+                            }
+                        }
+                    }
+
+                    Row {
+                        spacing: 0
+                        Layout.fillHeight: true
+                        visible: barSettings.centerMode === "pile"
+
+                        Repeater {
+                            model: ["file", "edit", "view", "special"]
+
+                            Item {
+                                width: Math.round(fm.advanceWidth(modelData)) + 16
+                                height: parent.height
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: pileArea.containsMouse ? configRoot.colors.colors.color8 : "transparent"
+                                }
+
+                                MText {
+                                    anchors.centerIn: parent
+                                    color: pileArea.containsMouse ? configRoot.colors.special.foreground : configRoot.colors.colors.color7
+                                    text: modelData
+                                }
+
+                                MouseArea {
+                                    id: pileArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {}
                                 }
                             }
                         }
