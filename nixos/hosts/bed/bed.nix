@@ -8,8 +8,8 @@
     ../../modules/system/files.nix
     ../../modules/system/btop.nix
     ../../modules/system/editor.nix
-    ../../modules/colors.nix
-    ../../modules/notes.nix
+    ../../modules/misc/colors.nix
+    ../../modules/misc/notes.nix
   ];
 
   home.username = "cat";
