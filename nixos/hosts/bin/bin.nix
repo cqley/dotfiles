@@ -3,8 +3,8 @@
 {
   imports = [
     ../../modules/system/files.nix
+    ../../modules/system/btop.nix
     ../../modules/programs/editor.nix
-    ../../modules/programs/btop.nix
   ];
 
   home.username = "cat";
