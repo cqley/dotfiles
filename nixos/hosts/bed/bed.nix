@@ -4,10 +4,10 @@
   imports = [
     components/wm.nix
     components/qksh.nix
-    ../../modules/layout.nix
-    ../../modules/vi.nix
-    ../../modules/yazi.nix
-    ../../modules/btop.nix
+    ../../modules/system/layout.nix
+    ../../modules/system/files.nix
+    ../../modules/programs/editor.nix
+    ../../modules/programs/btop.nix
     ../../modules/colors.nix
     ../../modules/notes.nix
   ];
