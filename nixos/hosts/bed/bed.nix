@@ -23,7 +23,7 @@
     enable = true;
     shellAbbrs = {
       rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#bed";
-      update = "nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#bed";
+      update = "sudo nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#bed";
     };
     functions = {
       fish_greeting = { body = ""; };
