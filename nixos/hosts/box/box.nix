@@ -6,8 +6,8 @@
     ../../modules/system/qksh.nix
     ../../modules/system/layout.nix
     ../../modules/system/files.nix
+    ../../modules/system/btop.nix
     ../../modules/programs/editor.nix
-    ../../modules/programs/btop.nix
     ../../modules/colors.nix
     ../../modules/notes.nix
     ../../modules/games/dayz.nix
