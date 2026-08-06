@@ -2,9 +2,9 @@
 
 {
   imports = [
-    ../../modules/vi.nix
-    ../../modules/btop.nix
-    ../../modules/yazi.nix
+    ../../modules/system/files.nix
+    ../../modules/programs/editor.nix
+    ../../modules/programs/btop.nix
   ];
 
   home.username = "cat";
