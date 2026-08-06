@@ -10,5 +10,7 @@
     videos = "/home/cat/videos";
     music = "/home/cat/music";
     desktop = "/home/cat/desktop";
+    public = "/home/cat/public";
+    templates = "/home/cat/templates";
   };
 }
