@@ -3,7 +3,7 @@
 {
   imports = [
     components/wm.nix
-    components/qksh.nix
+    ../../modules/system/qksh.nix
     ../../modules/system/layout.nix
     ../../modules/system/files.nix
     ../../modules/programs/editor.nix
