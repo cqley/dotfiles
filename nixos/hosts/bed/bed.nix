@@ -7,7 +7,7 @@
     ../../modules/system/layout.nix
     ../../modules/system/files.nix
     ../../modules/system/btop.nix
-    ../../modules/programs/editor.nix
+    ../../modules/system/editor.nix
     ../../modules/colors.nix
     ../../modules/notes.nix
   ];
