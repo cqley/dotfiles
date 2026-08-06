@@ -200,12 +200,12 @@ in {
                     { label: "pw",  sub: "pw"  }
                 ],
                 "sys": [
-                    { label: "nix",   cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/${host}/configuration.nix"]   },
-                    { label: "${host}", cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/${host}/${host}.nix"]             },
-                    { label: "wm",    cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/${host}/components/wm.nix"]   },
-                    { label: "qksh",  cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/hosts/${host}/components/qksh.nix"] },
-                    { label: "vi",    cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/modules/vi.nix"]                },
-                    { label: "yazi",  cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudo", "${pkgs.neovim}/bin/nvim", "/etc/nixos/modules/yazi.nix"]              }
+                    { label: "cat",    cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/hosts/${host}/configuration.nix"] }
+                    { label: "${host}", cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/hosts/${host}/${host}.nix"]      }
+                    { label: "wm",     cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/hosts/${host}/components/wm.nix"] }
+                    { label: "qksh",   cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/modules/system/qksh.nix"]         }
+                    { label: "editor", cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/modules/system/editor.nix"]       }
+                    { label: "files",  cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/modules/system/files.nix"]        }
                 ],
                 "sts": [
                     { label: "animations", sub: "animations" },
