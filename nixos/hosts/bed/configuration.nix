@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ./components/wireguard.nix
     ../../modules/misc/shared.nix
+    ../../modules/misc/dm.nix
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
