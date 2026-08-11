@@ -8,7 +8,7 @@
     ./components/pufferpanel.nix
     ./components/music.nix
     ./components/immich.nix
-    ../../modules/misc/shared.nix
+    ../../modules/misc/public.nix
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];

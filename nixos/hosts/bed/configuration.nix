@@ -4,7 +4,7 @@
   imports = [ 
     ./hardware-configuration.nix
     ./components/wireguard.nix
-    ../../modules/misc/shared.nix
+    ../../modules/misc/public.nix
     ../../modules/misc/ariang.nix
   ];
 
