@@ -1,16 +1,4 @@
 { pkgs, ... }: {
-  systemd.tmpfiles.rules = [
-    "d /var/lib/aria2 0755 cat users -"
-    "d /home/cat/downloads 0755 cat users -"
-  ];
-
-  environment.etc."nixos/secrets/aria2" = {
-    text = "cat";
-    mode = "0400";
-    user = "cat";
-    group = "users";
-  };
-
   services.aria2 = {
     enable = true;
     rpcSecretFile = "/etc/nixos/secrets/aria2";
@@ -30,8 +18,4 @@
     ProtectHome = pkgs.lib.mkForce false;
     DynamicUser = pkgs.lib.mkForce false;
   };
-
-  environment.systemPackages = with pkgs; [
-    ariang
-  ];
 }
