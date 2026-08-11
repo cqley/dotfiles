@@ -13,8 +13,8 @@
         "bin" = { id = "Y2BR3CK-RUTKTKN-CNOB7J6-ZQENCK7-OQVFVWL-C3OMTNK-FXWXUPZ-H4TWPAX"; };
       };
       folders = {
-        "shared" = {
-          path = "/home/cat/shared";
+        "public" = {
+          path = "/home/cat/public";
           devices = [ "box" "bed" "bin" ];
         };
       };
