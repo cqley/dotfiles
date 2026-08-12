@@ -19,7 +19,7 @@
     shellAbbrs = {
       rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#bin";
       update = "sudo nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#bin";
-      system = "sudo nvim /etc/nixos"
+      system = "sudo nvim /etc/nixos";
     };
     functions = {
       fish_greeting = { body = ""; };
