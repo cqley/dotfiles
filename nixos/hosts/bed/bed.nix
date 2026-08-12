@@ -24,6 +24,7 @@
     shellAbbrs = {
       rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#bed";
       update = "sudo nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#bed";
+      system = "sudo nvim /etc/nixos"
     };
     functions = {
       fish_greeting = { body = ""; };
