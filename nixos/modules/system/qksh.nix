@@ -846,7 +846,7 @@ in {
 
                                 MText {
                                     anchors.centerIn: parent
-                                    text: "󰇘"
+                                    text: "^"
                                     color: configRoot.colors.special.foreground
                                 }
 
