@@ -97,6 +97,11 @@
     };
   };
   
+  services.espanso = {
+    enable = true;
+    package = pkgs.espanso-wayland;
+  };
+
   users.users.cat = {
     isNormalUser = true;
     description = "cat";
