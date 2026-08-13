@@ -88,6 +88,12 @@
     };
   };
   
+  services.espanso = {
+    enable = true;
+    package = pkgs.espanso-wayland;
+  };
+
+
   users.users.cat = {
     isNormalUser = true;
     extraGroups = [ "networkmanager" "wheel" "video" ];
