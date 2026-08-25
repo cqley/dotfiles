@@ -69,7 +69,6 @@
   };
 
   services.tlp.enable = true;
-  services.mullvad-vpn.enable = true;
   services.udisks2.enable = true;
   programs.hyprland.enable = true;
   programs.fish.enable = true;
