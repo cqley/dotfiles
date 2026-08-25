@@ -32,7 +32,6 @@
           hl.exec_cmd("wl-paste --type text --watch cliphist store")
           hl.exec_cmd("wl-paste --type image --watch cliphist store")
           hl.exec_cmd("quickshell -p ~/.config/quickshell/shell.qml")
-          hl.exec_cmd("espanso service start --unmanaged")
       end)
 
       config({
