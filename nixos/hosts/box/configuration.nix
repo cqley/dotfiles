@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ./components/wireguard.nix
     ../../modules/misc/public.nix
+    ../../modules/misc/espanso.nix
     ../../modules/misc/ariang.nix
   ];
 
@@ -94,11 +95,6 @@
       ids = [ "3554:fa09" ];
       settings.main.capslock = "home";
     };
-  };
-  
-  services.espanso = {
-    enable = true;
-    package = pkgs.espanso-wayland;
   };
 
   users.users.cat = {
