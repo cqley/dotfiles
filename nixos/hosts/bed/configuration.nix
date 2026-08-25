@@ -5,7 +5,6 @@
     ./hardware-configuration.nix
     ./components/wireguard.nix
     ../../modules/misc/public.nix
-    ../../modules/misc/espanso.nix
     ../../modules/misc/ariang.nix
   ];
 
@@ -90,7 +89,7 @@
 
   users.users.cat = {
     isNormalUser = true;
-    extraGroups = [ "networkmanager" "wheel" "video" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "input" ];
     shell = pkgs.fish;
   };
 
