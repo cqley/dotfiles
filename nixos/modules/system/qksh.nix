@@ -33,6 +33,7 @@ in {
             font.pixelSize: 12
             font.weight: Font.Normal
             renderType: Text.NativeRendering
+            textFormat: Text.PlainText
             color: root.colors.special.foreground
         }
 
@@ -70,14 +71,23 @@ in {
         NotificationServer {
             id: notifServer
             keepOnReload: true
+            actionsSupported: true
+            imageSupported: true
+            bodySupported: true
+            persistenceSupported: true
 
             onNotification: (notif) => {
                 if (notifModel.count >= 3) notifModel.remove(0)
+                let app = notif.appName ?? ""
+                let sum = notif.summary ?? ""
+                let bod = notif.body ?? ""
+                if (sum === "" && bod === "" && app !== "") sum = app
+                if (sum === "" && bod !== "") { sum = bod; bod = "" }
                 notifModel.append({
                     nid:     notif.id,
-                    app:     notif.appName   ?? "",
-                    summary: notif.summary   ?? "",
-                    body:    notif.body      ?? "",
+                    app:     app,
+                    summary: sum,
+                    body:    bod,
                     timeout: notif.expireTimeout > 0 ? notif.expireTimeout : 5000
                 })
             }
@@ -210,7 +220,7 @@ in {
                 "bar":         [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }],
                 "barPosition": [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }],
                 "barLayout":   [{ label: "minimal", barLyt: "minimal" }, { label: "full", barLyt: "full" }],
-                "barMode":     [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }, { label: "pile", centerLyt: "pile" }, { label: "alphabet", centerLyt: "alphabet" }, { label: "english", centerLyt: "english" }],
+                "barMode":     [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }, { label: "pile", centerLyt: "pile" }, { label: "alphabet", centerLyt: "alphabet" }, { label: "english", centerLyt: "english" }, { label: "numbers", centerLyt: "numbers" }],
                 "barLook":     [{ label: "float", barLook: "float" }, { label: "fill", barLook: "fill" }],
                 "power": [
                     { label: "lock",     cmd: [""]                                      },
@@ -700,6 +710,7 @@ in {
                                 property string txt: {
                                     if (barSettings.centerMode === "alphabet") return (["a","b","c","d","e","f","g","h","i","j"])[index]
                                     if (barSettings.centerMode === "english") return (["one","two","three","four","five","six","seven","eight","nine","ten"])[index]
+                                    if (barSettings.centerMode === "numbers") return (["1","2","3","4","5","6","7","8","9","10"])[index]
                                     return (["一","二","三","四","五","六","七","八","九","十"])[index]
                                 }
 
@@ -1092,7 +1103,7 @@ in {
 
                             MText {
                                 width:          parent.width
-                                text:           model.summary !== "" ? model.summary : model.app
+                                text:           model.summary !== "" ? model.summary : (model.app !== "" ? model.app : "notification")
                                 font.pixelSize: 11
                                 font.weight:    Font.Medium
                                 color:          configRoot.colors.special.foreground
@@ -1100,7 +1111,7 @@ in {
                             }
 
                             MText {
-                                visible:        model.body !== "" && model.summary !== ""
+                                visible:        model.body !== ""
                                 width:          parent.width
                                 text:           model.body
                                 font.pixelSize: 10
