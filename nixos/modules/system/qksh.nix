@@ -193,21 +193,12 @@ in {
 
             property var masterTree: {
                 "root": [
-                    { label: "sys", sub: "sys" },
-                    { label: "sts", sub: "sts" },
-                    { label: "rcd", sub: "rcd" },
-                    { label: "wp",  sub: "wallpapers"  },
-                    { label: "pw",  sub: "pw"  }
+                    { label: "settings",  sub: "settings"  },
+                    { label: "record",    sub: "record"    },
+                    { label: "wallpaper", sub: "wallpapers" },
+                    { label: "power",     sub: "power"     }
                 ],
-                "sys": [
-                    { label: "cat",    cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/hosts/${host}/configuration.nix"] },
-                    { label: "${host}", cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/hosts/${host}/${host}.nix"]      },
-                    { label: "wm",     cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/hosts/${host}/components/wm.nix"] },
-                    { label: "qksh",   cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/modules/system/qksh.nix"]         },
-                    { label: "editor", cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/modules/system/editor.nix"]       },
-                    { label: "files",  cmd: ["${pkgs.kitty}/bin/kitty", "-e", "sudoedit", "/etc/nixos/modules/system/files.nix"]        }
-                ],
-                "sts": [
+                "settings": [
                     { label: "animations", sub: "animations" },
                     { label: "bar", sub: "bar" }
                 ],
@@ -219,9 +210,9 @@ in {
                 "bar":         [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }],
                 "barPosition": [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }],
                 "barLayout":   [{ label: "minimal", barLyt: "minimal" }, { label: "full", barLyt: "full" }],
-                "barMode":     [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }, { label: "pile", centerLyt: "pile" }],
+                "barMode":     [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }, { label: "pile", centerLyt: "pile" }, { label: "alphabet", centerLyt: "alphabet" }, { label: "english", centerLyt: "english" }],
                 "barLook":     [{ label: "float", barLook: "float" }, { label: "fill", barLook: "fill" }],
-                "pw": [
+                "power": [
                     { label: "lock",     cmd: [""]                                      },
                     { label: "logout",   cmd: ["${pkgs.hyprland}/bin/hyprctl", "dispatch", "hl.dsp.exit()"]  },
                     { label: "reboot",   cmd: ["${pkgs.systemd}/bin/systemctl", "reboot"]                   },
@@ -242,7 +233,7 @@ in {
             function masterItemsForLevel(l) {
                 if (l === "wallpapers") return masterWpItems
                 if (l === "rcdOutput")  return masterRcdOutItems
-                if (l === "rcd")        return rcdItems()
+                if (l === "record")     return rcdItems()
                 return masterTree[l] ?? masterTree["root"]
             }
 
@@ -706,10 +697,14 @@ in {
                                 property bool  isActive:  Hyprland.focusedWorkspace?.id === wsId
                                 property bool  isUrgent:  ws?.urgent ?? false
                                 property bool  hovered:   harea.containsMouse
-                                property string kanji:    (["一","二","三","四","五","六","七","八","九","十"])[index]
+                                property string txt: {
+                                    if (barSettings.centerMode === "alphabet") return (["a","b","c","d","e","f","g","h","i","j"])[index]
+                                    if (barSettings.centerMode === "english") return (["one","two","three","four","five","six","seven","eight","nine","ten"])[index]
+                                    return (["一","二","三","四","五","六","七","八","九","十"])[index]
+                                }
 
                                 visible: ws !== null || isActive
-                                width:   visible ? Math.round(fm.advanceWidth(kanji)) + 16 : 0
+                                width:   visible ? Math.round(fm.advanceWidth(txt)) + 16 : 0
                                 height:  parent.height
 
                                 Rectangle {
@@ -725,7 +720,7 @@ in {
                                          : parent.isActive ? configRoot.colors.special.background 
                                          : parent.hovered  ? configRoot.colors.special.foreground 
                                          : configRoot.colors.colors.color7 
-                                    text: parent.kanji
+                                    text: parent.txt
                                 }
                                 MouseArea {
                                     id: harea
