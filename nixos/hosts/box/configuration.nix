@@ -22,7 +22,7 @@
     device = "/dev/nvme0n1";
     useOSProber = true;
   };
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxPackages;
 
   zramSwap = {
     enable = true;
