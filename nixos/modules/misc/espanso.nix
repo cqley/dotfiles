@@ -6,6 +6,71 @@
       base = {
         matches = [
           {
+            trigger = ":e1";
+            replace = "{{output}}";
+            vars = [
+              {
+                name = "output";
+                type = "shell";
+                params = {
+                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e1";
+                };
+              }
+            ];
+          }
+          {
+            trigger = ":e2";
+            replace = "{{output}}";
+            vars = [
+              {
+                name = "output";
+                type = "shell";
+                params = {
+                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e2";
+                };
+              }
+            ];
+          }
+          {
+            trigger = ":e3";
+            replace = "{{output}}";
+            vars = [
+              {
+                name = "output";
+                type = "shell";
+                params = {
+                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e3";
+                };
+              }
+            ];
+          }
+          {
+            trigger = ":e4";
+            replace = "{{output}}";
+            vars = [
+              {
+                name = "output";
+                type = "shell";
+                params = {
+                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e4";
+                };
+              }
+            ];
+          }
+          {
+            trigger = ":e5";
+            replace = "{{output}}";
+            vars = [
+              {
+                name = "output";
+                type = "shell";
+                params = {
+                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e5";
+                };
+              }
+            ];
+          }
+          {
             trigger = ":date";
             replace = "{{output}}";
             vars = [
