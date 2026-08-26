@@ -3,6 +3,50 @@ let
   host = osConfig.networking.hostName;
   isbed = host == "bed";
   wpdir = "pictures/wallpapers";
+  sysstat = pkgs.writeCBin "sysstat" ''
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <unistd.h>
+    #include <string.h>
+
+    int main() {
+        long double a[4], b[4];
+        FILE *fp;
+        while (1) {
+            fp = fopen("/proc/stat", "r");
+            if (!fp) break;
+            fscanf(fp, "%*s %lf %lf %lf %lf", &a[0], &a[1], &a[2], &a[3]);
+            fclose(fp);
+
+            sleep(1);
+
+            fp = fopen("/proc/stat", "r");
+            if (!fp) break;
+            fscanf(fp, "%*s %lf %lf %lf %lf", &b[0], &b[1], &b[2], &b[3]);
+            fclose(fp);
+
+            double load = ((b[0]+b[1]+b[2]) - (a[0]+a[1]+a[2])) / ((b[0]+b[1]+b[2]+b[3]) - (a[0]+a[1]+a[2]+a[3])) * 100.0;
+
+            fp = fopen("/proc/meminfo", "r");
+            if (!fp) break;
+            long total = 0, avail = 0;
+            char line[256];
+            while (fgets(line, sizeof(line), fp)) {
+                if (sscanf(line, "MemTotal: %ld kB", &total) == 1) continue;
+                if (sscanf(line, "MemAvailable: %ld kB", &avail) == 1) break;
+            }
+            fclose(fp);
+
+            int mem = total > 0 ? (int)(((double)(total - avail) / total) * 100.0) : 0;
+
+            printf("cpu %d%% | mem %d%%\n", (int)load, mem);
+            fflush(stdout);
+
+            sleep(9);
+        }
+        return 0;
+    }
+  '';
 in {
   xdg.configFile."quickshell/shell.qml".text = ''
     import Quickshell
@@ -213,9 +257,9 @@ in {
                     { label: "bar", sub: "bar" }
                 ],
                 "animations": [
-                    { label: "fade", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"workspaces\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })' && ${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })' && ${pkgs.libnotify}/bin/notify-send animations fade"] },
-                    { label: "vertical", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" })' && ${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" })' && ${pkgs.libnotify}/bin/notify-send animations vertical"] },
-                    { label: "horizontal", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" })' && ${pkgs.hyprland}/bin/hyprctl eval 'hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" })' && ${pkgs.libnotify}/bin/notify-send animations horizontal"] }
+                    { label: "fade", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl --batch 'eval hl.animation({ leaf = \"workspaces\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" }) ; eval hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 1.94, bezier = \"almostLinear\", style = \"fade\" })' && ${pkgs.libnotify}/bin/notify-send animations fade"] },
+                    { label: "vertical", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl --batch 'eval hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" }) ; eval hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" })' && ${pkgs.libnotify}/bin/notify-send animations vertical"] },
+                    { label: "horizontal", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl --batch 'eval hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" }) ; eval hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" })' && ${pkgs.libnotify}/bin/notify-send animations horizontal"] }
                 ],
                 "bar":         [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }],
                 "barPosition": [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }],
@@ -498,7 +542,7 @@ in {
 
             Process {
                 id: sysProc
-                command: ["${pkgs.bash}/bin/bash", "-c", "while true; do echo \"cpu $(${pkgs.gnugrep}/bin/grep 'cpu ' /proc/stat | ${pkgs.gawk}/bin/awk '{print int(($2+$4)*100/($2+$4+$5))}')% | mem $(${pkgs.procps}/bin/free | ${pkgs.gawk}/bin/awk '/Mem:/ {print int($3/$2*100)}')%\"; ${pkgs.coreutils}/bin/sleep 10; done"]
+                command: ["${sysstat}/bin/sysstat"]
                 running: barSettings.centerMode === "performance"
                 stdout: SplitParser {
                     onRead: data => { root.sysStats = data.trim() }
@@ -1040,35 +1084,12 @@ in {
             fullWidth: true
 
             implicitWidth:  Math.round(root.implicitWidth / 3)
-            implicitHeight: notifModel.count * 34 + (notifModel.count > 1 ? 20 : 0)
+            implicitHeight: notifModel.count * 34
 
             Column {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: Math.round(root.implicitWidth / 3)
                 spacing: 0
-
-                Rectangle {
-                    visible: notifModel.count > 1
-                    width: parent.width
-                    height: 20
-                    color: configRoot.colors.special.background
-
-                    MText {
-                        anchors.right: parent.right
-                        anchors.rightMargin: 10
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "clear all"
-                        font.pixelSize: 10
-                        color: clearAllMouse.containsMouse ? configRoot.colors.special.foreground : configRoot.colors.colors.color7
-                        MouseArea {
-                            id: clearAllMouse
-                            anchors.fill: parent
-                            anchors.margins: -6
-                            hoverEnabled: true
-                            onClicked: root.clearAllNotifs()
-                        }
-                    }
-                }
 
                 Repeater {
                     model: notifModel
@@ -1078,6 +1099,7 @@ in {
                         width:  Math.round(root.implicitWidth / 3)
                         height: 34
                         color: configRoot.colors.special.background
+                        clip: true
 
                         Rectangle {
                             visible: index > 0
@@ -1108,6 +1130,7 @@ in {
                                 font.weight:    Font.Medium
                                 color:          configRoot.colors.special.foreground
                                 elide:          Text.ElideRight
+                                maximumLineCount: 1
                             }
 
                             MText {
@@ -1117,6 +1140,7 @@ in {
                                 font.pixelSize: 10
                                 color:          configRoot.colors.colors.color7
                                 elide:          Text.ElideRight
+                                maximumLineCount: 1
                             }
                         }
 
