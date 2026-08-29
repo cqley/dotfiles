@@ -9,6 +9,13 @@
 - operating system: https://nixos.org/
 - window manager: https://hypr.land/
 
+<hr>
+
+### Usage:
+
 ```
 curl -s https://raw.githubusercontent.com/cqley/dotfiles/main/install.sh | bash
 ```
+<hr>
+
+<div align="center">END OF DOCUMENT</div>
