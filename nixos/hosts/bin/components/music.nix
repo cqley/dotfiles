@@ -14,6 +14,7 @@
 
   environment.systemPackages = [
     pkgs.ffmpeg
+    pkgs.deno
     (pkgs.writeShellScriptBin "music" ''
       [[ $# -lt 2 ]] && { echo "usage: music [song|playlist] url"; exit 1; }
       cd /var/lib/navidrome/music || exit 1
@@ -31,7 +32,7 @@
         -o "%(title)s.%(ext)s" \
         "https://music.youtube.com/playlist?list=PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss"
     '';
-    path = [ pkgs.yt-dlp pkgs.ffmpeg ];
+    path = [ pkgs.yt-dlp pkgs.ffmpeg pkgs.deno ];
     serviceConfig = {
       Type = "oneshot";
       User = "navidrome";
@@ -47,7 +48,7 @@
         -o "%(title)s.%(ext)s" \
         "https://music.youtube.com/playlist?list=PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp"
     '';
-    path = [ pkgs.yt-dlp pkgs.ffmpeg ];
+    path = [ pkgs.yt-dlp pkgs.ffmpeg pkgs.deno ];
     serviceConfig = {
       Type = "oneshot";
       User = "navidrome";
