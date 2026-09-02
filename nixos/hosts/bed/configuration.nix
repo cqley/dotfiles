@@ -111,8 +111,7 @@
     wiremix
     zathura
     libreoffice
-    pkgs-unstable.mangal
-    pkgs-unstable.ani-cli
+    vencord
   ];
 
   fonts.packages = with pkgs; [
