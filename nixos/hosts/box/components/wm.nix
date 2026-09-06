@@ -38,7 +38,7 @@
           general = {
               gaps_in = 2.5,
               gaps_out = 5,
-              border_size = 1,
+              border_size = 0,
               resize_on_border = false,
               col = { active_border = "rgba(ffffffff)" },
               allow_tearing = false,
@@ -53,7 +53,7 @@
               active_opacity = 1.0,
               inactive_opacity = 1.0,
               shadow = {
-                  enabled = true,
+                  enabled = false,
                   range = 4,
                   render_power = 3,
                   color = "rgba(1a1a1aee)",
