@@ -117,6 +117,7 @@ environment.systemPackages = with pkgs; [
     mpv
     wiremix
     zathura
+    libreoffice
   ];
 
 fonts.packages = with pkgs; [
