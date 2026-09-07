@@ -109,7 +109,8 @@ in {
             property string position: "top"
             property string layout: "minimal"
             property string look: "float"
-            property string centerMode: "default"
+            property string centerMode: "kanji"
+            property bool wsAnimation: true
         }
 
         NotificationServer {
@@ -261,10 +262,11 @@ in {
                     { label: "vertical", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl --batch 'eval hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" }) ; eval hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slidevert\" })' && ${pkgs.libnotify}/bin/notify-send animations vertical"] },
                     { label: "horizontal", cmd: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.hyprland}/bin/hyprctl --batch 'eval hl.animation({ leaf = \"workspaces\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" }) ; eval hl.animation({ leaf = \"specialWorkspace\", enabled = true, speed = 5, bezier = \"hard\", style = \"slide\" })' && ${pkgs.libnotify}/bin/notify-send animations horizontal"] }
                 ],
-                "bar":         [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }],
+                "bar":         [{ label: "position", sub: "barPosition" }, { label: "layout", sub: "barLayout" }, { label: "mode", sub: "barMode" }, { label: "look", sub: "barLook" }, { label: "animation", sub: "barAnimation" }],
+                "barAnimation": [{ label: "on", barAnim: true }, { label: "off", barAnim: false }],
                 "barPosition": [{ label: "top", barPos: "top" }, { label: "bottom", barPos: "bottom" }],
                 "barLayout":   [{ label: "minimal", barLyt: "minimal" }, { label: "full", barLyt: "full" }],
-                "barMode":     [{ label: "performance", centerLyt: "performance" }, { label: "default", centerLyt: "default" }, { label: "pile", centerLyt: "pile" }, { label: "alphabet", centerLyt: "alphabet" }, { label: "english", centerLyt: "english" }, { label: "numbers", centerLyt: "numbers" }],
+                "barMode":     [{ label: "performance", centerLyt: "performance" }, { label: "kanji", centerLyt: "kanji" }, { label: "simple", centerLyt: "simple" }, { label: "pile", centerLyt: "pile" }, { label: "alphabet", centerLyt: "alphabet" }, { label: "english", centerLyt: "english" }, { label: "numbers", centerLyt: "numbers" }],
                 "barLook":     [{ label: "float", barLook: "float" }, { label: "fill", barLook: "fill" }],
                 "power": [
                     { label: "lock",     cmd: [""]                                      },
@@ -372,6 +374,7 @@ in {
                 if (item.barPos  !== undefined) { barSettings.position = item.barPos; masterClose(); return }
                 if (item.barLyt  !== undefined) { barSettings.layout   = item.barLyt; masterClose(); return }
                 if (item.barLook !== undefined) { barSettings.look     = item.barLook; masterClose(); return }
+                if (item.barAnim !== undefined) { barSettings.wsAnimation = item.barAnim; masterClose(); return }
                 if (item.centerLyt !== undefined) { barSettings.centerMode = item.centerLyt; masterClose(); return }
                 if (item.cmd    !== undefined) { mProc.command  = item.cmd; mProc.running  = true }
                 masterClose()
@@ -733,14 +736,108 @@ in {
                     color: configRoot.colors.special.foreground 
                 }
 
+                Item {
+                    anchors.centerIn: parent
+                    width: 0
+                    height: 22
+                    visible: barSettings.centerMode === "simple" && (root.activeMode === "none" || root.activeMode === "calendar" || root.activeMode === "wifi" || root.activeMode === "tray" || root.activeMode === "bluetooth")
+
+                    property int activeWs: Hyprland.focusedWorkspace?.id ?? 1
+                    property real scrollPos: 0
+
+                    Component.onCompleted: scrollPos = activeWs - 1
+
+                    onActiveWsChanged: {
+                        let target = activeWs - 1
+                        let currentMod = ((scrollPos % 26) + 26) % 26
+                        let diff = target - currentMod
+                        if (diff > 13) diff -= 26
+                        if (diff < -13) diff += 26
+                        scrollPos += diff
+                    }
+
+                    Behavior on scrollPos {
+                        enabled: barSettings.wsAnimation
+                        NumberAnimation {
+                            duration: 250
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+                    Repeater {
+                        model: 26
+                        Item {
+                            property int charIndex: index
+                            property string txt: "abcdefghijklmnopqrstuvwxyz"[charIndex]
+                            
+                            property real rawDist: charIndex - parent.scrollPos
+                            property real modDist: ((rawDist % 26) + 26) % 26
+                            property real wrapDist: modDist > 13 ? modDist - 26 : modDist
+                            
+                            visible: Math.abs(wrapDist) <= 4.5
+                            
+                            width: letterText.contentWidth + 8
+                            height: 22
+                            x: (wrapDist * 16) - (width / 2)
+                            
+                            property bool isActive: Math.abs(wrapDist) < 0.5
+                            property bool hovered: sarea.containsMouse
+                            
+                            Rectangle {
+                                anchors.fill: parent
+                                color: parent.hovered ? configRoot.colors.colors.color8 : "transparent"
+                            }
+                            
+                            MText {
+                                id: letterText
+                                anchors.centerIn: parent
+                                font.pixelSize: Math.max(1, 14 - Math.abs(parent.wrapDist))
+                                color: parent.isActive ? configRoot.colors.special.foreground 
+                                     : parent.hovered  ? configRoot.colors.special.foreground 
+                                     : configRoot.colors.colors.color7 
+                                text: parent.txt
+                            }
+                            
+                            MouseArea {
+                                id: sarea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: {
+                                    let targetWs = parent.charIndex + 1
+                                    Hyprland.dispatch('hl.dsp.focus({ workspace = "' + targetWs + '" })')
+                                }
+                            }
+                        }
+                    }
+                }
+
                 RowLayout {
                     anchors.fill: parent
                     spacing: 0
 
+                    Item {
+                        Layout.fillHeight: true
+                        implicitWidth: dateText.implicitWidth + 20
+                        visible: barSettings.centerMode === "simple"
+
+                        MText {
+                            id: dateText
+                            anchors.centerIn: parent
+                            font.letterSpacing: 0.02 * 11
+                            color: configRoot.colors.special.foreground
+                            text: Qt.formatDateTime(new Date(), "dd/MM")
+
+                            Timer {
+                                interval: 1000; running: true; repeat: true
+                                onTriggered: dateText.text = Qt.formatDateTime(new Date(), "dd/MM")
+                            }
+                        }
+                    }
+
                     Row {
                         spacing: 0
                         Layout.fillHeight: true
-                        visible: barSettings.centerMode !== "pile"
+                        visible: barSettings.centerMode !== "pile" && barSettings.centerMode !== "simple"
 
                         Repeater {
                             model: 10
@@ -886,6 +983,7 @@ in {
                     Item {
                         Layout.fillHeight: true
                         implicitWidth: 16
+                        visible: barSettings.centerMode !== "simple"
 
                         Row {
                             anchors.centerIn: parent
@@ -915,6 +1013,7 @@ in {
                         Layout.fillHeight: true
                         implicitWidth: 16
                         Layout.rightMargin: 6
+                        visible: barSettings.centerMode !== "simple"
 
                         Row {
                             anchors.centerIn: parent
@@ -944,7 +1043,7 @@ in {
                     Item {
                         Layout.fillHeight: true
                         implicitWidth: 36
-                        visible: ${if isbed then "true" else "false"}
+                        visible: ${if isbed then "barSettings.centerMode !== 'simple'" else "false"}
 
                         Row {
                             anchors.verticalCenter: parent.verticalCenter
@@ -974,17 +1073,18 @@ in {
                             anchors.horizontalCenter: parent.left
                             width: 1; height: parent.height
                             color: configRoot.colors.colors.color8
+                            visible: barSettings.centerMode !== "simple"
                         }
                         MText {
                             id: clockText
                             anchors.centerIn:   parent
                             font.letterSpacing: 0.02 * 11
                             color: configRoot.colors.special.foreground
-                            text:  Qt.formatDateTime(new Date(), "dd/MM | HH:mm:ss")
+                            text: barSettings.centerMode === "simple" ? Qt.formatDateTime(new Date(), "HH:mm:ss") : Qt.formatDateTime(new Date(), "dd/MM | HH:mm:ss")
 
                             Timer {
                                 interval: 1000; running: true; repeat: true
-                                onTriggered: clockText.text = Qt.formatDateTime(new Date(), "dd/MM | HH:mm:ss")
+                                onTriggered: clockText.text = barSettings.centerMode === "simple" ? Qt.formatDateTime(new Date(), "HH:mm:ss") : Qt.formatDateTime(new Date(), "dd/MM | HH:mm:ss")
                             }
                         }
                         MouseArea {
