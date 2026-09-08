@@ -111,7 +111,7 @@
     wiremix
     zathura
     libreoffice
-    vencord
+    brightnessctl
   ];
 
   fonts.packages = with pkgs; [
