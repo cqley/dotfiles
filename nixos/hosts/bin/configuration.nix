@@ -8,6 +8,7 @@
     ./components/pufferpanel.nix
     ./components/music.nix
     ./components/immich.nix
+    ./components/twitch.nix
     ../../modules/misc/public.nix
   ];
 
