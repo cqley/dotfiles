@@ -5,43 +5,40 @@ let
   wpdir = "pictures/wallpapers";
   sysstat = pkgs.writeCBin "sysstat" ''
     #include <stdio.h>
-    #include <stdlib.h>
     #include <unistd.h>
-    #include <string.h>
 
     int main() {
-        long double a[4], b[4];
-        FILE *fp;
+        FILE *fstat = fopen("/proc/stat", "r");
+        FILE *fmem = fopen("/proc/meminfo", "r");
+        long double a[8], b[8];
+        char line[256];
+        long total, avail;
+
         while (1) {
-            fp = fopen("/proc/stat", "r");
-            if (!fp) break;
-            fscanf(fp, "%*s %lf %lf %lf %lf", &a[0], &a[1], &a[2], &a[3]);
-            fclose(fp);
-
+            rewind(fstat);
+            fscanf(fstat, "%*s %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf", &a[0], &a[1], &a[2], &a[3], &a[4], &a[5], &a[6], &a[7]);
             sleep(1);
+            
+            rewind(fstat);
+            fscanf(fstat, "%*s %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf", &b[0], &b[1], &b[2], &b[3], &b[4], &b[5], &b[6], &b[7]);
 
-            fp = fopen("/proc/stat", "r");
-            if (!fp) break;
-            fscanf(fp, "%*s %lf %lf %lf %lf", &b[0], &b[1], &b[2], &b[3]);
-            fclose(fp);
+            long double id_a = a[3] + a[4];
+            long double id_b = b[3] + b[4];
+            long double t_a = id_a + a[0] + a[1] + a[2] + a[5] + a[6] + a[7];
+            long double t_b = id_b + b[0] + b[1] + b[2] + b[5] + b[6] + b[7];
+            
+            int load = (int)(((t_b - t_a) - (id_b - id_a)) / (t_b - t_a) * 100.0);
 
-            double load = ((b[0]+b[1]+b[2]) - (a[0]+a[1]+a[2])) / ((b[0]+b[1]+b[2]+b[3]) - (a[0]+a[1]+a[2]+a[3])) * 100.0;
-
-            fp = fopen("/proc/meminfo", "r");
-            if (!fp) break;
-            long total = 0, avail = 0;
-            char line[256];
-            while (fgets(line, sizeof(line), fp)) {
+            rewind(fmem);
+            while (fgets(line, sizeof(line), fmem)) {
                 if (sscanf(line, "MemTotal: %ld kB", &total) == 1) continue;
                 if (sscanf(line, "MemAvailable: %ld kB", &avail) == 1) break;
             }
-            fclose(fp);
 
             int mem = total > 0 ? (int)(((double)(total - avail) / total) * 100.0) : 0;
 
-            printf("cpu %d%% | mem %d%%\n", (int)load, mem);
+            printf("cpu %d%% | mem %d%%\n", load, mem);
             fflush(stdout);
-
             sleep(9);
         }
         return 0;
@@ -514,7 +511,7 @@ in {
 
             Process {
                 id: wpLsProc
-                command: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.coreutils}/bin/ls ${config.home.homeDirectory}/${wpdir}/"]
+                command: ["${pkgs.coreutils}/bin/ls", "${config.home.homeDirectory}/${wpdir}"]
                 running: false
                 stdout: SplitParser {
                     splitMarker: ""
@@ -533,16 +530,6 @@ in {
                 }
             }
 
-            Timer {
-                interval: 10000; running: true; repeat: true; triggeredOnStart: true
-                onTriggered: {
-                    if (!micProc.running) micProc.running = true
-                    if (!wifiStatusProc.running) wifiStatusProc.running = true
-                    if (!btStatusProc.running) btStatusProc.running = true
-                    ${if isbed then "if (!batProc.running) batProc.running = true" else ""}
-                }
-            }
-
             Process {
                 id: sysProc
                 command: ["${sysstat}/bin/sysstat"]
@@ -554,8 +541,8 @@ in {
 
             Process {
                 id: micProc
-                command: ["${pkgs.bash}/bin/bash", "-c", "${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | ${pkgs.gawk}/bin/awk '{print ($3==\"[MUTED]\"?\"󰍭\":\"󰍬\")}'"]
-                running: false
+                command: ["${pkgs.bash}/bin/bash", "-c", "while true; do ${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | ${pkgs.gawk}/bin/awk '{print ($3==\"[MUTED]\"?\"󰍭\":\"󰍬\")}'; sleep 10; done"]
+                running: true
                 stdout: SplitParser {
                     onRead: data => { root.micState = data.trim() }
                 }
@@ -564,12 +551,17 @@ in {
             Process {
                 id: micActProc
                 running: false
-                onRunningChanged: if (!running) micProc.running = true
+                onRunningChanged: {
+                    if (!running) {
+                        micProc.running = false
+                        micProc.running = true
+                    }
+                }
             }
 
             Process {
                 id: batProc
-                command: ["${pkgs.bash}/bin/bash", "-c", "b=$(${pkgs.coreutils}/bin/cat /sys/class/power_supply/BAT*/capacity 2>/dev/null | ${pkgs.coreutils}/bin/head -n1); echo \"''${b:-0}%\""]
+                command: ["${pkgs.bash}/bin/bash", "-c", "while true; do b=$(${pkgs.coreutils}/bin/cat /sys/class/power_supply/BAT*/capacity 2>/dev/null | ${pkgs.coreutils}/bin/head -n1); echo \"''${b:-0}%\"; sleep 10; done"]
                 running: ${if isbed then "true" else "false"}
                 stdout: SplitParser {
                     onRead: data => { root.batState = data.trim() }
@@ -578,8 +570,8 @@ in {
 
             Process {
                 id: wifiStatusProc
-                command: ["${pkgs.bash}/bin/bash", "-c", "r=$(${pkgs.networkmanager}/bin/nmcli -t radio wifi); s=$(${pkgs.networkmanager}/bin/nmcli -t -f active,ssid dev wifi | ${pkgs.gnugrep}/bin/grep '^yes:' | ${pkgs.coreutils}/bin/cut -d: -f2-); echo \"$r:$s\""]
-                running: false
+                command: ["${pkgs.bash}/bin/bash", "-c", "while true; do r=$(${pkgs.networkmanager}/bin/nmcli -t radio wifi); s=$(${pkgs.networkmanager}/bin/nmcli -t -f active,ssid dev wifi | ${pkgs.gnugrep}/bin/grep '^yes:' | ${pkgs.coreutils}/bin/cut -d: -f2-); echo \"$r:$s\"; sleep 10; done"]
+                running: true
                 stdout: SplitParser {
                     onRead: data => {
                         let parts = data.trim().split(":")
@@ -601,6 +593,7 @@ in {
                 running: false
                 onRunningChanged: {
                     if (!running) {
+                        wifiStatusProc.running = false
                         wifiStatusProc.running = true
                         wifiListProc.running = true
                     }
@@ -658,6 +651,7 @@ in {
                     } else {
                         root.wifiConnectError = root.wifiErrBuf.trim() !== "" ? root.wifiErrBuf.trim() : "connection failed"
                     }
+                    wifiStatusProc.running = false
                     wifiStatusProc.running = true
                     wifiListProc.running = true
                 }
@@ -665,8 +659,8 @@ in {
 
             Process {
                 id: btStatusProc
-                command: ["${pkgs.bash}/bin/bash", "-c", "p=$(${pkgs.bluez}/bin/bluetoothctl show 2>/dev/null | ${pkgs.gnugrep}/bin/grep -c 'Powered: yes'); c=$(${pkgs.bluez}/bin/bluetoothctl devices Connected 2>/dev/null | ${pkgs.coreutils}/bin/cut -d' ' -f3-); echo \"$p|$c\""]
-                running: false
+                command: ["${pkgs.bash}/bin/bash", "-c", "while true; do p=$(${pkgs.bluez}/bin/bluetoothctl show 2>/dev/null | ${pkgs.gnugrep}/bin/grep -c 'Powered: yes'); c=$(${pkgs.bluez}/bin/bluetoothctl devices Connected 2>/dev/null | ${pkgs.coreutils}/bin/cut -d' ' -f3-); echo \"$p|$c\"; sleep 10; done"]
+                running: true
                 stdout: SplitParser {
                     onRead: data => {
                         let parts = data.trim().split("|")
@@ -680,7 +674,12 @@ in {
             Process {
                 id: btToggleProc
                 running: false
-                onRunningChanged: if (!running) btStatusProc.running = true
+                onRunningChanged: {
+                    if (!running) {
+                        btStatusProc.running = false
+                        btStatusProc.running = true
+                    }
+                }
             }
 
             Process {
@@ -712,6 +711,7 @@ in {
                 running: false
                 onRunningChanged: {
                     if (!running) {
+                        btStatusProc.running = false
                         btStatusProc.running = true
                         btListProc.running = true
                     }
@@ -1392,9 +1392,9 @@ in {
 
             function activate(dev) {
                 if (dev.connected) {
-                    btConnectProc.command = ["${pkgs.bluez}/bin/bluetoothctl", "disconnect", dev.mac]
+                    btConnectProc.command = ["${pkgs.coreutils}/bin/timeout", "15", "${pkgs.bluez}/bin/bluetoothctl", "disconnect", dev.mac]
                 } else {
-                    btConnectProc.command = ["${pkgs.bluez}/bin/bluetoothctl", "connect", dev.mac]
+                    btConnectProc.command = ["${pkgs.coreutils}/bin/timeout", "15", "${pkgs.bluez}/bin/bluetoothctl", "connect", dev.mac]
                 }
                 btConnectProc.running = true
             }
@@ -1552,7 +1552,7 @@ in {
             }
 
             function connectTo(ssid, password) {
-                let cmd = "${pkgs.networkmanager}/bin/nmcli dev wifi connect \"" + ssid + "\""
+                let cmd = "${pkgs.coreutils}/bin/timeout 15 ${pkgs.networkmanager}/bin/nmcli dev wifi connect \"" + ssid + "\""
                 if (password !== undefined) cmd += " password \"" + password + "\""
                 wifiConnectProc.command = ["${pkgs.bash}/bin/bash", "-c", cmd]
                 wifiConnectProc.running = true
