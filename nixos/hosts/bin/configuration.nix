@@ -59,6 +59,14 @@
     LC_TIME = "de_DE.UTF-8";
   };
 
+  security.doas.enable = true;
+  security.sudo.enable = false;
+  security.doas.extraRules = [{
+    users = ["cat"];
+    keepEnv = true;
+    persist = true;
+  }];
+
   nixpkgs.config.allowUnfree = true;
   programs.fish.enable = true;
 

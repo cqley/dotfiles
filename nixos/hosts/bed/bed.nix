@@ -24,9 +24,9 @@
   programs.fish = {
     enable = true;
     shellAbbrs = {
-      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/#bed";
-      update = "sudo nix flake update --flake /etc/nixos/ && sudo nixos-rebuild switch --flake /etc/nixos/#bed";
-      system = "sudo nvim /etc/nixos";
+      rebuild = "doas nixos-rebuild switch --flake /etc/nixos/#bed";
+      update = "doas nix flake update --flake /etc/nixos/ && doas nixos-rebuild switch --flake /etc/nixos/#bed";
+      system = "doas nvim /etc/nixos";
     };
     functions = {
       fish_greeting = { body = ""; };

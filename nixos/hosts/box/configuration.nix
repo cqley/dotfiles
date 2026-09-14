@@ -96,6 +96,14 @@
     };
   };
 
+  security.doas.enable = true;
+  security.sudo.enable = false;
+  security.doas.extraRules = [{
+    users = ["cat"];
+    keepEnv = true;
+    persist = true;
+  }];
+
   users.users.cat = {
     isNormalUser = true;
     description = "cat";
