@@ -126,6 +126,7 @@ environment.systemPackages = with pkgs; [
     wiremix
     zathura
     libreoffice
+    kdenlive
   ];
 
 fonts.packages = with pkgs; [
