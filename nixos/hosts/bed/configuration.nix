@@ -90,7 +90,7 @@
   };
 
   security.doas.enable = true;
-  security.sudo.enable = false;
+  security.sudo.enable = true;
   security.doas.extraRules = [{
     users = ["cat"];
     keepEnv = true;
