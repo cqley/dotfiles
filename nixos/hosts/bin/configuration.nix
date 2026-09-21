@@ -7,7 +7,7 @@
     ./components/cgit.nix
     ./components/pufferpanel.nix
     ./components/music.nix
-    ./components/immich.nix
+    ./components/filehost.nix
     ./components/twitch.nix
     ../../modules/misc/public.nix
   ];
