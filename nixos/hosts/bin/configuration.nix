@@ -10,7 +10,7 @@
     ./components/music.nix
     ./components/filehost.nix
     ./components/twitch.nix
-    ../../modules/misc/core.nix
+    ../../modules/system/core.nix
     ../../modules/misc/public.nix
   ];
 
