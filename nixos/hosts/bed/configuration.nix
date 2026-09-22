@@ -106,6 +106,7 @@
   environment.systemPackages = with pkgs; [
     git
     kitty
+    tmux
     ungoogled-chromium
     wl-clipboard
     libnotify

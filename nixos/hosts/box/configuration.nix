@@ -114,6 +114,7 @@
 environment.systemPackages = with pkgs; [
     git
     kitty
+    tmux
     wl-clipboard
     libnotify
     quickshell
