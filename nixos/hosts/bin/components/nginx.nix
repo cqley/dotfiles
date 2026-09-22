@@ -20,11 +20,10 @@
       enableACME = true;
       locations."/".proxyPass = "http://127.0.0.1:47291";
     };
-    virtualHosts."host.1f2t.org" = {
+    virtualHosts."music.1f2t.org" = {
       forceSSL = true;
       enableACME = true;
-      extraConfig = "client_max_body_size 250M;";
-      locations."/".proxyPass = "http://127.0.0.1:47291";
+      locations."/".proxyPass = "http://127.0.0.1:4533";
     };
     virtualHosts."tv.1f2t.org" = {
       forceSSL = true;
