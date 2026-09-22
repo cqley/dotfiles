@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>blog</title>
+<style>
+:root{
+  --bg:#fff;
+  --fg:#222;
+  --dim:#888;
+  --acc:#f2b8e2;
+  --line:#ddd;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:ui-monospace,monospace;
+  font-size:14px;
+  line-height:1.5;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.wrap{
+  max-width:60ch;
+  margin:4rem auto;
+  padding:0 1rem;
+}
+h1{font-size:1rem;font-weight:normal;margin:0 0 1.5rem}
+h2{
+  font-size:.85em;
+  color:var(--dim);
+  border-bottom:1px solid var(--line);
+  padding-bottom:.4rem;
+  margin:0 0 1rem;
+}
+p{margin:0 0 1.2rem}
+.date{color:var(--dim);font-size:.85em}
+table{width:100%;border-collapse:collapse}
+tr{border-bottom:1px solid var(--line)}
+tr:last-child{border-bottom:none}
+td{padding:.6rem 0;vertical-align:top}
+td.d{color:var(--dim);white-space:nowrap;padding-right:1.2rem}
+a{color:var(--fg);text-decoration:none}
+a:hover, a:focus{color:var(--acc)}
+a:focus{outline:1px solid var(--acc)}
+.up{color:var(--dim)}
+.up:hover, .up:focus{color:var(--acc)}
+.post p{color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const posts=[];
+
+function esc(s){return s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+
+function render(){
+  const hash=location.hash.slice(1);
+  const app=document.getElementById("app");
+  if(!hash){
+    app.innerHTML=`
+      <h1>blog</h1>
+      <table><tbody>
+        ${posts.map(p=>`<tr>
+          <td class="d">${p.date}</td>
+          <td><a href="#${p.slug}">${p.name}</a></td>
+        </tr>`).join("")}
+      </tbody></table>
+    `;
+    return;
+  }
+  const post=posts.find(p=>p.slug===hash);
+  if(!post){
+    app.innerHTML=`<p>no such file.</p><a class="up" href="#">../</a>`;
+    return;
+  }
+  app.innerHTML=`
+    <a class="up" href="#">../</a>
+    <h1 style="margin-top:1.5rem">${post.name.replace(".md","")}</h1>
+    <p class="date" style="margin-bottom:1.5rem">${post.date}</p>
+    <div class="post">${post.body.map(b=>`<p>${esc(b)}</p>`).join("")}</div>
+  `;
+}
+
+window.addEventListener("hashchange",render);
+render();
+</script>
+</body>
+</html>

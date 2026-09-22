@@ -6,8 +6,9 @@
     ./components/nginx.nix
     ./components/wireguard.nix
     ./components/dashboard.nix
-    ./components/cgit.nix
-    ./components/pufferpanel.nix
+    ./components/git.nix
+    ./components/panel.nix
+    ./components/blog.nix
     ./components/music.nix
     ./components/filehost.nix
     ../../modules/system/core.nix
