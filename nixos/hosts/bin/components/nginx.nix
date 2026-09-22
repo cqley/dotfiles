@@ -2,7 +2,7 @@
 {
   security.acme = {
     acceptTerms = true;
-    defaults.email = "@cat4.org";
+    defaults.email = "@1f2t.org";
   };
 
   services.nginx = {
@@ -10,22 +10,22 @@
     recommendedProxySettings = true;
     recommendedTlsSettings = true;
 
-    virtualHosts."git.cat4.org" = {
+    virtualHosts."git.1f2t.org" = {
       forceSSL = true;
       enableACME = true;
       locations."/".proxyPass = "http://127.0.0.1:8888";
     };
-    virtualHosts."files.cat4.org" = {
+    virtualHosts."files.1f2t.org" = {
       forceSSL = true;
       enableACME = true;
       locations."/".proxyPass = "http://127.0.0.1:47291";
     };
-    virtualHosts."music.cat4.org" = {
+    virtualHosts."music.1f2t.org" = {
       forceSSL = true;
       enableACME = true;
       locations."/".proxyPass = "http://127.0.0.1:4533";
     };
-    virtualHosts."tv.cat4.org" = {
+    virtualHosts."tv.1f2t.org" = {
       forceSSL = true;
       enableACME = true;
       locations."/".proxyPass = "http://127.0.0.1:8934";

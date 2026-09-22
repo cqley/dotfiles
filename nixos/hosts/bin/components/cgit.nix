@@ -2,7 +2,7 @@
   services.cgit.tight = {
     enable = true;
     scanPath = "/srv/git";
-    nginx.virtualHost = "git.cat4.org";
+    nginx.virtualHost = "git.1f2t.org";
     gitHttpBackend = {
       enable = true;
       checkExportOkFiles = false;
@@ -14,7 +14,7 @@
       enable-commit-graph = 1;
       enable-log-filecount = 1;
       enable-log-linecount = 1;
-      clone-prefix = "https://git.cat4.org";
+      clone-prefix = "https://git.1f2t.org";
     };
   };
 }
