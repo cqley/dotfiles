@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bin</title>
+<style>
+:root{--bg:#fff;--fg:#222;--dim:#888;--acc:#f2b8e2;--line:#ddd;--ok:#5a5;--err:#e33;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:ui-monospace,monospace;font-size:14px;line-height:1.5;max-width:60ch;margin:3rem auto;padding:0 1rem;}
+h1{font-size:1rem;font-weight:normal;margin:0 0 .3rem}
+h2{font-size:.85rem;font-weight:normal;color:var(--dim);margin:2rem 0 .4rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
+p{margin:0;color:var(--dim);font-size:.85em}
+table{width:100%;border-collapse:collapse;font-size:.9em}
+td{padding:.25rem 0;border-bottom:1px solid var(--line)}
+td:last-child{text-align:right;color:var(--dim)}
+.dot{display:inline-block;width:.6em;height:.6em;border-radius:50%;margin-right:.5em;background:var(--dim)}
+.ok .dot{background:var(--ok)}
+.bad .dot{background:var(--err)}
+.bad td{color:var(--err)}
+.errs{color:var(--err)}
+.bar{background:var(--line);height:.5em;width:100%;margin-top:.15rem}
+.bar i{display:block;height:100%;background:var(--acc)}
+</style>
+</head>
+<body>
+<h1>bin</h1>
+<p id="gen">loading...</p>
+
+<h2>load / mem</h2>
+<table>
+<tr><td>load</td><td id="load">-</td></tr>
+<tr><td>mem<div class="bar"><i id="membar" style="width:0%"></i></div></td><td id="mem">-</td></tr>
+</table>
+
+<h2>services</h2>
+<table id="services"></table>
+
+<h2>disk</h2>
+<table id="disk"></table>
+
+<h2>storage per component</h2>
+<table id="storage"></table>
+
+<script>
+function row(cells,cls){
+  const tr=document.createElement('tr');
+  if(cls) tr.className=cls;
+  cells.forEach(c=>{const td=document.createElement('td');td.innerHTML=c;tr.appendChild(td)});
+  return tr;
+}
+
+async function load(){
+  try{
+    const s=await (await fetch('/data/status.json',{cache:'no-store'})).json();
+    document.getElementById('gen').textContent='updated '+new Date(s.generated*1000).toLocaleTimeString();
+    document.getElementById('load').textContent=s.load.join(' / ');
+    const pct=Math.round(s.mem.used/s.mem.total*100);
+    document.getElementById('mem').textContent=s.mem.used+'mb / '+s.mem.total+'mb';
+    document.getElementById('membar').style.width=pct+'%';
+
+    const st=document.getElementById('services');
+    st.innerHTML='';
+    s.services.forEach(x=>{
+      const bad = x.active!=='active' || x.failed==='failed' || x.errors>0;
+      st.appendChild(row([
+        '<span class="dot"></span>'+x.name,
+        x.active,
+        x.errors>0?('<span class="errs">'+x.errors+' err</span>'):'ok'
+      ], bad?'bad':'ok'));
+    });
+
+    const dk=document.getElementById('disk');
+    dk.innerHTML='';
+    s.disk.forEach(x=>{
+      dk.appendChild(row([x.path, x.used+' / '+x.size, x.pct+'%'], x.pct>85?'bad':''));
+    });
+  }catch(e){
+    document.getElementById('gen').textContent='status unavailable';
+  }
+
+  try{
+    const d=await (await fetch('/data/storage.json',{cache:'no-store'})).json();
+    const sc=document.getElementById('storage');
+    sc.innerHTML='';
+    d.components.forEach(x=>{
+      sc.appendChild(row([x.name, x.path, x.size]));
+    });
+  }catch(e){}
+}
+
+load();
+setInterval(load,5000);
+</script>
+</body>
+</html>
