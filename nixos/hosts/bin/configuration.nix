@@ -3,6 +3,7 @@
 {
   imports = [ 
     ./hardware-configuration.nix
+    ./components/nginx.nix
     ./components/wireguard.nix
     ./components/cgit.nix
     ./components/pufferpanel.nix
@@ -84,6 +85,7 @@
   environment.systemPackages = with pkgs; [
     git
     kitty
+    tmux
     wireguard-tools
   ];
 
