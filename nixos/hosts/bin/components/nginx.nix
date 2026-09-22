@@ -25,11 +25,6 @@
       enableACME = true;
       locations."/".proxyPass = "http://127.0.0.1:4533";
     };
-    virtualHosts."tv.1f2t.org" = {
-      forceSSL = true;
-      enableACME = true;
-      locations."/".proxyPass = "http://127.0.0.1:8934";
-    };
   };
 
   networking.firewall.allowedTCPPorts = [ 80 443 ];
