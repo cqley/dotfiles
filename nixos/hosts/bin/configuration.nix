@@ -9,7 +9,6 @@
     ./components/pufferpanel.nix
     ./components/music.nix
     ./components/filehost.nix
-    ./components/twitch.nix
     ../../modules/system/core.nix
     ../../modules/misc/public.nix
   ];
