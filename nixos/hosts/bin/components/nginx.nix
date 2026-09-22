@@ -2,7 +2,7 @@
 {
   security.acme = {
     acceptTerms = true;
-    defaults.email = "@1f2t.org";
+    defaults.email = "cat@1f2t.org";
   };
 
   services.nginx = {
