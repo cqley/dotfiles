@@ -15,7 +15,7 @@
       enableACME = true;
       locations."/".proxyPass = "http://127.0.0.1:8888";
     };
-    virtualHosts."files.1f2t.org" = {
+    virtualHosts."host.1f2t.org" = {
       forceSSL = true;
       enableACME = true;
       locations."/".proxyPass = "http://127.0.0.1:47291";
