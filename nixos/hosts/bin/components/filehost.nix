@@ -4,7 +4,7 @@
     wantedBy = [ "multi-user.target" ];
     after = [ "network.target" ];
     serviceConfig = {
-      ExecStart = "${pkgs.linx-server}/bin/linx-server -bind 0.0.0.0:47291 -siteurl http://5.231.118.153:47291/ -maxsize 1073741824 -filespath /var/lib/linx-server/files -metapath /var/lib/linx-server/meta";
+      ExecStart = "${pkgs.linx-server}/bin/linx-server -bind 127.0.0.1:47291 -siteurl https://host.1f2t.org/ ...";
       DynamicUser = true;
       StateDirectory = "linx-server linx-server/files linx-server/meta";
     };
