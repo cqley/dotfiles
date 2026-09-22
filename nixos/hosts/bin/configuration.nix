@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ./components/nginx.nix
     ./components/wireguard.nix
+    ./components/dashboard.nix
     ./components/cgit.nix
     ./components/pufferpanel.nix
     ./components/music.nix
