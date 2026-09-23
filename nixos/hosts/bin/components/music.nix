@@ -2,7 +2,26 @@
 
 let
   dl-server = pkgs.writeText "dl-server.js" ''
-    Deno.serve({ port: 4534 }, async (req) => {
+    const tokenFile = "/var/lib/navidrome/.downloader-token";
+    async function ensureToken() {
+      try {
+        return (await Deno.readTextFile(tokenFile)).trim();
+      } catch {
+        const t = crypto.randomUUID().replaceAll("-", "");
+        await Deno.writeTextFile(tokenFile, t);
+        console.log(`downloader token: ''${t}`);
+        return t;
+      }
+    }
+    const token = await ensureToken();
+    function authed(req) {
+      return req.headers.get("authorization") === `bearer ''${token}`;
+    }
+
+    Deno.serve({ port: 4534, hostname: "127.0.0.1" }, async (req) => {
+      if (req.method === "GET" && new URL(req.url).pathname === "/check") {
+        return authed(req) ? new Response("ok") : new Response("unauthorized", { status: 401 });
+      }
       if (req.method === "GET") {
         return new Response(`
           <!doctype html>
@@ -34,21 +53,33 @@ let
           </head>
           <body>
             <h1>music</h1>
-            <p>music downloader &lt;3</p>
-            <h2>fetch</h2>
-            <form id="f">
-              <div class="row">
-                <input type="url" id="url" placeholder="link" required autocomplete="off">
-                <select id="type">
-                  <option value="song">song</option>
-                  <option value="playlist">playlist</option>
-                </select>
-              </div>
-              <button type="submit" id="btn">download</button>
+            <form id="login">
+              <input id="pw" type="password" placeholder="token" autocomplete="off">
+              <button type="submit">unlock</button>
             </form>
-            <div id="status" class="status">ready</div>
-            <pre id="out"></pre>
+            <div id="app" style="display:none">
+              <p>music downloader &lt;3</p>
+              <h2>fetch</h2>
+              <form id="f">
+                <div class="row">
+                  <input type="url" id="url" placeholder="link" required autocomplete="off">
+                  <select id="type">
+                    <option value="song">song</option>
+                    <option value="playlist">playlist</option>
+                  </select>
+                </div>
+                <button type="submit" id="btn">download</button>
+              </form>
+              <div id="status" class="status">ready</div>
+              <pre id="out"></pre>
+            </div>
             <script>
+              let token = localStorage.getItem('downloader-token') || "";
+
+              const login = document.getElementById('login');
+              const pw = document.getElementById('pw');
+              const app = document.getElementById('app');
+
               const f = document.getElementById('f');
               const urlInput = document.getElementById('url');
               const typeSelect = document.getElementById('type');
@@ -63,6 +94,13 @@ let
                 }
               });
 
+              login.onsubmit = (e) => {
+                e.preventDefault();
+                token = pw.value;
+                localStorage.setItem('downloader-token', token);
+                boot();
+              };
+
               f.onsubmit = async (e) => {
                 e.preventDefault();
                 btn.disabled = true;
@@ -74,13 +112,20 @@ let
                 status.className = 'status';
 
                 try {
-                  const res = await fetch('/dl', {
+                  const res = await fetch('dl', {
                     method: 'POST',
+                    headers: { authorization: 'bearer ' + token },
                     body: JSON.stringify({ url: urlInput.value, type: typeSelect.value })
                   });
+                  if (res.status === 401) {
+                    token = "";
+                    localStorage.removeItem('downloader-token');
+                    boot();
+                    return;
+                  }
                   const text = await res.text();
                   out.textContent = text;
-                  
+
                   if (text.startsWith('success')) {
                     status.textContent = 'download complete';
                     status.className = 'status success';
@@ -100,6 +145,26 @@ let
                   urlInput.focus();
                 }
               };
+
+              async function boot() {
+                if (!token) {
+                  login.style.display = 'flex';
+                  app.style.display = 'none';
+                  return;
+                }
+                const res = await fetch('check', { headers: { authorization: 'bearer ' + token } });
+                if (res.ok) {
+                  login.style.display = 'none';
+                  app.style.display = 'block';
+                  urlInput.focus();
+                } else {
+                  token = "";
+                  localStorage.removeItem('downloader-token');
+                  login.style.display = 'flex';
+                  app.style.display = 'none';
+                }
+              }
+              boot();
             </script>
           </body>
           </html>
@@ -133,7 +198,7 @@ let
   '';
 in
 {
-  networking.firewall.allowedTCPPorts = [ 4533 4534 ];
+  networking.firewall.allowedTCPPorts = [ 4533 ];
 
   services.navidrome = {
     enable = true;
