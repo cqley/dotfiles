@@ -24,6 +24,8 @@
       forceSSL = true;
       enableACME = true;
       locations."/".proxyPass = "http://127.0.0.1:4533";
+      locations."= /downloader".return = "301 $scheme://$host/downloader/";
+      locations."/downloader/".proxyPass = "http://127.0.0.1:4534/";
     };
   };
 
