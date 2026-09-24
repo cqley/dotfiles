@@ -78,7 +78,7 @@
     git
     kitty
     tmux
-    brave-origin
+    pkgs-unstable.brave-origin
     wl-clipboard
     libnotify
     quickshell
