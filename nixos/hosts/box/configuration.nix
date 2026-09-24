@@ -85,6 +85,7 @@ environment.systemPackages = with pkgs; [
     hyprshot
     hyprpolkitagent
     wireguard-tools
+    dnsutils
     imv
     mpv
     ouch

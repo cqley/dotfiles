@@ -54,6 +54,7 @@
     tmux
     ouch
     wireguard-tools
+    dnsutils
   ];
 
   services.nscd.enable = false;
