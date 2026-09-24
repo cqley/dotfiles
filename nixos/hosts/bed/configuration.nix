@@ -78,7 +78,7 @@
     git
     kitty
     tmux
-    ungoogled-chromium
+    brave-origin
     wl-clipboard
     libnotify
     quickshell
