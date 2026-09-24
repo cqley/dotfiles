@@ -8,9 +8,13 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    helium = {
+      url = "github:oxcl/nix-flake-helium-browser";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, ... }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, helium, ... }:
   let
     system = "x86_64-linux";
     pkgs-unstable = import nixpkgs-unstable {
@@ -24,8 +28,13 @@
         specialArgs = { inherit pkgs-unstable; };
         modules = [
           ./hosts/box/configuration.nix
+          helium.nixosModules.default
           home-manager.nixosModules.home-manager
           {
+            programs.helium = {
+              enable = true;
+              package = helium.packages.${system}.helium;
+            };
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit pkgs-unstable; };
@@ -41,8 +50,13 @@
         specialArgs = { inherit pkgs-unstable; };
         modules = [
           ./hosts/bed/configuration.nix
+          helium.nixosModules.default
           home-manager.nixosModules.home-manager
           {
+            programs.helium = {
+              enable = true;
+              package = helium.packages.${system}.helium;
+            };
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit pkgs-unstable; };
