@@ -1,0 +1,145 @@
+:root {
+  --bg: #fff;
+  --fg: #222;
+  --dim: #888;
+  --acc: #f2b8e2;
+  --line: #ddd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-monospace, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.wrap {
+  max-width: 60ch;
+  margin: 4rem auto;
+  padding: 0 1rem;
+}
+
+h1 {
+  font-size: 1rem;
+  font-weight: normal;
+  margin: 0 0 1.5rem;
+}
+
+h2 {
+  font-size: .85em;
+  color: var(--dim);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: .4rem;
+  margin: 0 0 1rem;
+}
+
+p {
+  margin: 0 0 1.2rem;
+}
+
+a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+a:hover,
+a:focus {
+  color: var(--acc);
+}
+
+a:focus {
+  outline: 1px solid var(--acc);
+}
+
+.up {
+  color: var(--dim);
+}
+
+.up:hover,
+.up:focus {
+  color: var(--acc);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+tr {
+  border-bottom: 1px solid var(--line);
+}
+
+tr:last-child {
+  border-bottom: none;
+}
+
+td {
+  padding: .6rem 0;
+  vertical-align: top;
+}
+
+td.d {
+  color: var(--dim);
+  white-space: nowrap;
+  padding-right: 1.2rem;
+}
+
+.contact {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.contact tr {
+  border-bottom: 1px solid var(--line);
+}
+
+.contact tr:last-child {
+  border-bottom: none;
+}
+
+.contact td {
+  padding: .6rem 0;
+  vertical-align: top;
+}
+
+.contact td:first-child {
+  color: var(--dim);
+  width: 8rem;
+  padding-right: 1.2rem;
+}
+
+.nav {
+  margin-bottom: 3rem;
+}
+
+.nav a {
+  margin-right: 1.2rem;
+}
+
+.nav a:last-child {
+  margin-right: 0;
+}
+
+.cat {
+  display: block;
+  max-width: 12rem;
+  width: 100%;
+  height: auto;
+  margin: 0 0 1.5rem;
+}
+
+.muted {
+  color: var(--dim);
+}
