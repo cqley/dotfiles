@@ -86,6 +86,7 @@
     hyprshot
     hyprpolkitagent
     wireguard-tools
+    dnsutils
     imv
     mpv
     ouch
