@@ -88,6 +88,7 @@
     wireguard-tools
     imv
     mpv
+    ouch
     wiremix
     zathura
     libreoffice
