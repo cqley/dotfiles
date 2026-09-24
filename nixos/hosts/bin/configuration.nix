@@ -51,6 +51,7 @@
     git
     kitty
     tmux
+    ouch
     wireguard-tools
   ];
 

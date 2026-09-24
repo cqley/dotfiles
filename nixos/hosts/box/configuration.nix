@@ -87,6 +87,7 @@ environment.systemPackages = with pkgs; [
     wireguard-tools
     imv
     mpv
+    ouch
     wiremix
     zathura
     libreoffice
