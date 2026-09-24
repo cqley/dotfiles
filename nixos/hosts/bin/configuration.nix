@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ./components/nginx.nix
     ./components/wireguard.nix
+    ./components/website.nix
     ./components/dashboard.nix
     ./components/git.nix
     ./components/panel.nix
