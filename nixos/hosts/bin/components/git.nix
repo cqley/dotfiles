@@ -1,5 +1,5 @@
 {
-  services.cgit.tight = {
+  services.cgit.1f2t = {
     enable = true;
     scanPath = "/srv/git";
     nginx.virtualHost = "git.1f2t.org";
@@ -8,7 +8,7 @@
       checkExportOkFiles = false;
     };
     settings = {
-      root-title = "tight";
+      root-title = "1f2t";
       root-desc = "";
       enable-index-owner = 0;
       enable-commit-graph = 1;
