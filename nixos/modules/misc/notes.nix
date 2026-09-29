@@ -4,7 +4,7 @@
   home.packages = [ pkgs.obsidian ];
 
   home.file = {
-    "documents/notes/obsidian/app.json".text = builtins.toJSON {
+    "documents/notes/.obsidian/app.json".text = builtins.toJSON {
       readableLineLength = true;
       foldHeading = true;
       showLineNumber = true;
@@ -13,12 +13,12 @@
       newFileLocation = "current";
       promptDelete = false;
     };
-    "documents/notes/obsidian/appearance.json".text = builtins.toJSON {
+    "documents/notes/.obsidian/appearance.json".text = builtins.toJSON {
       accentColor = "#ffa8db";
       cssTheme = "";
       theme = "obsidian";
     };
-    "documents/notes/obsidian/core-plugins.json".text = builtins.toJSON {
+    "documents/notes/.obsidian/core-plugins.json".text = builtins.toJSON {
       "file-explorer" = true;
       "global-search" = true;
       "switcher" = false;
