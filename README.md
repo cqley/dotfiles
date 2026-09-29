@@ -6,6 +6,7 @@
 | `bed`             | laptop, portable bed                                                            |
 | `bin`             | server, cool server                                                             |
 
+#
 
 - operating system: https://nixos.org/
 - window manager: https://hypr.land/
