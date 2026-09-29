@@ -26,7 +26,7 @@
     shellAbbrs = {
       rebuild = "doas nixos-rebuild switch --flake /etc/nixos/#bed";
       update = "doas nix flake update --flake /etc/nixos/ && doas nixos-rebuild switch --flake /etc/nixos/#bed";
-      system = "doas nvim /etc/nixos";
+      system = "doas vim /etc/nixos";
     };
     functions = {
       fish_greeting = { body = ""; };
