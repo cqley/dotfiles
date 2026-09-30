@@ -3,7 +3,6 @@
 {
   imports = [
     components/wm.nix
-    ../../modules/system/qksh.nix
     ../../modules/system/layout.nix
     ../../modules/system/files.nix
     ../../modules/system/btop.nix
