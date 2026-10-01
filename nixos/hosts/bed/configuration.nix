@@ -101,6 +101,7 @@
     zathura
     libreoffice
     brightnessctl
+    gpu-screen-recorder
   ];
 
   fonts.packages = with pkgs; [
