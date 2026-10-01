@@ -100,6 +100,7 @@ environment.systemPackages = with pkgs; [
     zathura
     libreoffice
     kdePackages.kdenlive
+    gpu-screen-recorder
   ];
 
 fonts.packages = with pkgs; [
