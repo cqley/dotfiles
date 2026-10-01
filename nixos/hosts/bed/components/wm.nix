@@ -129,6 +129,7 @@
       bind(mod .. " + R", exec("quickshell ipc call launcher toggle"))
       bind(mod .. " + T", exec("quickshell ipc call wallpaper toggle"))
       bind(mod .. " + P", exec("quickshell ipc call power toggle"))
+      bind(mod .. " + O", exec("quickshell ipc call record toggle"))
       bind(mod .. " + W", exec("quickshell ipc call bar toggle"))
       bind(mod .. " + X", exec("quickshell ipc call mic toggle"))
       bind(mod .. " + B", exec(browser))
