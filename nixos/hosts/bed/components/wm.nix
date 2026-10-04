@@ -135,6 +135,7 @@
       bind(mod .. " + I", exec("quickshell ipc call battery toggle"))
       bind(mod .. " + W", exec("quickshell ipc call bar toggle"))
       bind(mod .. " + X", exec("quickshell ipc call mic toggle"))
+      bind(mod .. " + =", exec("quickshell ipc call settings toggle"))
       bind(mod .. " + B", exec(browser))
       bind(mod .. " + C", window.close())
       bind(mod .. " + V", window.float({ action = "toggle" }))
