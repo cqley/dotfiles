@@ -13,7 +13,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e1";
+                  cmd = "cat e1";
                 };
               }
             ];
@@ -26,7 +26,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e2";
+                  cmd = "cat e2";
                 };
               }
             ];
@@ -39,7 +39,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e3";
+                  cmd = "cat e3";
                 };
               }
             ];
@@ -52,7 +52,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e4";
+                  cmd = "cat e4";
                 };
               }
             ];
@@ -65,7 +65,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show e5";
+                  cmd = "cat e5";
                 };
               }
             ];
@@ -91,7 +91,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show github";
+                  cmd = "cat github";
                 };
               }
             ];
@@ -104,7 +104,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show codeberg";
+                  cmd = "cat codeberg";
                 };
               }
             ];
@@ -117,7 +117,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show reddit";
+                  cmd = "cat reddit";
                 };
               }
             ];
@@ -130,7 +130,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show discord";
+                  cmd = "cat discord";
                 };
               }
             ];
@@ -143,7 +143,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show icloud";
+                  cmd = "cat icloud";
                 };
               }
             ];
@@ -156,7 +156,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show hytale";
+                  cmd = "cat hytale";
                 };
               }
             ];
@@ -169,7 +169,7 @@
                 name = "output";
                 type = "shell";
                 params = {
-                  cmd = "PATH=$PATH:/run/current-system/sw/bin pass show skrime";
+                  cmd = "cat skrime";
                 };
               }
             ];
