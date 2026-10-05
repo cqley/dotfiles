@@ -103,12 +103,12 @@ environment.systemPackages = with pkgs; [
     gpu-screen-recorder
   ];
 
-fonts.packages = with pkgs; [
-  cherry
-  noto-fonts
-  noto-fonts-cjk-sans
-  noto-fonts-color-emoji
-  nerd-fonts.jetbrains-mono
-];
+  fonts.packages = with pkgs; [
+    cherry
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-color-emoji
+    nerd-fonts.jetbrains-mono
+  ];
 
 }
