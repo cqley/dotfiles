@@ -100,6 +100,7 @@ environment.systemPackages = with pkgs; [
     zathura
     libreoffice
     kdePackages.kdenlive
+    brightnessctl
     gpu-screen-recorder
   ];
 
