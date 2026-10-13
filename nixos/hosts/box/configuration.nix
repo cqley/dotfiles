@@ -101,6 +101,7 @@ environment.systemPackages = with pkgs; [
     libreoffice
     kdePackages.kdenlive
     gpu-screen-recorder
+    brightnessctl
     ddcutil
     i2c-tools
     claude-code
