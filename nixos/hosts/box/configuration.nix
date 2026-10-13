@@ -101,7 +101,7 @@ environment.systemPackages = with pkgs; [
     libreoffice
     kdePackages.kdenlive
     gpu-screen-recorder
-    ddcutils
+    ddcutil
     i2c-tools
   ];
 
