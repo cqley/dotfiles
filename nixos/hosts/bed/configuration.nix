@@ -103,6 +103,8 @@
     libreoffice
     brightnessctl
     gpu-screen-recorder
+    claude
+    claude-monitor
   ];
 
   fonts.packages = with pkgs; [

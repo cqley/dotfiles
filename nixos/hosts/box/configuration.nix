@@ -103,6 +103,8 @@ environment.systemPackages = with pkgs; [
     gpu-screen-recorder
     ddcutil
     i2c-tools
+    claude
+    claude-monitor
   ];
 
   fonts.packages = with pkgs; [
