@@ -103,7 +103,7 @@ environment.systemPackages = with pkgs; [
     gpu-screen-recorder
     ddcutil
     i2c-tools
-    claude
+    claude-code
     claude-monitor
   ];
 

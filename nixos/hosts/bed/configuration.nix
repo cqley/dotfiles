@@ -103,7 +103,7 @@
     libreoffice
     brightnessctl
     gpu-screen-recorder
-    claude
+    claude-code
     claude-monitor
   ];
 
