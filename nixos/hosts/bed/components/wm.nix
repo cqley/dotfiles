@@ -133,6 +133,7 @@
       bind(mod .. " + N", exec("quickshell ipc call network toggle"))
       bind(mod .. " + M", exec("quickshell ipc call bluetooth toggle"))
       bind(mod .. " + I", exec("quickshell ipc call battery toggle"))
+      bind(mod .. " + K", exec("quickshell ipc call brightness toggle"))
       bind(mod .. " + W", exec("quickshell ipc call bar toggle"))
       bind(mod .. " + X", exec("quickshell ipc call mic toggle"))
       bind(mod .. " + L", exec("quickshell ipc call settings toggle"))
