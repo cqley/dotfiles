@@ -104,7 +104,10 @@
     brightnessctl
     gpu-screen-recorder
     claude-code
-    claude-monitor
+    imagemagick
+    coreutils
+    awww
+    gawk
   ];
 
   fonts.packages = with pkgs; [
