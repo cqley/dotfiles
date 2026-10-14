@@ -103,9 +103,11 @@ environment.systemPackages = with pkgs; [
     gpu-screen-recorder
     brightnessctl
     ddcutil
-    i2c-tools
     claude-code
-    claude-monitor
+    imagemagick
+    coreutils
+    awww
+    gawk
   ];
 
   fonts.packages = with pkgs; [
