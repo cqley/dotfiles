@@ -62,6 +62,7 @@
       shell_integration no-cursor
 
       confirm_os_window_close 0
+      remember_window_size no
       allow_remote_control yes
 
       background_opacity 1
