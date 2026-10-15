@@ -16,6 +16,9 @@
   };
   boot.kernelPackages = pkgs.linuxPackages;
 
+  boot.kernelModules = [ "i2c-dev" ];
+  hardware.i2c.enable = true;
+
   services.getty.autologinUser = "cat";
   services.fstrim.enable = true;
   
