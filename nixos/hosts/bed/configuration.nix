@@ -108,6 +108,7 @@
     coreutils
     awww
     gawk
+    claude-code
   ];
 
   fonts.packages = with pkgs; [

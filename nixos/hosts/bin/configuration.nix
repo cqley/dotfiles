@@ -55,6 +55,7 @@
     ouch
     wireguard-tools
     dnsutils
+    claude-code
   ];
 
   services.nscd.enable = false;
