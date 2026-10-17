@@ -1,5 +1,5 @@
 {
-  services.cgit.1f2t = {
+  services.cgit."1f2t" = {
     enable = true;
     scanPath = "/srv/git";
     nginx.virtualHost = "git.1f2t.org";
