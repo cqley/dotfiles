@@ -4,6 +4,8 @@
   --dim: #888;
   --acc: #f2b8e2;
   --line: #ddd;
+  --err: #e33;
+  --ok: #5a5;
 }
 
 * {
@@ -57,10 +59,7 @@ a {
 a:hover,
 a:focus {
   color: var(--acc);
-}
-
-a:focus {
-  outline: 1px solid var(--acc);
+  outline: none;
 }
 
 .up {
@@ -132,14 +131,71 @@ td.d {
   margin-right: 0;
 }
 
-.cat {
-  display: block;
-  max-width: 12rem;
-  width: 100%;
-  height: auto;
-  margin: 0 0 1.5rem;
-}
-
 .muted {
   color: var(--dim);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  margin-bottom: 2rem;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  padding: .4rem .5rem;
+  border-radius: 0;
+  outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--acc);
+}
+
+textarea {
+  min-height: 10rem;
+  resize: vertical;
+}
+
+button {
+  color: var(--acc);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+button:hover {
+  border-color: var(--acc);
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.status {
+  color: var(--dim);
+  font-size: .85em;
+}
+
+.status.err {
+  color: var(--err);
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.del {
+  color: var(--err);
+  font-size: .85em;
 }

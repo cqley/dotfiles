@@ -1,4 +1,4 @@
-units="nginx.service navidrome.service music-web.service edeltalk.service unfassbar.service pufferpanel.service linx-server.service wireguard-wg0.service sshd.service syncthing.service"
+units="nginx.service navidrome.service music-web.service edeltalk.service unfassbar.service pufferpanel.service linx-server.service blog-web.service wireguard-wg0.service sshd.service syncthing.service"
 cgit_unit=$(systemctl list-units --plain --no-legend 'fcgiwrap-cgit-*' 2>/dev/null | awk '{print $1}' | head -n1)
 [ -n "$cgit_unit" ] && units="$units $cgit_unit"
 

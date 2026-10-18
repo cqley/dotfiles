@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bin</title>
+<link rel="icon" type="image/svg+xml" href="/assets/cat.svg">
+<style>
+:root{--bg:#fff;--fg:#222;--dim:#888;--acc:#f2b8e2;--line:#ddd;--ok:#5a5;--err:#e33;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:ui-monospace,monospace;font-size:14px;line-height:1.5;max-width:60ch;margin:3rem auto;padding:0 1rem;}
+h1{font-size:1rem;font-weight:normal;margin:0 0 .3rem}
+h2{font-size:.85rem;font-weight:normal;color:var(--dim);margin:2rem 0 .4rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
+p{margin:0;color:var(--dim);font-size:.85em}
+table{width:100%;border-collapse:collapse;font-size:.9em}
+td{padding:.25rem 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:last-child{text-align:right;color:var(--dim);white-space:nowrap}
+.dot{display:inline-block;width:.6em;height:.6em;border-radius:50%;margin-right:.5em;background:var(--dim)}
+.ok .dot{background:var(--ok)}
+.bad .dot{background:var(--err)}
+.bad td{color:var(--err)}
+.errs{color:var(--err)}
+.bar{background:var(--line);height:.5em;width:100%;margin-top:.15rem}
+.bar i{display:block;height:100%;background:var(--acc)}
+.total td{color:var(--fg);font-weight:normal;border-bottom:none;border-top:1px solid var(--line);padding-top:.5rem}
+.stale{color:var(--err)}
+.banner{display:inline-block;padding:.3rem .6rem;margin:0 0 1rem;font-size:.85em;border:1px solid var(--line);}
+.banner.ok{color:var(--ok);border-color:var(--ok);}
+.banner.bad{color:var(--err);border-color:var(--err);}
+</style>
+</head>
+<body>
+<h1>bin</h1>
+<span id="banner" class="banner">checking...</span>
+<p id="gen">loading...</p>
+
+<h2>load / mem</h2>
+<table>
+<tr><td>load</td><td id="load">-</td></tr>
+<tr><td>mem<div class="bar"><i id="membar" style="width:0%"></i></div></td><td id="mem">-</td></tr>
+</table>
+
+<h2>services</h2>
+<table id="services"></table>
+
+<h2>disk</h2>
+<table id="disk"></table>
+
+<h2>storage per component <span id="genStorage" style="font-weight:normal"></span></h2>
+<table id="storage"></table>
+
+<script>
+function row(cells,cls){
+  const tr=document.createElement('tr');
+  if(cls) tr.className=cls;
+  cells.forEach(c=>{const td=document.createElement('td');td.innerHTML=c;tr.appendChild(td)});
+  return tr;
+}
+
+function fmtBytes(n){
+  if(!n || n<=0) return '0 B';
+  const units=['B','KB','MB','GB','TB'];
+  let i=0, v=n;
+  while(v>=1024 && i<units.length-1){v/=1024;i++;}
+  return (i===0 ? v : v.toFixed(v<10?2:1))+' '+units[i];
+}
+
+function ago(ts){
+  const s=Math.max(0, Math.floor(Date.now()/1000-ts));
+  if(s<5) return 'just now';
+  if(s<60) return s+'s ago';
+  if(s<3600) return Math.floor(s/60)+'m ago';
+  return Math.floor(s/3600)+'h ago';
+}
+
+let lastStatus=null, lastStorage=null;
+let badServices=0, badDisks=0;
+
+function updateBanner(){
+  const b=document.getElementById('banner');
+  const total=badServices+badDisks;
+  if(!lastStatus){
+    b.textContent='status unavailable';
+    b.className='banner bad';
+    return;
+  }
+  if(total===0){
+    b.textContent='all systems normal';
+    b.className='banner ok';
+    return;
+  }
+  const parts=[];
+  if(badServices) parts.push(badServices+' service'+(badServices>1?'s':'')+' down');
+  if(badDisks) parts.push(badDisks+' disk'+(badDisks>1?'s':'')+' almost full');
+  b.textContent=parts.join(', ');
+  b.className='banner bad';
+}
+
+function renderStatus(s){
+  lastStatus=s;
+  document.getElementById('load').textContent=s.load.join(' / ');
+  const pct=Math.round(s.mem.used/s.mem.total*100);
+  document.getElementById('mem').textContent=s.mem.used+'mb / '+s.mem.total+'mb';
+  document.getElementById('membar').style.width=pct+'%';
+
+  const st=document.getElementById('services');
+  st.innerHTML='';
+  badServices=0;
+  s.services.forEach(x=>{
+    const bad = x.active!=='active' || x.failed==='failed' || x.errors>0;
+    if(bad) badServices++;
+    st.appendChild(row([
+      '<span class="dot"></span>'+x.name,
+      x.active,
+      x.errors>0?('<span class="errs">'+x.errors+' err</span>'):'ok'
+    ], bad?'bad':'ok'));
+  });
+
+  const dk=document.getElementById('disk');
+  dk.innerHTML='';
+  badDisks=0;
+  s.disk.forEach(x=>{
+    if(x.pct>85) badDisks++;
+    dk.appendChild(row([x.path, x.used+' / '+x.size, x.pct+'%'], x.pct>85?'bad':''));
+  });
+
+  updateBanner();
+}
+
+function renderStorage(d){
+  lastStorage=d;
+  const sc=document.getElementById('storage');
+  sc.innerHTML='';
+  const total=d.components.reduce((a,x)=>a+x.bytes,0);
+  const max=Math.max(1,...d.components.map(x=>x.bytes));
+  d.components.forEach(x=>{
+    const pct=Math.round(x.bytes/max*100);
+    const tr=document.createElement('tr');
+    tr.innerHTML=
+      '<td>'+x.name+'<div class="bar"><i style="width:'+pct+'%"></i></div></td>'+
+      '<td>'+x.path+'</td>'+
+      '<td>'+fmtBytes(x.bytes)+'</td>';
+    sc.appendChild(tr);
+  });
+  sc.appendChild(row(['total','',fmtBytes(total)],'total'));
+}
+
+function tickFreshness(){
+  const gen=document.getElementById('gen');
+  if(lastStatus){
+    const stale = (Date.now()/1000 - lastStatus.generated) > 30;
+    gen.textContent='updated '+ago(lastStatus.generated);
+    gen.className=stale?'stale':'';
+  }
+  const genStorage=document.getElementById('genStorage');
+  if(lastStorage){
+    const stale = (Date.now()/1000 - lastStorage.generated) > 600;
+    genStorage.textContent='('+ago(lastStorage.generated)+')';
+    genStorage.className=stale?'stale':'';
+  }
+  updateBanner();
+}
+
+async function load(){
+  try{
+    const s=await (await fetch('/data/status.json',{cache:'no-store'})).json();
+    renderStatus(s);
+  }catch(e){
+    if(!lastStatus) document.getElementById('gen').textContent='status unavailable';
+  }
+
+  try{
+    const d=await (await fetch('/data/storage.json',{cache:'no-store'})).json();
+    renderStorage(d);
+  }catch(e){}
+
+  tickFreshness();
+}
+
+load();
+setInterval(load,5000);
+setInterval(tickFreshness,1000);
+</script>
+</body>
+</html>

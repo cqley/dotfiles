@@ -198,8 +198,6 @@ let
   '';
 in
 {
-  networking.firewall.allowedTCPPorts = [ 4533 ];
-
   services.navidrome = {
     enable = true;
     settings = {
@@ -278,5 +276,13 @@ in
       User = "navidrome";
     };
     startAt = "*:0/3";
+  };
+
+  services.nginx.virtualHosts."music.1f2t.org" = {
+    forceSSL = true;
+    enableACME = true;
+    locations."/".proxyPass = "http://127.0.0.1:4533";
+    locations."= /downloader".return = "301 $scheme://$host/downloader/";
+    locations."/downloader/".proxyPass = "http://127.0.0.1:4534/";
   };
 }

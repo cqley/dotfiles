@@ -1,0 +1,263 @@
+
+:root {
+  --bg: #fff;
+  --fg: #222;
+  --dim: #888;
+  --acc: #f2b8e2;
+  --line: #ddd;
+  --err: #e33;
+  --ok: #5a5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-monospace, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#cgit {
+  width: 100%;
+  margin: 2rem 0;
+  padding: 0 2rem;
+}
+
+a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+a:hover, a:focus {
+  color: var(--acc);
+}
+
+table#header {
+  width: 100%;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+#header .logo {
+  padding-right: .8rem;
+}
+
+#header .logo img {
+  max-width: 2.5rem;
+  height: auto;
+  display: block;
+}
+
+#header a {
+  color: var(--fg);
+}
+
+#header td.main {
+  font-size: 1rem;
+}
+
+#header td.main a {
+  font-weight: normal;
+}
+
+#header input, #header select {
+  font-family: inherit;
+  font-size: inherit;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  padding: .3rem .4rem;
+}
+
+.mainmenu, table.tabs {
+  margin: 0 0 1.5rem;
+}
+
+.mainmenu a, table.tabs a {
+  color: var(--dim);
+  margin-right: 1.2rem;
+  font-size: .9em;
+}
+
+.mainmenu a.active, table.tabs a.active {
+  color: var(--acc);
+}
+
+.mainmenu a:hover, table.tabs a:hover {
+  color: var(--acc);
+}
+
+.path {
+  color: var(--dim);
+  font-size: .85em;
+  margin: 0 0 1rem;
+}
+
+.path a {
+  color: var(--dim);
+}
+
+table.list {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9em;
+}
+
+table.list tr {
+  border-bottom: 1px solid var(--line);
+}
+
+table.list tr:hover {
+  background: rgba(242, 184, 226, 0.08);
+}
+
+table.list th {
+  text-align: left;
+  color: var(--dim);
+  font-weight: normal;
+  border-bottom: 1px solid var(--line);
+  padding: .4rem 0;
+}
+
+table.list td {
+  padding: .5rem .4rem .5rem 0;
+  vertical-align: top;
+}
+
+table.list td.logage, table.list td agefile {
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.age-mins, .age-hours, .age-days, .age-weeks, .age-months, .age-years {
+  color: var(--dim);
+}
+
+.commit-subject {
+  color: var(--fg);
+  font-weight: normal;
+}
+
+.commit-msg {
+  white-space: pre-wrap;
+  color: var(--fg);
+  margin: 1rem 0;
+}
+
+table.commit-info {
+  border-collapse: collapse;
+  font-size: .9em;
+  margin: 1rem 0;
+}
+
+table.commit-info td {
+  padding: .3rem .6rem .3rem 0;
+  vertical-align: top;
+}
+
+table.commit-info th {
+  text-align: left;
+  color: var(--dim);
+  font-weight: normal;
+  padding: .3rem .6rem .3rem 0;
+  white-space: nowrap;
+}
+
+.sha1 {
+  color: var(--dim);
+}
+
+table.diff {
+  width: 100%;
+  font-size: .85em;
+}
+
+div.diffstat-header {
+  color: var(--dim);
+  margin-bottom: .5rem;
+}
+
+table.diffstat td {
+  padding: .1rem .4rem;
+}
+
+table.diffstat td.bar {
+  background: var(--line);
+}
+
+table.diffstat td.bar span.add {
+  background: var(--ok);
+}
+
+table.diffstat td.bar span.rem {
+  background: var(--err);
+}
+
+.diff .add {
+  color: var(--ok);
+}
+
+.diff .del {
+  color: var(--err);
+}
+
+.diff .hunk {
+  color: var(--acc);
+}
+
+.diff .head {
+  color: var(--dim);
+}
+
+table.ls td {
+  padding: .3rem .4rem .3rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+table.ls td.ls-mode {
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+table.blob {
+  width: 100%;
+  font-size: .85em;
+}
+
+table.blob td.linenumbers {
+  color: var(--dim);
+  text-align: right;
+  padding-right: 1rem;
+  user-select: none;
+}
+
+div#cgit div.commit-subject a {
+  color: var(--fg);
+}
+
+div.footer {
+  margin-top: 3rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+  color: var(--dim);
+  font-size: .85em;
+}
+
+div.footer a {
+  color: var(--dim);
+  margin-right: 1rem;
+}
+
+div.footer a:hover {
+  color: var(--acc);
+}
+
+.error {
+  color: var(--err);
+}
