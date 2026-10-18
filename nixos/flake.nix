@@ -72,7 +72,6 @@
         specialArgs = { inherit pkgs-unstable; };
         modules = [
           ./hosts/bin/configuration.nix
-          ./hosts/bin/components/filehost.nix
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;

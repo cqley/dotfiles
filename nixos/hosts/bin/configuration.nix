@@ -1,17 +1,18 @@
 { config, lib, pkgs, pkgs-unstable, ... }:
 
 {
-  imports = [ 
+  imports = [
     ./hardware-configuration.nix
-    ./components/nginx.nix
     ./components/wireguard.nix
-    ./components/website.nix
-    ./components/dashboard.nix
-    ./components/git.nix
-    ./components/panel.nix
-    ./components/blog.nix
-    ./components/music.nix
-    ./components/filehost.nix
+    ./components/website/nginx.nix
+    ./components/website/assets.nix
+    ./components/website/website.nix
+    ./components/website/dashboard.nix
+    ./components/website/git.nix
+    ./components/website/panel.nix
+    ./components/website/blog.nix
+    ./components/website/music.nix
+    ./components/website/filehost.nix
     ../../modules/system/core.nix
     ../../modules/misc/public.nix
   ];

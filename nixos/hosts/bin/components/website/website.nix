@@ -1,7 +1,6 @@
 { ... }:
-
 {
-  environment.etc."website".source = ./website;
+  environment.etc."website".source = ./sites/website;
 
   services.nginx.virtualHosts."1f2t.org" = {
     forceSSL = true;
@@ -14,6 +13,8 @@
     '';
 
     locations = {
+      "/assets/".alias = "/etc/website-assets/";
+
       "= /blog" = {
         return = "301 https://blog.1f2t.org/";
       };

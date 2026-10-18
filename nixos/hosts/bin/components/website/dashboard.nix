@@ -9,9 +9,10 @@
   users.groups.dash = {};
 
   systemd.services.dash-fast = {
-    script = builtins.readFile ./dashboard/fast.sh;
+    script = builtins.readFile ./sites/dashboard/fast.sh;
     path = [ pkgs.systemd pkgs.coreutils pkgs.gawk ];
     serviceConfig = {
+      Type = "oneshot";
       User = "dash";
       Group = "dash";
       StateDirectory = "dash";
@@ -27,13 +28,16 @@
   };
 
   systemd.services.dash-slow = {
-    script = builtins.readFile ./dashboard/slow.sh;
+    script = builtins.readFile ./sites/dashboard/slow.sh;
     path = [ pkgs.coreutils ];
     serviceConfig = {
+      Type = "oneshot";
       User = "dash";
       Group = "dash";
       StateDirectory = "dash";
       StateDirectoryMode = "0755";
+      AmbientCapabilities = [ "CAP_DAC_READ_SEARCH" ];
+      CapabilityBoundingSet = [ "CAP_DAC_READ_SEARCH" ];
     };
   };
   systemd.timers.dash-slow = {
@@ -44,11 +48,12 @@
     };
   };
 
-  environment.etc."dash/index.html".source = ./dashboard/dashboard.html;
+  environment.etc."dash/index.html".source = ./sites/dashboard/dashboard.html;
 
   services.nginx.virtualHosts."dash" = {
     listen = [{ addr = "10.0.0.1"; port = 8081; }];
     root = "/etc/dash";
     locations."/data/".alias = "/var/lib/dash/";
+    locations."/assets/".alias = "/etc/website-assets/";
   };
 }
