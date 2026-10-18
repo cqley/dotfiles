@@ -137,6 +137,7 @@
       bind(mod .. " + J", exec("quickshell ipc call audio toggle"))
       bind(mod .. " + W", exec("quickshell ipc call bar toggle"))
       bind(mod .. " + X", exec("quickshell ipc call mic toggle"))
+      bind(mod .. " + H", exec("quickshell ipc call notifications toggle"))
       bind(mod .. " + L", exec("quickshell ipc call settings toggle"))
       bind(mod .. " + B", exec(browser))
       bind(mod .. " + C", window.close())
