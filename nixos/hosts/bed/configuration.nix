@@ -113,6 +113,7 @@
   ];
 
   fonts.packages = with pkgs; [
+    inter
     cherry
     noto-fonts
     noto-fonts-cjk-sans
