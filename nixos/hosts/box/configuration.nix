@@ -110,6 +110,7 @@ environment.systemPackages = with pkgs; [
     imagemagick
     coreutils
     awww
+    grim
     gawk
   ];
 

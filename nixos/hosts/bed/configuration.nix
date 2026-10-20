@@ -108,6 +108,7 @@
     coreutils
     awww
     gawk
+    grim
     claude-code
   ];
 
