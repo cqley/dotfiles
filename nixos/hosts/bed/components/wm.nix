@@ -137,25 +137,19 @@
       bind(mod .. " + J", exec("quickshell ipc call audio toggle"))
       bind(mod .. " + W", exec("quickshell ipc call bar toggle"))
       bind(mod .. " + X", exec("quickshell ipc call mic toggle"))
+      bind(mod .. " + HOME", exec("quickshell ipc call screenshot toggle"))
       bind("ALT + S", exec("quickshell ipc call screenshot region"))
-      bind("ALT + HOME", exec("quickshell ipc call screenshot toggle"))
-      bind(mod .. " + H", exec("quickshell ipc call notifications toggle"))
+      bind(mod .. " + K", exec("quickshell ipc call brightness toggle"))
       bind(mod .. " + L", exec("quickshell ipc call settings toggle"))
       bind(mod .. " + B", exec(browser))
       bind(mod .. " + C", window.close())
       bind(mod .. " + V", window.float({ action = "toggle" }))
       bind(mod .. " + F", window.fullscreen({ mode = 0 }))
       bind(mod .. " + Tab", focus({ workspace = "m+1" }))
-
       bind(mod .. " + left",  focus({ direction = "left" }))
       bind(mod .. " + right", focus({ direction = "right" }))
       bind(mod .. " + up",    focus({ direction = "up" }))
       bind(mod .. " + down",  focus({ direction = "down" }))
-
-      bind("SHIFT + left",  window.move({ direction = "left" }))
-      bind("SHIFT + right", window.move({ direction = "right" }))
-      bind("SHIFT + up",    window.move({ direction = "up" }))
-      bind("SHIFT + down",  window.move({ direction = "down" }))
 
       for i = 1, 10 do
           local key = (i == 10) and "0" or tostring(i)
