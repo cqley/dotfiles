@@ -84,31 +84,26 @@
 
   environment.systemPackages = with pkgs; [
     git
+    coreutils
+    gawk
+    ouch
+    dnsutils
+    wireguard-tools
     kitty
     tmux
-    pkgs-unstable.brave-origin
-    wl-clipboard
-    libnotify
     quickshell
     awww
-    hyprshot
-    hyprpolkitagent
-    wireguard-tools
-    dnsutils
+    wl-clipboard
+    libnotify
+    brightnessctl
+    grim
+    gpu-screen-recorder
     imv
     mpv
-    ouch
+    imagemagick
     wiremix
     zathura
     libreoffice
-    brightnessctl
-    gpu-screen-recorder
-    claude-code
-    imagemagick
-    coreutils
-    awww
-    gawk
-    grim
     claude-code
   ];
 
