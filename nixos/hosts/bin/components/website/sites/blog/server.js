@@ -1,6 +1,11 @@
+import { marked } from "npm:marked@12";
+
 const dir = Deno.env.get("STATE_DIRECTORY") ?? ".";
 const postsFile = `${dir}/posts.json`;
+const postsDir = `${dir}/posts`;
 const tokenFile = `${dir}/token`;
+
+await Deno.mkdir(postsDir, { recursive: true });
 
 async function ensureToken() {
   try {
@@ -14,15 +19,34 @@ async function ensureToken() {
 }
 const token = await ensureToken();
 
-async function loadPosts() {
+async function loadIndex() {
+  let raw;
   try {
-    return JSON.parse(await Deno.readTextFile(postsFile));
+    raw = JSON.parse(await Deno.readTextFile(postsFile));
   } catch {
     return [];
   }
+  let changed = false;
+  for (const p of raw) {
+    if (Array.isArray(p.body)) {
+      await Deno.writeTextFile(`${postsDir}/${p.slug}.md`, p.body.join("\n\n") + "\n");
+      delete p.body;
+      changed = true;
+    }
+  }
+  if (changed) await Deno.writeTextFile(postsFile, JSON.stringify(raw, null, 2));
+  return raw;
 }
-async function savePosts(posts) {
+async function saveIndex(posts) {
   await Deno.writeTextFile(postsFile, JSON.stringify(posts, null, 2));
+}
+
+async function loadBody(slug) {
+  try {
+    return await Deno.readTextFile(`${postsDir}/${slug}.md`);
+  } catch {
+    return null;
+  }
 }
 
 function slugify(s) {
@@ -59,7 +83,7 @@ function indexPage(posts) {
   const list = posts.length
     ? `<table><tbody>${posts.map((p) => `<tr>
         <td class="d">${esc(p.date)}</td>
-        <td><a href="/${esc(p.slug)}">${esc(p.title)}</a></td>
+        <td><a href="/${esc(p.slug)}.md">${esc(p.title)}</a></td>
       </tr>`).join("")}</tbody></table>`
     : `<p>nothing posted yet.</p>`;
   return layout("blog", `
@@ -68,12 +92,12 @@ function indexPage(posts) {
   `);
 }
 
-function postPage(post) {
+function postPage(post, md) {
   return layout(post.title, `
     <a class="up" href="/">../</a>
     <h1 style="margin-top:1.5rem">${esc(post.title)}</h1>
     <p class="date" style="margin-bottom:1.5rem">${esc(post.date)}</p>
-    <div class="post">${post.body.map((b) => `<p>${esc(b)}</p>`).join("")}</div>
+    <div class="markdown-body">${marked.parse(md)}</div>
   `);
 }
 
@@ -95,10 +119,14 @@ function dashboardPage() {
     <div id="main" style="display:none">
       <form id="new">
         <input id="title" placeholder="title" required>
-        <textarea id="body" placeholder="paragraphs, separated by a blank line" required></textarea>
+        <textarea id="md" placeholder="markdown" required style="min-height:14rem;font-family:ui-monospace,monospace"></textarea>
         <button type="submit">post</button>
         <span class="status" id="status">ready</span>
       </form>
+      <div class="file-card">
+        <div class="file-card-header"><span class="name">preview</span></div>
+        <div class="file-card-body markdown-body" id="preview"><p class="muted">nothing yet</p></div>
+      </div>
       <table id="list"><tbody></tbody></table>
     </div>
     <script>
@@ -116,7 +144,7 @@ function dashboardPage() {
       const posts=await (await fetch("/api/posts")).json();
       document.querySelector("#list tbody").innerHTML=posts.map(p=>\`<tr>
         <td class="d">\${p.date}</td>
-        <td><a href="/\${p.slug}" target="_blank">\${esc(p.title)}</a></td>
+        <td><a href="/\${p.slug}.md" target="_blank">\${esc(p.title)}</a></td>
         <td><a class="del" href="#" data-slug="\${p.slug}">delete</a></td>
         </tr>\`).join("");
       document.querySelectorAll(".del").forEach(el=>el.onclick=async e=>{
@@ -133,17 +161,32 @@ function dashboardPage() {
       boot();
     };
 
+    let previewTimer=null;
+    document.getElementById("md").addEventListener("input",e=>{
+      clearTimeout(previewTimer);
+      previewTimer=setTimeout(async()=>{
+        const md=e.target.value;
+        const preview=document.getElementById("preview");
+        if(!md){preview.innerHTML='<p class="muted">nothing yet</p>';return;}
+        try{
+          const res=await api("/api/preview",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({md})});
+          preview.innerHTML=await res.text();
+        }catch{}
+      },250);
+    });
+
     document.getElementById("new").onsubmit=async e=>{
       e.preventDefault();
       const status=document.getElementById("status");
       const title=document.getElementById("title").value;
-      const body=document.getElementById("body").value.split(/\\n\\s*\\n/).map(s=>s.trim()).filter(Boolean);
+      const md=document.getElementById("md").value;
       status.textContent="posting...";status.className="status";
       try{
         await api("/api/posts",{method:"POST",headers:{"content-type":"application/json"},
-          body:JSON.stringify({title,body})});
+          body:JSON.stringify({title,md})});
         document.getElementById("title").value="";
-        document.getElementById("body").value="";
+        document.getElementById("md").value="";
+        document.getElementById("preview").innerHTML='<p class="muted">nothing yet</p>';
         status.textContent="posted";status.className="status ok";
         loadList();
       }catch(err){
@@ -174,7 +217,7 @@ Deno.serve({ port: 4600 }, async (req) => {
   const path = url.pathname;
 
   if (req.method === "GET" && path === "/") {
-    const posts = await loadPosts();
+    const posts = await loadIndex();
     posts.sort((a, b) => b.date.localeCompare(a.date));
     return new Response(indexPage(posts), { headers: { "content-type": "text/html" } });
   }
@@ -184,43 +227,65 @@ Deno.serve({ port: 4600 }, async (req) => {
   }
 
   if (path === "/api/posts" && req.method === "GET") {
-    const posts = await loadPosts();
+    const posts = await loadIndex();
     posts.sort((a, b) => b.date.localeCompare(a.date));
     return Response.json(posts);
   }
 
+  if (path === "/api/preview" && req.method === "POST") {
+    if (!authed(req)) return new Response("unauthorized", { status: 401 });
+    const { md } = await req.json();
+    return new Response(marked.parse(md ?? ""), { headers: { "content-type": "text/html" } });
+  }
+
   if (path === "/api/posts" && req.method === "POST") {
     if (!authed(req)) return new Response("unauthorized", { status: 401 });
-    const { title, body } = await req.json();
-    if (!title || !Array.isArray(body) || !body.length) {
+    const { title, md } = await req.json();
+    if (!title || typeof md !== "string" || !md.trim()) {
       return new Response("bad request", { status: 400 });
     }
-    const posts = await loadPosts();
+    const posts = await loadIndex();
     let slug = slugify(title);
     let n = 2;
     while (posts.some((p) => p.slug === slug)) slug = `${slugify(title)}-${n++}`;
-    const post = { slug, title, date: new Date().toISOString().slice(0, 10), body };
+    const post = { slug, title, date: new Date().toISOString().slice(0, 10) };
+    await Deno.writeTextFile(`${postsDir}/${slug}.md`, md.endsWith("\n") ? md : md + "\n");
     posts.push(post);
-    await savePosts(posts);
+    await saveIndex(posts);
     return Response.json(post);
   }
 
   if (path.startsWith("/api/posts/") && req.method === "DELETE") {
     if (!authed(req)) return new Response("unauthorized", { status: 401 });
     const slug = path.split("/").pop();
-    const posts = await loadPosts();
+    const posts = await loadIndex();
     const next = posts.filter((p) => p.slug !== slug);
-    await savePosts(next);
+    await saveIndex(next);
+    try { await Deno.remove(`${postsDir}/${slug}.md`); } catch {}
     return Response.json({ deleted: slug });
   }
 
   if (req.method === "GET" && !path.startsWith("/api/")) {
-    const slug = path.slice(1);
-    const posts = await loadPosts();
-    const post = posts.find((p) => p.slug === slug);
-    if (post) {
-      return new Response(postPage(post), { headers: { "content-type": "text/html" } });
+    const postMatch = path.match(/^\/([^/]+)\.md$/);
+    if (postMatch) {
+      const slug = postMatch[1];
+      const posts = await loadIndex();
+      const post = posts.find((p) => p.slug === slug);
+      const md = post ? await loadBody(slug) : null;
+      if (post && md !== null) {
+        return new Response(postPage(post, md), { headers: { "content-type": "text/html" } });
+      }
+      return new Response(notFoundPage(), { status: 404, headers: { "content-type": "text/html" } });
     }
+
+    const bareMatch = path.match(/^\/([^/]+)$/);
+    if (bareMatch) {
+      const posts = await loadIndex();
+      if (posts.some((p) => p.slug === bareMatch[1])) {
+        return Response.redirect(`${url.origin}/${bareMatch[1]}.md`, 301);
+      }
+    }
+
     return new Response(notFoundPage(), { status: 404, headers: { "content-type": "text/html" } });
   }
 

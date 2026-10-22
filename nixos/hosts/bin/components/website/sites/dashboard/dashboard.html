@@ -5,58 +5,62 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>bin</title>
 <link rel="icon" type="image/svg+xml" href="/assets/cat.svg">
+<link rel="stylesheet" href="/assets/style.css">
 <style>
-:root{--bg:#fff;--fg:#222;--dim:#888;--acc:#f2b8e2;--line:#ddd;--ok:#5a5;--err:#e33;}
-*{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:ui-monospace,monospace;font-size:14px;line-height:1.5;max-width:60ch;margin:3rem auto;padding:0 1rem;}
-h1{font-size:1rem;font-weight:normal;margin:0 0 .3rem}
-h2{font-size:.85rem;font-weight:normal;color:var(--dim);margin:2rem 0 .4rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
-p{margin:0;color:var(--dim);font-size:.85em}
-table{width:100%;border-collapse:collapse;font-size:.9em}
-td{padding:.25rem 0;border-bottom:1px solid var(--line);vertical-align:top}
-td:last-child{text-align:right;color:var(--dim);white-space:nowrap}
-.dot{display:inline-block;width:.6em;height:.6em;border-radius:50%;margin-right:.5em;background:var(--dim)}
-.ok .dot{background:var(--ok)}
-.bad .dot{background:var(--err)}
-.bad td{color:var(--err)}
-.errs{color:var(--err)}
-.bar{background:var(--line);height:.5em;width:100%;margin-top:.15rem}
-.bar i{display:block;height:100%;background:var(--acc)}
-.total td{color:var(--fg);font-weight:normal;border-bottom:none;border-top:1px solid var(--line);padding-top:.5rem}
-.stale{color:var(--err)}
-.banner{display:inline-block;padding:.3rem .6rem;margin:0 0 1rem;font-size:.85em;border:1px solid var(--line);}
+.dash-wrap{max-width:900px;margin:3rem auto;padding:0 1rem;}
+.banner{display:inline-block;padding:.3rem .7rem;margin:0 0 1.5rem;font-size:.85em;border:1px solid var(--line);transition:color .2s,border-color .2s;}
 .banner.ok{color:var(--ok);border-color:var(--ok);}
 .banner.bad{color:var(--err);border-color:var(--err);}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:.5rem;}
+.stat{border:1px solid var(--line);padding:.8rem 1rem;}
+.stat .label{font-size:.75em;color:var(--dim);margin-bottom:.4rem;}
+.stat .value{font-size:1.3em;}
+.bar{background:var(--line);height:.45em;width:100%;margin-top:.5rem;overflow:hidden;}
+.bar i{display:block;height:100%;background:var(--acc);transition:width .4s;}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.6rem;margin-bottom:.5rem;}
+.chip{border:1px solid var(--line);padding:.6rem .8rem;display:flex;align-items:center;gap:.5rem;font-size:.9em;transition:border-color .2s,color .2s;}
+.chip .dot{width:.6em;height:.6em;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .2s;}
+.chip.ok .dot{background:var(--ok);}
+.chip.bad{border-color:var(--err);color:var(--err);}
+.chip.bad .dot{background:var(--err);}
+.chip .name{flex:1;}
+.chip .err-count{font-size:.8em;color:var(--err);}
+.disks{display:flex;flex-direction:column;gap:.7rem;margin-bottom:.5rem;}
+.disk .row1{display:flex;justify-content:space-between;font-size:.9em;margin-bottom:.1rem;}
+.disk .row1 .d{color:var(--dim);}
+.disk.bad .row1{color:var(--err);}
+.storage-row{display:flex;align-items:center;gap:1rem;padding:.5rem 0;border-top:1px solid var(--line);font-size:.9em;}
+.storage-row:first-child{border-top:none;}
+.storage-row .name{width:6rem;flex-shrink:0;}
+.storage-row .path{color:var(--dim);flex:1;font-size:.85em;}
+.storage-row .size{width:6rem;text-align:right;flex-shrink:0;}
+.storage-row .bar{width:8rem;flex-shrink:0;margin:0;}
+.storage-total{font-weight:normal;border-top:1px solid var(--line);padding-top:.6rem;margin-top:.2rem;display:flex;justify-content:space-between;}
+.stale{color:var(--err);}
 </style>
 </head>
 <body>
+<main class="dash-wrap">
 <h1>bin</h1>
 <span id="banner" class="banner">checking...</span>
-<p id="gen">loading...</p>
+<p id="gen" class="muted">loading...</p>
 
 <h2>load / mem</h2>
-<table>
-<tr><td>load</td><td id="load">-</td></tr>
-<tr><td>mem<div class="bar"><i id="membar" style="width:0%"></i></div></td><td id="mem">-</td></tr>
-</table>
+<div class="stats">
+  <div class="stat"><div class="label">load</div><div class="value" id="load">-</div></div>
+  <div class="stat"><div class="label">mem</div><div class="value" id="mem">-</div><div class="bar"><i id="membar" style="width:0%"></i></div></div>
+</div>
 
 <h2>services</h2>
-<table id="services"></table>
+<div class="chips" id="services"></div>
 
 <h2>disk</h2>
-<table id="disk"></table>
+<div class="disks" id="disk"></div>
 
-<h2>storage per component <span id="genStorage" style="font-weight:normal"></span></h2>
-<table id="storage"></table>
+<h2>storage per component <span id="genStorage" class="muted" style="font-size:.75em"></span></h2>
+<div id="storage"></div>
 
 <script>
-function row(cells,cls){
-  const tr=document.createElement('tr');
-  if(cls) tr.className=cls;
-  cells.forEach(c=>{const td=document.createElement('td');td.innerHTML=c;tr.appendChild(td)});
-  return tr;
-}
-
 function fmtBytes(n){
   if(!n || n<=0) return '0 B';
   const units=['B','KB','MB','GB','TB'];
@@ -109,11 +113,11 @@ function renderStatus(s){
   s.services.forEach(x=>{
     const bad = x.active!=='active' || x.failed==='failed' || x.errors>0;
     if(bad) badServices++;
-    st.appendChild(row([
-      '<span class="dot"></span>'+x.name,
-      x.active,
-      x.errors>0?('<span class="errs">'+x.errors+' err</span>'):'ok'
-    ], bad?'bad':'ok'));
+    const chip=document.createElement('div');
+    chip.className='chip '+(bad?'bad':'ok');
+    chip.innerHTML='<span class="dot"></span><span class="name">'+x.name+'</span>'+
+      (x.errors>0?('<span class="err-count">'+x.errors+' err</span>'):'');
+    st.appendChild(chip);
   });
 
   const dk=document.getElementById('disk');
@@ -121,7 +125,11 @@ function renderStatus(s){
   badDisks=0;
   s.disk.forEach(x=>{
     if(x.pct>85) badDisks++;
-    dk.appendChild(row([x.path, x.used+' / '+x.size, x.pct+'%'], x.pct>85?'bad':''));
+    const row=document.createElement('div');
+    row.className='disk'+(x.pct>85?' bad':'');
+    row.innerHTML='<div class="row1"><span>'+x.path+'</span><span class="d">'+x.used+' / '+x.size+' ('+x.pct+'%)</span></div>'+
+      '<div class="bar"><i style="width:'+Math.min(100,x.pct)+'%"></i></div>';
+    dk.appendChild(row);
   });
 
   updateBanner();
@@ -135,14 +143,18 @@ function renderStorage(d){
   const max=Math.max(1,...d.components.map(x=>x.bytes));
   d.components.forEach(x=>{
     const pct=Math.round(x.bytes/max*100);
-    const tr=document.createElement('tr');
-    tr.innerHTML=
-      '<td>'+x.name+'<div class="bar"><i style="width:'+pct+'%"></i></div></td>'+
-      '<td>'+x.path+'</td>'+
-      '<td>'+fmtBytes(x.bytes)+'</td>';
-    sc.appendChild(tr);
+    const row=document.createElement('div');
+    row.className='storage-row';
+    row.innerHTML='<span class="name">'+x.name+'</span>'+
+      '<span class="path">'+x.path+'</span>'+
+      '<div class="bar"><i style="width:'+pct+'%"></i></div>'+
+      '<span class="size">'+fmtBytes(x.bytes)+'</span>';
+    sc.appendChild(row);
   });
-  sc.appendChild(row(['total','',fmtBytes(total)],'total'));
+  const totalRow=document.createElement('div');
+  totalRow.className='storage-total';
+  totalRow.innerHTML='<span>total</span><span>'+fmtBytes(total)+'</span>';
+  sc.appendChild(totalRow);
 }
 
 function tickFreshness(){
@@ -150,13 +162,13 @@ function tickFreshness(){
   if(lastStatus){
     const stale = (Date.now()/1000 - lastStatus.generated) > 30;
     gen.textContent='updated '+ago(lastStatus.generated);
-    gen.className=stale?'stale':'';
+    gen.className=stale?'stale':'muted';
   }
   const genStorage=document.getElementById('genStorage');
   if(lastStorage){
     const stale = (Date.now()/1000 - lastStorage.generated) > 600;
     genStorage.textContent='('+ago(lastStorage.generated)+')';
-    genStorage.className=stale?'stale':'';
+    genStorage.className=stale?'stale':'muted';
   }
   updateBanner();
 }
@@ -181,5 +193,6 @@ load();
 setInterval(load,5000);
 setInterval(tickFreshness,1000);
 </script>
+</main>
 </body>
 </html>

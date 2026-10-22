@@ -30,49 +30,39 @@ let
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>music</title>
+            <link rel="icon" type="image/svg+xml" href="/assets/cat.svg">
+            <link rel="stylesheet" href="/assets/style.css">
             <style>
-              :root{--bg:#fff;--fg:#222;--dim:#888;--acc:#f2b8e2;--line:#ddd;--err:#e33;}
-              *{box-sizing:border-box}
-              body{background:var(--bg);color:var(--fg);font-family:ui-monospace,monospace;font-size:15px;line-height:1.5;max-width:60ch;margin:4rem auto;padding:0 1rem;}
-              h1{font-size:1rem;font-weight:normal;margin:0 0 .5rem}
-              h2{font-size:.9rem;font-weight:normal;color:var(--dim);margin:2rem 0 .5rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
-              p{margin:0 0 1rem;color:var(--dim)}
-              form{display:flex;flex-direction:column;gap:.5rem;}
               .row{display:flex;gap:.5rem;}
-              input,select,button{font-family:inherit;font-size:inherit;background:var(--bg);color:var(--fg);border:1px solid var(--line);padding:.3rem .5rem;outline:none;border-radius:0;}
-              input:focus,select:focus,button:focus{border-color:var(--acc);}
-              input{flex:1;}
-              button{color:var(--acc);cursor:pointer;}
-              button:hover{border-color:var(--acc);}
-              button:disabled{opacity:.5;cursor:not-allowed;}
-              #out{color:var(--dim);border:1px solid var(--line);padding:.5rem;max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;display:none;font-size:.85em;margin-top:2rem;}
-              .status{color:var(--dim);font-size:.9em;margin-top:.5rem;}
-              .status.success{color:var(--acc);}
-              .status.error{color:var(--err);}
+              .row input{flex:1;}
+              #out{color:var(--dim);border:1px solid var(--line);padding:.5rem;max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;display:none;font-size:.85em;margin-top:1.5rem;}
             </style>
           </head>
           <body>
-            <h1>music</h1>
-            <form id="login">
-              <input id="pw" type="password" placeholder="token" autocomplete="off">
-              <button type="submit">unlock</button>
-            </form>
-            <div id="app" style="display:none">
-              <p>music downloader &lt;3</p>
-              <h2>fetch</h2>
-              <form id="f">
-                <div class="row">
-                  <input type="url" id="url" placeholder="link" required autocomplete="off">
-                  <select id="type">
-                    <option value="song">song</option>
-                    <option value="playlist">playlist</option>
-                  </select>
-                </div>
-                <button type="submit" id="btn">download</button>
+            <main class="wrap">
+              <a class="up" href="/">../</a>
+              <h1 style="margin-top:1.5rem">music</h1>
+              <form id="login">
+                <input id="pw" type="password" placeholder="token" autocomplete="off">
+                <button type="submit">unlock</button>
               </form>
-              <div id="status" class="status">ready</div>
-              <pre id="out"></pre>
-            </div>
+              <div id="app" style="display:none">
+                <p class="muted">music downloader &lt;3</p>
+                <h2>fetch</h2>
+                <form id="f">
+                  <div class="row">
+                    <input type="url" id="url" placeholder="link" required autocomplete="off">
+                    <select id="type">
+                      <option value="song">song</option>
+                      <option value="playlist">playlist</option>
+                    </select>
+                  </div>
+                  <button type="submit" id="btn">download</button>
+                </form>
+                <div id="status" class="status">ready</div>
+                <pre id="out"></pre>
+              </div>
+            </main>
             <script>
               let token = localStorage.getItem('downloader-token') || "";
 
@@ -128,16 +118,16 @@ let
 
                   if (text.startsWith('success')) {
                     status.textContent = 'download complete';
-                    status.className = 'status success';
+                    status.className = 'status ok';
                     urlInput.value = "";
                   } else {
                     status.textContent = 'process failed';
-                    status.className = 'status error';
+                    status.className = 'status err';
                   }
                 } catch (err) {
                   out.textContent = err;
                   status.textContent = 'network error';
-                  status.className = 'status error';
+                  status.className = 'status err';
                 } finally {
                   btn.disabled = false;
                   urlInput.disabled = false;
@@ -282,6 +272,7 @@ in
     forceSSL = true;
     enableACME = true;
     locations."/".proxyPass = "http://127.0.0.1:4533";
+    locations."/assets/".alias = "/etc/website-assets/";
     locations."= /downloader".return = "301 $scheme://$host/downloader/";
     locations."/downloader/".proxyPass = "http://127.0.0.1:4534/";
   };
