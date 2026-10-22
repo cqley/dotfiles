@@ -84,34 +84,31 @@
     shell = pkgs.fish;
   };
 
-environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; [
     git
+    coreutils
+    gawk
+    ouch
+    dnsutils
+    wireguard-tools
     kitty
     tmux
-    wl-clipboard
-    libnotify
     quickshell
     awww
-    hyprshot
-    hyprpolkitagent
-    wireguard-tools
-    dnsutils
+    wl-clipboard
+    libnotify
+    brightnessctl
+    ddcutil
+    grim
+    gpu-screen-recorder
     imv
     mpv
-    ouch
+    imagemagick
+    kdePackages.kdenlive
     wiremix
     zathura
     libreoffice
-    kdePackages.kdenlive
-    gpu-screen-recorder
-    brightnessctl
-    ddcutil
     claude-code
-    imagemagick
-    coreutils
-    awww
-    grim
-    gawk
   ];
 
   fonts.packages = with pkgs; [
