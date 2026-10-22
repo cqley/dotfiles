@@ -13,7 +13,7 @@ hl.monitor({ output = "eDP-1", mode = "2560x1600@90", position = "0x0", scale = 
 
 local mod = "SUPER"
 local terminal = "kitty"
-local browser = "chromium"
+local browser = "helium"
 
 hl.on("hyprland.start", function ()
     hl.exec_cmd("awww-daemon")
