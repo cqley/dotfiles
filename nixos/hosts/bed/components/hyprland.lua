@@ -32,7 +32,7 @@ config({
     general = {
         gaps_in = 2.5,
         gaps_out = 5,
-        border_size = 0,
+        border_size = 1,
         resize_on_border = false,
         col = { active_border = border_color },
         allow_tearing = false,

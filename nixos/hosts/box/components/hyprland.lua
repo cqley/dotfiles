@@ -23,8 +23,6 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("quickshell -p ~/.config/quickshell/shell.qml")
 end)
 
--- live-reloadable: edit this file and run `hyprctl reload`, no nixos-rebuild needed.
--- border color is pulled from ~/.colors/colors.lua (written by colors.sh on wallpaper change).
 local border_color = "rgba(ffffffff)"
 local colors_ok, colors = pcall(dofile, (os.getenv("HOME") or "") .. "/.colors/colors.lua")
 if colors_ok and colors and colors.accent then
@@ -35,7 +33,7 @@ config({
     general = {
         gaps_in = 2.5,
         gaps_out = 5,
-        border_size = 0,
+        border_size = 1,
         resize_on_border = false,
         col = { active_border = border_color },
         allow_tearing = false,
