@@ -53,9 +53,9 @@
     git
     kitty
     tmux
-    ouch
-    wireguard-tools
     dnsutils
+    wireguard-tools
+    ouch
     claude-code
   ];
 

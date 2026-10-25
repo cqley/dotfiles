@@ -105,6 +105,7 @@
     zathura
     libreoffice
     claude-code
+    cava
   ];
 
   fonts.packages = with pkgs; [
