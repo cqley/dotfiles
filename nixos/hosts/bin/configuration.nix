@@ -9,6 +9,7 @@
     ./components/website/website.nix
     ./components/website/dashboard.nix
     ./components/website/git.nix
+    ./components/website/matrix.nix
     ./components/website/panel.nix
     ./components/website/blog.nix
     ./components/website/music.nix
@@ -50,9 +51,9 @@
   };
 
   environment.systemPackages = with pkgs; [
+    git
     kitty
     tmux
-    git
     dnsutils
     wireguard-tools
     ouch
@@ -61,7 +62,7 @@
 
   services.nscd.enable = false;
   system.nssModules = lib.mkForce [];
-  
+
   services.openssh = {
     enable = true;
     settings = {
