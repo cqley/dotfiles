@@ -138,15 +138,15 @@ bind(mod .. " + T", exec("quickshell ipc call wallpaper toggle"))
 
 bind(mod .. " + N", exec("quickshell ipc call network toggle"))
 bind(mod .. " + M", exec("quickshell ipc call bluetooth toggle"))
-bind(mod .. " + J", exec("quickshell ipc call audio toggle"))
 bind(mod .. " + X", exec("quickshell ipc call mic toggle"))
-bind(mod .. " + K", exec("quickshell ipc call brightness toggle"))
 bind(mod .. " + I", exec("quickshell ipc call battery toggle"))
 bind(mod .. " + G", exec("quickshell ipc call mixer toggle"))
 
 bind(mod .. " + HOME", exec("quickshell ipc call screenshot toggle"))
 bind("ALT + S", exec("quickshell ipc call screenshot region"))
 bind(mod .. " + O", exec("quickshell ipc call record toggle"))
+
+bind(mod .. " + F12", exec("pkill quickshell; env QSG_RENDER_LOOP=threaded quickshell -p ~/.config/quickshell/shell.qml & disown"))
 
 bind(mod .. " + left",  focus({ direction = "left" }))
 bind(mod .. " + right", focus({ direction = "right" }))
