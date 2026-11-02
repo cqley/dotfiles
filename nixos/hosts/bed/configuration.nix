@@ -111,7 +111,9 @@
   fonts.packages = with pkgs; [
     inter
     cherry
+    libertinus
     noto-fonts
+    courier-prime
     noto-fonts-cjk-sans
     noto-fonts-color-emoji
     nerd-fonts.jetbrains-mono

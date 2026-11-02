@@ -54,8 +54,8 @@
       shell fish
       shell_integration enabled
 
-      font_family cherry
-      font_size 10
+      font_family Courier Prime
+      font_size 12
       
       cursor_shape beam
       cursor_blink_interval 1
@@ -93,13 +93,19 @@
   gtk = {
     enable = true;
     theme = { name = "Adwaita-dark"; package = pkgs.gnome-themes-extra; };
-    font = { name = "MonaspiceNe Nerd Font Mono"; size = 11; };
+    font = { name = "Libertinus Serif"; size = 11; };
   };
 
   qt = {
     enable = true;
     platformTheme.name = "kde";
     style.name = "breeze";
+  };
+
+  fonts.fontconfig.defaultFonts = {
+    serif = [ "Libertinus Serif" ];
+    sansSerif = [ "Libertinus Serif" ];
+    monospace = [ "Courier Prime" ];
   };
 
   programs.home-manager.enable = true;
