@@ -9,8 +9,7 @@
     ../../modules/system/editor.nix
     ../../modules/misc/espanso.nix
     ../../modules/misc/notes.nix
-    ../../modules/games/dayz.nix
-    ../../modules/games/mc.nix
+    ../../modules/misc/mc.nix
   ];
 
   home.username = "cat";
