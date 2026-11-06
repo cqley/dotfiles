@@ -110,7 +110,6 @@
 
   fonts.packages = with pkgs; [
     inter
-    cherry
     libertinus
     noto-fonts
     courier-prime
