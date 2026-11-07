@@ -141,6 +141,7 @@ bind(mod .. " + M", exec("quickshell ipc call bluetooth toggle"))
 bind(mod .. " + X", exec("quickshell ipc call mic toggle"))
 bind(mod .. " + I", exec("quickshell ipc call battery toggle"))
 bind(mod .. " + G", exec("quickshell ipc call mixer toggle"))
+bind(mod .. " + J", exec("quickshell ipc call dashboard toggle"))
 
 bind(mod .. " + HOME", exec("quickshell ipc call screenshot toggle"))
 bind("ALT + S", exec("quickshell ipc call screenshot region"))

@@ -55,6 +55,8 @@
   programs.dconf.enable = true;
   hardware.uinput.enable = true;
 
+  programs.nix-ld.enable = true;
+
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
@@ -105,6 +107,7 @@
     zathura
     libreoffice
     claude-code
+    sox
     cava
   ];
 

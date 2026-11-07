@@ -64,6 +64,8 @@
     proton-ge-bin
   ];
 
+  programs.nix-ld.enable = true;
+
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
@@ -109,6 +111,7 @@
     zathura
     libreoffice
     claude-code
+    sox
     cava
   ];
 

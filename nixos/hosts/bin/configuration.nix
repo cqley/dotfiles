@@ -58,10 +58,13 @@
     wireguard-tools
     ouch
     claude-code
+    sox
   ];
 
   services.nscd.enable = false;
   system.nssModules = lib.mkForce [];
+
+  programs.nix-ld.enable = true;
 
   services.openssh = {
     enable = true;
