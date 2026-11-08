@@ -28,13 +28,13 @@
         IconTheme = "OSX";
         IconsDir = "icons";
         IgnoreJavaCompatibility = false;
-        IgnoreJavaWizard = false;
+        IgnoreJavaWizard = true;
         InstRenamingMode = "AskEverytime";
         InstSortMode = "Name";
         InstanceDir = "instances";
         JavaArchitecture = "64";
         JavaDir = "java";
-        JavaPath = "/nix/store/55mw2ly3dxh5008li72rx6ilc75hgvr0-openjdk-8u502-b01/bin/java";
+        JavaPath = "${pkgs.jdk25}/bin/java";
         Language = "en_US";
         LaunchMaximized = false;
         LowMemWarning = true;
