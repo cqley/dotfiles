@@ -4,7 +4,6 @@
   imports = [
     ../../modules/system/files.nix
     ../../modules/system/btop.nix
-    ../../modules/system/editor.nix
   ];
 
   home.username = "cat";

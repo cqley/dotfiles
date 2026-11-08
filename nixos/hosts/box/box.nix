@@ -6,7 +6,6 @@
     ../../modules/system/layout.nix
     ../../modules/system/files.nix
     ../../modules/system/btop.nix
-    ../../modules/system/editor.nix
     ../../modules/misc/espanso.nix
     ../../modules/misc/notes.nix
     ../../modules/misc/mc.nix

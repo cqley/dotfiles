@@ -15,6 +15,7 @@
     ./components/website/music.nix
     ./components/website/filehost.nix
     ../../modules/system/core.nix
+    ../../modules/system/editor.nix
     ../../modules/misc/public.nix
   ];
 
