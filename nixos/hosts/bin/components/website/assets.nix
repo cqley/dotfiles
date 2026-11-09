@@ -1,4 +1,4 @@
 { ... }:
 {
-  environment.etc."website-assets".source = ./assets;
+  environment.etc."assets".source = ./assets;
 }

@@ -1,29 +1,33 @@
 { pkgs, ... }:
+
+let
+  uploadKeys = pkgs.writeText "filehostkeys" "0bmKIN8r1/L4fr8npo3V9+fdDepx7d43weGOqKzQh6c=\n";
+in
 {
-  systemd.services.linx-server = {
+  systemd.services.linx = {
     wantedBy = [ "multi-user.target" ];
     after = [ "network.target" ];
     serviceConfig = {
-      ExecStart = "${pkgs.linx-server}/bin/linx-server -bind 127.0.0.1:47291 -siteurl https://host.1f2t.org/ -filespath /var/lib/linx-server/files -metapath /var/lib/linx-server/meta -maxsize 262144000";
-      WorkingDirectory = "/var/lib/linx-server";
-      StateDirectory = "linx-server";
+      ExecStart = "${pkgs.linx-server}/bin/linx-server -bind 127.0.0.1:47291 -siteurl https://host.1f2t.org/ -filespath /var/lib/linx/files -metapath /var/lib/linx/meta -maxsize 262144000 -authfile ${uploadKeys} -basicauth";
+      WorkingDirectory = "/var/lib/linx";
+      StateDirectory = "linx";
       DynamicUser = true;
       Restart = "on-failure";
     };
   };
 
-  systemd.services.filehost-dashboard = {
+  systemd.services.filehost = {
     wantedBy = [ "multi-user.target" ];
-    environment.DENO_DIR = "/var/lib/filehost-dashboard/.deno";
+    environment.DENO_DIR = "/var/lib/filehost/.deno";
     script = ''
-      exec ${pkgs.deno}/bin/deno run --allow-net --allow-read --allow-write --allow-env ${./sites/filehost-dashboard/server.js}
+      exec ${pkgs.deno}/bin/deno run --allow-net --allow-read --allow-write --allow-env ${./sites/filehost/server.js}
     '';
     serviceConfig = {
       DynamicUser = true;
-      StateDirectory = "filehost-dashboard";
-      WorkingDirectory = "/var/lib/filehost-dashboard";
+      StateDirectory = "filehost";
+      WorkingDirectory = "/var/lib/filehost";
       Restart = "on-failure";
-      BindPaths = [ "/var/lib/linx-server" ];
+      BindPaths = [ "/var/lib/linx" ];
       AmbientCapabilities = [ "CAP_DAC_READ_SEARCH" "CAP_DAC_OVERRIDE" ];
       CapabilityBoundingSet = [ "CAP_DAC_READ_SEARCH" "CAP_DAC_OVERRIDE" ];
     };
@@ -38,7 +42,7 @@
       client_body_timeout 300s;
     '';
 
-    locations."/assets/".alias = "/etc/website-assets/";
+    locations."/assets/".alias = "/etc/assets/";
 
     locations."/dashboard".proxyPass = "http://127.0.0.1:4601";
 
@@ -49,6 +53,8 @@
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
         sub_filter "<link href='/static/images/favicon.gif' rel='icon' type='image/gif'>" "<link href='/assets/cat.svg' rel='icon' type='image/svg+xml'>";
+        sub_filter "<title>" "<title>分</title><!--";
+        sub_filter "</title>" "-->";
         sub_filter_once on;
       '';
     };

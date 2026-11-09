@@ -1,0 +1,51 @@
+html .excalidraw {
+  --color-primary: #e48fcd;
+  --color-primary-darker: #d877bd;
+  --color-primary-darkest: #c862ad;
+  --color-primary-hover: #db82c3;
+  --color-primary-light: #fbe7f3;
+  --color-primary-light-darker: #f6cce9;
+  --color-primary-contrast-offset: #e48fcd;
+  --color-brand-hover: #db82c3;
+  --color-selection: #e48fcd;
+  --color-surface-primary-container: #f9dbee;
+  --color-on-primary-container: #5e1f50;
+  --color-surface-high: #fdf0f8;
+}
+
+html .excalidraw.theme--dark {
+  --color-primary: #f2b8e2;
+  --color-primary-darker: #f6cce9;
+  --color-primary-darkest: #f9dbee;
+  --color-primary-hover: #f6cce9;
+  --color-primary-light: #5e4057;
+  --color-primary-light-darker: #4c3446;
+  --color-primary-contrast-offset: #f6cce9;
+  --color-brand-hover: #f6cce9;
+  --color-selection: #f2b8e2;
+  --color-surface-primary-container: #5e4057;
+  --color-on-primary-container: #f9dbee;
+  --color-surface-high: #33282f;
+}
+
+.plus-banner,
+.encrypted-icon,
+.HelpDialog__header,
+.sidebar-tab-trigger[id$="-trigger-comments"],
+.sidebar-tab-trigger[id$="-trigger-presentation"],
+.Card:has([style*="color-logo-icon"]) {
+  display: none !important;
+}
+
+.welcome-screen-center__logo > * {
+  display: none !important;
+}
+
+.welcome-screen-center__logo::before {
+  content: "";
+  display: block;
+  width: 5rem;
+  height: 5rem;
+  margin: 0 auto;
+  background: url("/favicon.svg") center / contain no-repeat;
+}

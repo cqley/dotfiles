@@ -11,9 +11,13 @@ in
     settings = {
       port = 7880;
       rtc = {
+        tcp_port = 7881;
         port_range_start = 50000;
         port_range_end = 51000;
+        use_external_ip = false;
+        node_ip = "5.231.118.153";
       };
+      room.auto_create = false;
     };
   };
 
@@ -24,19 +28,29 @@ in
     port = 8082;
   };
 
+  systemd.services.lk-jwt-service.environment = {
+    LIVEKIT_JWT_BIND = pkgs.lib.mkForce "127.0.0.1:8082";
+    LIVEKIT_FULL_ACCESS_HOMESERVERS = "matrix.1f2t.org";
+  };
+
   services.nginx.virtualHosts."livekit.1f2t.org" = {
     forceSSL = true;
     enableACME = true;
 
-    locations."/sfu/" = {
+    locations."~ ^/(sfu/get|healthz|get_token)" = {
       proxyPass = "http://127.0.0.1:8082";
     };
 
     locations."/" = {
       proxyPass = "http://127.0.0.1:7880";
       proxyWebsockets = true;
+      extraConfig = ''
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+      '';
     };
   };
 
+  networking.firewall.allowedTCPPorts = [ 7881 ];
   networking.firewall.allowedUDPPortRanges = [{ from = 50000; to = 51000; }];
 }

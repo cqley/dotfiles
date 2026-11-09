@@ -1,6 +1,6 @@
 export LC_ALL=C
 
-paths="git:/srv/git files:/var/lib/linx-server music:/var/lib/navidrome puffer:/var/lib/pufferpanel blog:/var/lib/blog public:/home/cat/public"
+paths="files:/var/lib/linx music:/var/lib/navidrome matrix:/var/lib/tuwunel puffer:/var/lib/pufferpanel blog:/var/lib/blog draw:/var/lib/draw public:/home/cat/public"
 
 json=""
 for p in $paths; do
