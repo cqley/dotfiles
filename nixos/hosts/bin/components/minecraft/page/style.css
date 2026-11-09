@@ -136,6 +136,7 @@ a.pl:hover{color:var(--acc);}
 .rows .grp{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end;}
 .rows input.f.num{width:6rem;}
 #wmanage input.f{width:11rem;}
+#wmanage input.f.wide{flex:1;min-width:11rem;width:auto;font-family:var(--mono,monospace);font-size:.8rem;}
 @media (max-width:600px){.rows>div:has(.grp){flex-wrap:wrap;}.rows .grp{width:100%;justify-content:flex-start;}#wmanage>div{flex-wrap:wrap;}}
 .chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.3rem 0 .8rem;}
 .chips span{display:inline-flex;align-items:center;height:1.4rem;padding:0 .5rem;font-size:.8rem;line-height:1;border:1px solid var(--warn);color:var(--warn);}
