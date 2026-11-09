@@ -1,8 +1,7 @@
 { pkgs, ... }:
 
 let
-  livekitSecret = "3d140dfc749bead29137610391c2d6d30f5e34d09e52d99cf1680557fae56726";
-  livekitKeyFile = pkgs.writeText "livekitkeys.yaml" "tuwunel: ${livekitSecret}\n";
+  livekitKeyFile = "/var/lib/matrixsecrets/livekit";
 in
 {
   services.livekit = {

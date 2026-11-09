@@ -11,7 +11,7 @@ async function ensureToken() {
   } catch {
     const t = crypto.randomUUID().replaceAll("-", "");
     await Deno.writeTextFile(tokenFile, t);
-    console.log(`admin token: ${t}`);
+    console.log("new admin token written to " + tokenFile);
     return t;
   }
 }

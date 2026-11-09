@@ -20,7 +20,7 @@ in
     wantedBy = [ "multi-user.target" ];
     environment.DENO_DIR = "/var/lib/filehost/.deno";
     script = ''
-      exec ${pkgs.deno}/bin/deno run --allow-net --allow-read --allow-write --allow-env ${./sites/filehost/server.js}
+      exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1:4601 --allow-read=/var/lib/linx,/var/lib/filehost --allow-write=/var/lib/linx,/var/lib/filehost --allow-env=STATE_DIRECTORY ${./sites/filehost/server.js}
     '';
     serviceConfig = {
       DynamicUser = true;

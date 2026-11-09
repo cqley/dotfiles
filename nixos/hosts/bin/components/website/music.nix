@@ -81,7 +81,7 @@ in
         DENO_DIR = "/var/lib/navidrome/.deno";
       };
       script = ''
-        exec ${pkgs.deno}/bin/deno run --allow-net --allow-run --allow-read --allow-write --allow-env ${./sites/downloader/server.js}
+        exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1:4534 --allow-run=yt-dlp,spotdl,zip --allow-read=/var/lib/navidrome --allow-write=/var/lib/navidrome ${./sites/downloader/server.js}
       '';
       serviceConfig = sandbox // {
         User = "navidrome";
