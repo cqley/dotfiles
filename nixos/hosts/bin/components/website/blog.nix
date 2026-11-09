@@ -4,7 +4,7 @@
     wantedBy = [ "multi-user.target" ];
     environment.DENO_DIR = "/var/lib/blog/.deno";
     script = ''
-      exec ${pkgs.deno}/bin/deno run --allow-net --allow-read --allow-write --allow-env ${./sites/blog}/server.js
+      exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1:4600 --allow-read=/var/lib/blog,${./sites/blog} --allow-write=/var/lib/blog --allow-env=STATE_DIRECTORY,PORT ${./sites/blog}/server.js
     '';
     serviceConfig = {
       DynamicUser = true;

@@ -2,10 +2,10 @@
 
 {
   imports = [
-    ./hardware-configuration.nix
+    ./hardware.nix
     ./components/wireguard.nix
-    ./components/migrate.nix
     ./components/security.nix
+    ./components/immich.nix
     ./components/website/nginx.nix
     ./components/website/assets.nix
     ./components/website/website.nix
@@ -15,7 +15,6 @@
     ./components/website/blog.nix
     ./components/website/music.nix
     ./components/website/filehost.nix
-    ./components/website/draw.nix
     ../../modules/system/core.nix
     ../../modules/system/editor.nix
     ../../modules/misc/public.nix

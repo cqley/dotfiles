@@ -6,5 +6,6 @@
     ./matrix/nginx.nix
     ./matrix/turn.nix
     ./matrix/livekit.nix
+    ./matrix/secrets.nix
   ];
 }

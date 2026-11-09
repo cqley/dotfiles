@@ -1,6 +1,6 @@
 export LC_ALL=C
 
-paths="files:/var/lib/linx music:/var/lib/navidrome matrix:/var/lib/tuwunel puffer:/var/lib/pufferpanel blog:/var/lib/blog draw:/var/lib/draw public:/home/cat/public"
+paths="files:/var/lib/linx music:/var/lib/navidrome matrix:/var/lib/tuwunel puffer:/var/lib/pufferpanel blog:/var/lib/blog photos:/var/lib/immich public:/home/cat/public"
 
 json=""
 for p in $paths; do

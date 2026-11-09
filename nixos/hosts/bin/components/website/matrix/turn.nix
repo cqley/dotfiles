@@ -5,7 +5,7 @@
     enable = true;
     realm = "matrix.1f2t.org";
     use-auth-secret = true;
-    static-auth-secret = "4626905729e91d52d10c68a9e31499c8f595270d87c9b898a187c0d98080f3ef";
+    static-auth-secret-file = "/run/credentials/coturn.service/turn";
     cert = "/var/lib/acme/matrix.1f2t.org/fullchain.pem";
     pkey = "/var/lib/acme/matrix.1f2t.org/key.pem";
     no-cli = true;

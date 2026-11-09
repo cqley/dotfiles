@@ -1,4 +1,4 @@
-units="nginx.service tuwunel.service livekit.service lk-jwt-service.service coturn.service navidrome.service downloader.service edeltalk.timer unfassbar.timer henkescorner.timer wanshow.timer draw.service blog.service linx.service filehost.service pufferpanel.service syncthing.service wireguard-wg0.service sshd.service fail2ban.service"
+units="nginx.service tuwunel.service livekit.service lk-jwt-service.service coturn.service navidrome.service downloader.service edeltalk.timer unfassbar.timer henkescorner.timer wanshow.timer blog.service linx.service filehost.service pufferpanel.service immich-server.service immich-machine-learning.service syncthing.service wireguard-wg0.service sshd.service fail2ban.service"
 
 read -r l1 l5 l15 _ < /proc/loadavg
 mem_total=$(awk '/MemTotal/{print int($2/1024)}' /proc/meminfo)
