@@ -2,16 +2,16 @@
 
 {
   imports = [
-    ./hardware.nix
+    ./hardware-configuration.nix
     ./components/wireguard.nix
     ./components/security.nix
     ./components/immich.nix
+    ./components/minecraft.nix
     ./components/website/nginx.nix
     ./components/website/assets.nix
     ./components/website/website.nix
     ./components/website/dashboard.nix
     ./components/website/matrix.nix
-    ./components/website/panel.nix
     ./components/website/blog.nix
     ./components/website/music.nix
     ./components/website/filehost.nix
@@ -74,6 +74,8 @@
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
       PermitRootLogin = "no";
+      ClientAliveInterval = 30;
+      ClientAliveCountMax = 3;
     };
   };
 

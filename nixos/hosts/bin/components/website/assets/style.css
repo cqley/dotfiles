@@ -200,10 +200,6 @@ button:disabled {
   color: var(--err);
   font-size: .85em;
 }
-input,
-select {
-  min-height: 2.3rem;
-}
 
 code,
 pre,
@@ -211,4 +207,102 @@ kbd,
 samp {
   font-family: ui-monospace, monospace;
   font-size: .9em;
+}
+
+input,
+select,
+button {
+  min-height: 2.3rem;
+  box-sizing: border-box;
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 1.9rem;
+  background-color: var(--bg);
+  background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%), linear-gradient(135deg, var(--dim) 50%, transparent 50%);
+  background-position: calc(100% - 1rem) 52%, calc(100% - .7rem) 52%;
+  background-size: .3rem .3rem;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+input[type=checkbox],
+input[type=radio] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--dim);
+  background: var(--bg);
+  display: inline-grid;
+  place-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+
+input[type=radio] {
+  border-radius: 50%;
+}
+
+input[type=checkbox]::before,
+input[type=radio]::before {
+  content: "";
+  width: .6rem;
+  height: .6rem;
+  background: var(--acc);
+  transform: scale(0);
+  transition: transform .12s;
+}
+
+input[type=checkbox]::before {
+  clip-path: polygon(12% 50%, 0 64%, 40% 100%, 100% 18%, 86% 4%, 40% 72%);
+}
+
+input[type=radio]::before {
+  border-radius: 50%;
+}
+
+input[type=checkbox]:checked,
+input[type=radio]:checked {
+  border-color: var(--acc);
+}
+
+input[type=checkbox]:checked::before,
+input[type=radio]:checked::before {
+  transform: scale(1);
+}
+
+input[type=checkbox]:hover,
+input[type=radio]:hover,
+input[type=checkbox]:focus-visible,
+input[type=radio]:focus-visible {
+  border-color: var(--acc);
+}
+
+input[type=checkbox]:disabled,
+input[type=radio]:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+label:has(> input[type=checkbox]),
+label:has(> input[type=radio]) {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  cursor: pointer;
 }

@@ -55,6 +55,8 @@ in
         sub_filter "<link href='/static/images/favicon.gif' rel='icon' type='image/gif'>" "<link href='/assets/cat.svg' rel='icon' type='image/svg+xml'>";
         sub_filter "<title>" "<title>分</title><!--";
         sub_filter "</title>" "-->";
+        sub_filter "</head>" "<link rel='stylesheet' href='/assets/linx.css'></head>";
+        sub_filter "initial-scale=0.8" "initial-scale=1";
         sub_filter_once on;
       '';
     };

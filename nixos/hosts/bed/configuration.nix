@@ -2,7 +2,7 @@
 
 {
   imports = [ 
-    ./hardware.nix
+    ./hardware-configuration.nix
     ./components/wireguard.nix
     ../../modules/system/core.nix
     ../../modules/system/editor.nix

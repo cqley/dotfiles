@@ -1,4 +1,5 @@
-units="nginx.service tuwunel.service livekit.service lk-jwt-service.service coturn.service navidrome.service downloader.service edeltalk.timer unfassbar.timer henkescorner.timer wanshow.timer blog.service linx.service filehost.service pufferpanel.service immich-server.service immich-machine-learning.service syncthing.service wireguard-wg0.service sshd.service fail2ban.service"
+units="nginx.service tuwunel.service livekit.service lk-jwt-service.service coturn.service navidrome.service downloader.service edeltalk.timer unfassbar.timer henkescorner.timer wanshow.timer blog.service linx.service filehost.service immich-server.service immich-machine-learning.service minecraft-cron.timer mcpanel.service syncthing.service wireguard-wg0.service sshd.service fail2ban.service"
+units="$units $(systemctl list-units --all --plain --no-legend 'minecraft@*.service' 2>/dev/null | awk '{print $1}')"
 
 read -r l1 l5 l15 _ < /proc/loadavg
 mem_total=$(awk '/MemTotal/{print int($2/1024)}' /proc/meminfo)
