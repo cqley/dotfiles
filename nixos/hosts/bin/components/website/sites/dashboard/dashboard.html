@@ -24,6 +24,9 @@
 .chip.bad{border-color:var(--err);color:var(--err);}
 .chip.bad .dot{background:var(--err);}
 .chip .name{flex:1;}
+a.chip{color:inherit;cursor:pointer;}
+a.chip:hover,a.chip:focus-visible{border-color:var(--acc);color:var(--acc);}
+a.chip.bad:hover,a.chip.bad:focus-visible{color:var(--err);}
 .chip .err-count{font-size:.8em;color:var(--err);}
 .disks{display:flex;flex-direction:column;gap:.7rem;margin-bottom:.5rem;}
 .disk .row1{display:flex;justify-content:space-between;font-size:.9em;margin-bottom:.1rem;}
@@ -77,6 +80,22 @@ function ago(ts){
   return Math.floor(s/3600)+'h ago';
 }
 
+const links={
+  nginx:'https://1f2t.org/',
+  tuwunel:'https://federationtester.matrix.org/#matrix.1f2t.org',
+  navidrome:'https://music.1f2t.org/',
+  downloader:'https://music.1f2t.org/downloader/',
+  edeltalk:'https://www.youtube.com/playlist?list=PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss',
+  unfassbar:'https://www.youtube.com/playlist?list=PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp',
+  henkescorner:'https://www.youtube.com/playlist?list=PLnEam709xEo1DuqpEFBR43gEYBFfQyM7D',
+  wanshow:'https://www.youtube.com/playlist?list=PLBKxjEPgnXa0',
+  blog:'https://blog.1f2t.org/dashboard',
+  linx:'https://host.1f2t.org/',
+  filehost:'https://host.1f2t.org/dashboard',
+  pufferpanel:'https://panel.1f2t.org/',
+  draw:'https://draw.1f2t.org/'
+};
+
 let lastStatus=null, lastStorage=null;
 let badServices=0, badDisks=0;
 
@@ -113,8 +132,10 @@ function renderStatus(s){
   s.services.forEach(x=>{
     const bad = x.active!=='active' || x.failed==='failed' || x.errors>0;
     if(bad) badServices++;
-    const chip=document.createElement('div');
-    chip.className='chip '+(bad?'bad':'ok');
+    const link=links[x.name];
+    const chip=document.createElement(link?'a':'div');
+    if(link){chip.href=link;chip.target='_blank';chip.rel='noopener';}
+    chip.className='chip '+(bad?'bad':'ok')+(link?' link':'');
     chip.innerHTML='<span class="dot"></span><span class="name">'+x.name+'</span>'+
       (x.errors>0?('<span class="err-count">'+x.errors+' err</span>'):'');
     st.appendChild(chip);

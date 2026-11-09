@@ -13,7 +13,7 @@
     '';
 
     locations = {
-      "/assets/".alias = "/etc/website-assets/";
+      "/assets/".alias = "/etc/assets/";
 
       "= /blog" = {
         return = "301 https://blog.1f2t.org/";

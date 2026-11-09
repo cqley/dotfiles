@@ -8,7 +8,7 @@
   };
   users.groups.dash = {};
 
-  systemd.services.dash-fast = {
+  systemd.services.dashstatus = {
     script = builtins.readFile ./sites/dashboard/fast.sh;
     path = [ pkgs.systemd pkgs.coreutils pkgs.gawk ];
     serviceConfig = {
@@ -19,7 +19,7 @@
       StateDirectoryMode = "0755";
     };
   };
-  systemd.timers.dash-fast = {
+  systemd.timers.dashstatus = {
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnBootSec = "10s";
@@ -27,7 +27,7 @@
     };
   };
 
-  systemd.services.dash-slow = {
+  systemd.services.dashstorage = {
     script = builtins.readFile ./sites/dashboard/slow.sh;
     path = [ pkgs.coreutils ];
     serviceConfig = {
@@ -40,7 +40,7 @@
       CapabilityBoundingSet = [ "CAP_DAC_READ_SEARCH" ];
     };
   };
-  systemd.timers.dash-slow = {
+  systemd.timers.dashstorage = {
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnBootSec = "1min";
@@ -54,6 +54,6 @@
     listen = [{ addr = "10.0.0.1"; port = 8081; }];
     root = "/etc/dash";
     locations."/data/".alias = "/var/lib/dash/";
-    locations."/assets/".alias = "/etc/website-assets/";
+    locations."/assets/".alias = "/etc/assets/";
   };
 }

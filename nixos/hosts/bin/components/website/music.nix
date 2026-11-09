@@ -1,191 +1,32 @@
-{ config, pkgs, ... }:
+{ lib, pkgs, ... }:
 
 let
-  dl-server = pkgs.writeText "dl-server.js" ''
-    const tokenFile = "/var/lib/navidrome/.downloader-token";
-    async function ensureToken() {
-      try {
-        return (await Deno.readTextFile(tokenFile)).trim();
-      } catch {
-        const t = crypto.randomUUID().replaceAll("-", "");
-        await Deno.writeTextFile(tokenFile, t);
-        console.log(`downloader token: ''${t}`);
-        return t;
-      }
-    }
-    const token = await ensureToken();
-    function authed(req) {
-      return req.headers.get("authorization") === `bearer ''${token}`;
-    }
-
-    Deno.serve({ port: 4534, hostname: "127.0.0.1" }, async (req) => {
-      if (req.method === "GET" && new URL(req.url).pathname === "/check") {
-        return authed(req) ? new Response("ok") : new Response("unauthorized", { status: 401 });
-      }
-      if (req.method === "GET") {
-        return new Response(`
-          <!doctype html>
-          <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>music</title>
-            <link rel="icon" type="image/svg+xml" href="/assets/cat.svg">
-            <link rel="stylesheet" href="/assets/style.css">
-            <style>
-              .row{display:flex;gap:.5rem;}
-              .row input{flex:1;}
-              #out{color:var(--dim);border:1px solid var(--line);padding:.5rem;max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;display:none;font-size:.85em;margin-top:1.5rem;}
-            </style>
-          </head>
-          <body>
-            <main class="wrap">
-              <a class="up" href="/">../</a>
-              <h1 style="margin-top:1.5rem">music</h1>
-              <form id="login">
-                <input id="pw" type="password" placeholder="token" autocomplete="off">
-                <button type="submit">unlock</button>
-              </form>
-              <div id="app" style="display:none">
-                <p class="muted">music downloader &lt;3</p>
-                <h2>fetch</h2>
-                <form id="f">
-                  <div class="row">
-                    <input type="url" id="url" placeholder="link" required autocomplete="off">
-                    <select id="type">
-                      <option value="song">song</option>
-                      <option value="playlist">playlist</option>
-                    </select>
-                  </div>
-                  <button type="submit" id="btn">download</button>
-                </form>
-                <div id="status" class="status">ready</div>
-                <pre id="out"></pre>
-              </div>
-            </main>
-            <script>
-              let token = localStorage.getItem('downloader-token') || "";
-
-              const login = document.getElementById('login');
-              const pw = document.getElementById('pw');
-              const app = document.getElementById('app');
-
-              const f = document.getElementById('f');
-              const urlInput = document.getElementById('url');
-              const typeSelect = document.getElementById('type');
-              const btn = document.getElementById('btn');
-              const out = document.getElementById('out');
-              const status = document.getElementById('status');
-
-              urlInput.addEventListener('input', (e) => {
-                const val = e.target.value;
-                if (val.includes('playlist') || val.includes('&list=')) {
-                  typeSelect.value = 'playlist';
-                }
-              });
-
-              login.onsubmit = (e) => {
-                e.preventDefault();
-                token = pw.value;
-                localStorage.setItem('downloader-token', token);
-                boot();
-              };
-
-              f.onsubmit = async (e) => {
-                e.preventDefault();
-                btn.disabled = true;
-                urlInput.disabled = true;
-                typeSelect.disabled = true;
-                out.style.display = 'block';
-                out.textContent = "";
-                status.textContent = 'processing...';
-                status.className = 'status';
-
-                try {
-                  const res = await fetch('dl', {
-                    method: 'POST',
-                    headers: { authorization: 'bearer ' + token },
-                    body: JSON.stringify({ url: urlInput.value, type: typeSelect.value })
-                  });
-                  if (res.status === 401) {
-                    token = "";
-                    localStorage.removeItem('downloader-token');
-                    boot();
-                    return;
-                  }
-                  const text = await res.text();
-                  out.textContent = text;
-
-                  if (text.startsWith('success')) {
-                    status.textContent = 'download complete';
-                    status.className = 'status ok';
-                    urlInput.value = "";
-                  } else {
-                    status.textContent = 'process failed';
-                    status.className = 'status err';
-                  }
-                } catch (err) {
-                  out.textContent = err;
-                  status.textContent = 'network error';
-                  status.className = 'status err';
-                } finally {
-                  btn.disabled = false;
-                  urlInput.disabled = false;
-                  typeSelect.disabled = false;
-                  urlInput.focus();
-                }
-              };
-
-              async function boot() {
-                if (!token) {
-                  login.style.display = 'flex';
-                  app.style.display = 'none';
-                  return;
-                }
-                const res = await fetch('check', { headers: { authorization: 'bearer ' + token } });
-                if (res.ok) {
-                  login.style.display = 'none';
-                  app.style.display = 'block';
-                  urlInput.focus();
-                } else {
-                  token = "";
-                  localStorage.removeItem('downloader-token');
-                  login.style.display = 'flex';
-                  app.style.display = 'none';
-                }
-              }
-              boot();
-            </script>
-          </body>
-          </html>
-        `, { headers: { "content-type": "text/html" } });
-      }
-      if (req.method === "POST" && new URL(req.url).pathname === "/dl") {
-        const { url, type } = await req.json();
-        let cmd;
-        if (url.includes("spotify.com")) {
-          const args = ["download", url, "--output", "/var/lib/navidrome/music", "--format", "mp3"];
-          cmd = new Deno.Command("${pkgs.spotdl}/bin/spotdl", {
-            args,
-            env: {
-              HOME: "/var/lib/navidrome",
-              XDG_CONFIG_HOME: "/var/lib/navidrome/.config",
-              XDG_CACHE_HOME: "/var/lib/navidrome/.cache"
-            }
-          });
-        } else {
-          const args = ["-x", "--audio-format", "mp3", "--embed-metadata", "--embed-thumbnail", "-o", "%(title)s.%(ext)s", "-P", "/var/lib/navidrome/music"];
-          if (type === "song") args.push("--no-playlist");
-          args.push(url);
-          cmd = new Deno.Command("${pkgs.yt-dlp}/bin/yt-dlp", { args });
-        }
-        const { code, stdout, stderr } = await cmd.output();
-        const dec = new TextDecoder();
-        return new Response((code === 0 ? "success\n\n" : "error\n\n") + dec.decode(stdout) + dec.decode(stderr));
-      }
-      return new Response("not found", { status: 404 });
-    });
-  '';
+  podcasts = {
+    edeltalk = { list = "PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss"; newest = "1"; };
+    unfassbar = { list = "PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp"; newest = "1"; };
+    henkescorner = { list = "PLnEam709xEo1DuqpEFBR43gEYBFfQyM7D"; newest = "-1"; };
+    wanshow = { list = "PLBKxjEPgnXa0"; newest = "1"; };
+  };
+  sandbox = {
+    NoNewPrivileges = true;
+    PrivateTmp = true;
+    PrivateDevices = true;
+    ProtectSystem = "strict";
+    ProtectHome = true;
+    ReadWritePaths = [ "/var/lib/navidrome" ];
+    ProtectKernelTunables = true;
+    ProtectKernelModules = true;
+    ProtectKernelLogs = true;
+    ProtectControlGroups = true;
+    ProtectClock = true;
+    ProtectHostname = true;
+    RestrictSUIDSGID = true;
+    RestrictRealtime = true;
+    RestrictNamespaces = true;
+    LockPersonality = true;
+    RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
+    CapabilityBoundingSet = "";
+  };
 in
 {
   services.navidrome = {
@@ -213,67 +54,56 @@ in
     '')
   ];
 
-  systemd.services.music-web = {
-    wantedBy = [ "multi-user.target" ];
-    path = [ pkgs.yt-dlp pkgs.ffmpeg pkgs.deno pkgs.spotdl ];
-    environment = {
-      HOME = "/var/lib/navidrome";
-      XDG_CONFIG_HOME = "/var/lib/navidrome/.config";
-      XDG_CACHE_HOME = "/var/lib/navidrome/.cache";
-    };
+  systemd.services = lib.mapAttrs (name: podcast: {
     script = ''
-      exec ${pkgs.deno}/bin/deno run \
-        --allow-net \
-        --allow-run \
-        --allow-read \
-        --allow-write \
-        --allow-env \
-        ${dl-server}
-    '';
-    serviceConfig = {
-      User = "navidrome";
-      WorkingDirectory = "/var/lib/navidrome";
-    };
-  };
-
-  systemd.services.edeltalk = {
-    script = ''
+      mkdir -p /var/lib/navidrome/.podcasts
       ${pkgs.yt-dlp}/bin/yt-dlp -x --audio-format mp3 --embed-metadata --embed-thumbnail \
-        --playlist-items 1 \
+        --playlist-items ${podcast.newest} \
+        --download-archive /var/lib/navidrome/.podcasts/${name} \
         -o "%(title)s.%(ext)s" \
         -P /var/lib/navidrome/music \
-        "https://music.youtube.com/playlist?list=PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss"
+        "https://www.youtube.com/playlist?list=${podcast.list}"
     '';
-    path = [ pkgs.yt-dlp pkgs.ffmpeg pkgs.deno ];
-    serviceConfig = {
+    path = [ pkgs.ffmpeg pkgs.deno ];
+    serviceConfig = sandbox // {
       Type = "oneshot";
       User = "navidrome";
     };
-    startAt = "*:0/3";
-  };
-
-  systemd.services.unfassbar = {
-    script = ''
-      ${pkgs.yt-dlp}/bin/yt-dlp -x --audio-format mp3 --embed-metadata --embed-thumbnail \
-        --playlist-items 1 \
-        -o "%(title)s.%(ext)s" \
-        -P /var/lib/navidrome/music \
-        "https://music.youtube.com/playlist?list=PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp"
-    '';
-    path = [ pkgs.yt-dlp pkgs.ffmpeg pkgs.deno ];
-    serviceConfig = {
-      Type = "oneshot";
-      User = "navidrome";
+    startAt = "hourly";
+  }) podcasts // {
+    downloader = {
+      wantedBy = [ "multi-user.target" ];
+      path = [ pkgs.yt-dlp pkgs.ffmpeg pkgs.deno pkgs.spotdl pkgs.zip ];
+      environment = {
+        HOME = "/var/lib/navidrome";
+        XDG_CONFIG_HOME = "/var/lib/navidrome/.config";
+        XDG_CACHE_HOME = "/var/lib/navidrome/.cache";
+        DENO_DIR = "/var/lib/navidrome/.deno";
+      };
+      script = ''
+        exec ${pkgs.deno}/bin/deno run --allow-net --allow-run --allow-read --allow-write --allow-env ${./sites/downloader/server.js}
+      '';
+      serviceConfig = sandbox // {
+        User = "navidrome";
+        WorkingDirectory = "/var/lib/navidrome";
+        Restart = "on-failure";
+      };
     };
-    startAt = "*:0/3";
   };
 
   services.nginx.virtualHosts."music.1f2t.org" = {
     forceSSL = true;
     enableACME = true;
     locations."/".proxyPass = "http://127.0.0.1:4533";
-    locations."/assets/".alias = "/etc/website-assets/";
+    locations."/assets/".alias = "/etc/assets/";
     locations."= /downloader".return = "301 $scheme://$host/downloader/";
-    locations."/downloader/".proxyPass = "http://127.0.0.1:4534/";
+    locations."/downloader/" = {
+      proxyPass = "http://127.0.0.1:4534/";
+      extraConfig = ''
+        proxy_read_timeout 1800s;
+        proxy_send_timeout 1800s;
+        proxy_buffering off;
+      '';
+    };
   };
 }

@@ -20,15 +20,15 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: ui-monospace, monospace;
-  font-size: 14px;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+  font-size: 16px;
   line-height: 1.5;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .wrap {
-  max-width: 60ch;
+  max-width: 34rem;
   margin: 4rem auto;
   padding: 0 1rem;
 }
@@ -147,6 +147,7 @@ textarea,
 select,
 button {
   font-family: inherit;
+  line-height: 1.4;
   font-size: inherit;
   background: var(--bg);
   color: var(--fg);
@@ -198,4 +199,16 @@ button:disabled {
 .del {
   color: var(--err);
   font-size: .85em;
+}
+input,
+select {
+  min-height: 2.3rem;
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: ui-monospace, monospace;
+  font-size: .9em;
 }

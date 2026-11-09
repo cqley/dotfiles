@@ -1,5 +1,5 @@
-const filesDir = "/var/lib/linx-server/files";
-const metaDir = "/var/lib/linx-server/meta";
+const filesDir = "/var/lib/linx/files";
+const metaDir = "/var/lib/linx/meta";
 const siteUrl = "https://host.1f2t.org";
 
 const dir = Deno.env.get("STATE_DIRECTORY") ?? ".";
@@ -59,7 +59,7 @@ function layout(body) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>files dashboard</title>
+<title>分</title>
 <link rel="icon" type="image/svg+xml" href="/assets/cat.svg">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
@@ -89,12 +89,12 @@ function dashboardPage() {
       while(v>=1024&&i<u.length-1){v/=1024;i++;}
       return (i===0?v:v.toFixed(v<10?2:1))+" "+u[i];
     }
-    let token=localStorage.getItem("files-token")||"";
+    let token=localStorage.getItem("filestoken")||"";
 
     async function api(path,opts={}){
       opts.headers={...opts.headers,authorization:"bearer "+token};
       const res=await fetch(path,opts);
-      if(res.status===401){token="";localStorage.removeItem("files-token");boot();throw new Error("unauthorized");}
+      if(res.status===401){token="";localStorage.removeItem("filestoken");boot();throw new Error("unauthorized");}
       return res;
     }
 
@@ -117,7 +117,7 @@ function dashboardPage() {
     document.getElementById("login").onsubmit=e=>{
       e.preventDefault();
       token=document.getElementById("pw").value;
-      localStorage.setItem("files-token",token);
+      localStorage.setItem("filestoken",token);
       boot();
     };
 
