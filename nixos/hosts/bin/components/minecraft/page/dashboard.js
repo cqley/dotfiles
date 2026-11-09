@@ -53,7 +53,7 @@ function buildNew(){
   type.onchange=()=>fillVersions(ver,type.value);
   const mem=memSelect("4G");
   const port=el("input","f");port.placeholder="auto";port.inputMode="numeric";
-  const backup=timeInput("05:00"),restart=timeInput("04:00");
+  const backup=timeInput(null),restart=timeInput("04:00");
   const auto=check("start on boot",true),pub=check("public stats",true),now=check("start now",true);
   $("nform").append(field("name",name),field("type",type),field("version",ver),field("memory",mem),field("port",port),field("backup",backup),field("restart",restart),auto,pub,now);
   fillVersions(ver,"fabric");

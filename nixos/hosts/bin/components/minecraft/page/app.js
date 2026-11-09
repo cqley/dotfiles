@@ -715,9 +715,20 @@ async function loadWorld(){
   const type=el("select","f");
   for(const [v,l] of [["minecraft:normal","normal"],["minecraft:flat","flat"],["minecraft:large_biomes","large biomes"],["minecraft:amplified","amplified"]]){const o=el("option",null,l);o.value=v;type.append(o);}
   type.value=w.typeProp;
-  mrow("new world",seed,type,btn("create",async()=>{if(ask("replace this world"))await act_("reset",{seed:seed.value,type:type.value})();},"danger"));
+  const pick=el("select","f"),preset=el("input","f wide");
+  preset.placeholder="layers;biome";preset.maxLength=2000;preset.value=w.presetProp||flatPresets[0][1];
+  for(const [l,v] of flatPresets){const o=el("option",null,l);o.value=v;pick.append(o);}
+  const custom=el("option",null,"custom");custom.value="";pick.append(custom);
+  const sync=()=>{pick.value=flatPresets.some(([,v])=>v===preset.value)?preset.value:"";};
+  pick.onchange=()=>{if(pick.value)preset.value=pick.value;else preset.focus();};
+  preset.oninput=sync;sync();
+  mrow("new world",seed,type,btn("create",async()=>{if(ask("replace this world"))await act_("reset",{seed:seed.value,type:type.value,preset:preset.value})();},"danger"));
+  const flatRow=mrow("flat layers",pick,preset);
+  const showFlat=()=>{flatRow.hidden=type.value!=="minecraft:flat";};
+  type.addEventListener("change",showFlat);showFlat();
   m.querySelectorAll("button,input,select").forEach((x)=>{if(w.busy)x.disabled=true;});
 }
+const flatPresets=[["classic","minecraft:bedrock,2*minecraft:dirt,minecraft:grass_block;minecraft:plains"],["tunnelers dream","minecraft:bedrock,230*minecraft:stone,5*minecraft:dirt,minecraft:grass_block;minecraft:windswept_hills"],["water world","minecraft:bedrock,5*minecraft:stone,5*minecraft:dirt,5*minecraft:sand,90*minecraft:water;minecraft:deep_ocean"],["snowy kingdom","minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass_block,minecraft:snow;minecraft:snowy_plains"],["desert","minecraft:bedrock,3*minecraft:stone,52*minecraft:sandstone,8*minecraft:sand;minecraft:desert"],["redstone ready","minecraft:bedrock,3*minecraft:stone,116*minecraft:sandstone;minecraft:desert"],["the void","minecraft:air;minecraft:the_void"]];
 const ruleDefaults={"spawn_wandering_traders":true,"block_drops":true,"reduced_debug_info":false,"show_death_messages":true,"spawn_monsters":true,"spawner_blocks_work":true,"tnt_explodes":true,"player_movement_check":true,"immediate_respawn":false,"spread_vines":true,"block_explosion_drop_decay":true,"max_entity_cramming":24,"forgive_dead_players":true,"fall_damage":true,"send_command_feedback":true,"global_sound_events":true,"elytra_movement_check":true,"fire_spread_radius_around_player":128,"freeze_damage":true,"mob_explosion_drop_decay":true,"natural_health_regeneration":true,"players_nether_portal_default_delay":80,"mob_drops":true,"log_admin_commands":true,"mob_griefing":true,"pvp":true,"spawn_mobs":true,"spectators_generate_chunks":true,"players_sleeping_percentage":100,"players_nether_portal_creative_delay":0,"max_command_sequence_length":65536,"advance_weather":true,"max_block_modifications":32768,"max_command_forks":65536,"drowning_damage":true,"locator_bar":true,"command_block_output":true,"show_advancement_messages":true,"respawn_radius":10,"raids":true,"spawn_phantoms":true,"max_snow_accumulation_height":1,"limited_crafting":false,"allow_entering_nether_using_portals":true,"lava_source_conversion":false,"tnt_explosion_drop_decay":false,"keep_inventory":false,"universal_anger":false,"spawn_patrols":true,"random_tick_speed":3,"fire_damage":true,"entity_drops":true,"advance_time":true,"command_blocks_work":true,"spawn_wardens":true,"projectiles_can_break_blocks":true,"water_source_conversion":true,"ender_pearls_vanish_on_death":true};
 function ruleChanges(){const w=worldData;if(!w||!w.rules)return [];return Object.entries(ruleDefaults).filter(([k,v])=>k in w.rules&&String(w.rules[k])!==String(v));}
 function renderRules(){

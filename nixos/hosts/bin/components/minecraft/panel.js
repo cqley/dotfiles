@@ -929,6 +929,33 @@ function find(obj, ...keys) {
 const worldActions = ["reset", "nether", "end", "import", "delete"];
 const levelTypes = ["minecraft:normal", "minecraft:flat", "minecraft:large_biomes", "minecraft:amplified"];
 
+const blockId = /^([a-z0-9_.-]+:)?[a-z0-9_./-]+$/;
+
+function flatSettings(preset) {
+  const p = String(preset ?? "").trim();
+  if (!p) return "";
+  if (p.length > 2000 || /[\r\n]/.test(p)) throw new Error("invalid preset");
+  const [layerPart, biome = "minecraft:plains"] = p.split(";");
+  const layers = layerPart.split(",").map((l) => l.trim()).filter(Boolean).map((l) => {
+    const m = l.match(/^(?:(\d+)\*)?(.+)$/);
+    const height = Number(m[1] ?? 1);
+    const block = m[2].includes(":") ? m[2] : `minecraft:${m[2]}`;
+    if (!blockId.test(block) || height < 1 || height > 4064) throw new Error(`bad layer: ${l}`);
+    return { block, height };
+  });
+  const b = biome.trim().includes(":") ? biome.trim() : `minecraft:${biome.trim()}`;
+  if (!layers.length || !blockId.test(b)) throw new Error("invalid preset");
+  if (layers.reduce((a, x) => a + x.height, 0) > 4064) throw new Error("too many layers");
+  return JSON.stringify({ layers, biome: b });
+}
+
+function flatPreset(settings) {
+  try {
+    const s = JSON.parse(settings);
+    return s.layers.map((l) => (l.height > 1 ? `${l.height}*` : "") + l.block).join(",") + ";" + (s.biome ?? "minecraft:plains");
+  } catch { return ""; }
+}
+
 async function walkSize(dir, rel, sizes) {
   try {
     for await (const e of Deno.readDir(dir)) {
@@ -1006,6 +1033,7 @@ async function worldInfo(name) {
     sizes,
     seedProp: getProp(props, "level-seed") ?? "",
     typeProp: getProp(props, "level-type") ?? "minecraft:normal",
+    presetProp: flatPreset(getProp(props, "generator-settings") ?? ""),
     ...await worldJobs(name),
   };
 }
@@ -1219,13 +1247,15 @@ async function route(req) {
     return Response.json(await storePack(name, data, { title: original.replace(/\.zip$/i, ""), icon: null, project: null, version: null, original }));
   }
   if (action === "world" && sub === "action") {
-    const { action: what, seed, type } = await req.json();
+    const { action: what, seed, type, preset } = await req.json();
     if (!["reset", "nether", "end"].includes(what)) return text("unknown action", 400);
     if (what === "reset") {
       if (typeof seed !== "string" || seed.length > 64 || /[\r\n]/.test(seed)) return text("invalid seed", 400);
       if (!levelTypes.includes(type)) return text("invalid world type", 400);
       const txt = await Deno.readTextFile(props).catch(() => "");
-      await Deno.writeTextFile(props, setProps(txt, { "level-seed": seed.trim(), "level-type": type }));
+      let gen = "";
+      if (type === "minecraft:flat") { try { gen = flatSettings(preset); } catch (e) { return text(e.message, 400); } }
+      await Deno.writeTextFile(props, setProps(txt, { "level-seed": seed.trim(), "level-type": type, "generator-settings": gen }));
     }
     try { await startWorld(name, what); } catch (e) { return text(e.message, 409); }
     return text("ok");
