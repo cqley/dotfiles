@@ -1,12 +1,10 @@
 import { marked } from "npm:marked@12";
-import { timingSafeEqual } from "node:crypto";
 
 const dir = Deno.env.get("STATE_DIRECTORY") ?? ".";
 const postsFile = `${dir}/posts.json`;
 const postsDir = `${dir}/posts`;
 const imagesDir = `${dir}/images`;
 const settingsFile = `${dir}/settings.json`;
-const tokenFile = `${dir}/token`;
 
 const here = new URL(".", import.meta.url);
 const dashboardJs = await Deno.readTextFile(new URL("dashboard.js", here));
@@ -21,44 +19,13 @@ const imageTypes = { png: "image/png", jpg: "image/jpeg", gif: "image/gif", webp
 await Deno.mkdir(postsDir, { recursive: true });
 await Deno.mkdir(imagesDir, { recursive: true });
 
-async function ensureToken() {
-  try {
-    return (await Deno.readTextFile(tokenFile)).trim();
-  } catch {
-    const t = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
-    await Deno.writeTextFile(tokenFile, t, { mode: 0o600 });
-    console.log("new admin token written to " + tokenFile);
-    return t;
-  }
-}
-const token = await ensureToken();
-
-async function digest(s) {
-  return new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
-}
-const tokenDigest = await digest(`bearer ${token}`);
-
-async function authed(req) {
-  return timingSafeEqual(await digest(req.headers.get("authorization") ?? ""), tokenDigest);
-}
-
 async function loadIndex() {
-  let raw;
   try {
-    raw = JSON.parse(await Deno.readTextFile(postsFile));
-  } catch {
-    return [];
+    return JSON.parse(await Deno.readTextFile(postsFile));
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) return [];
+    throw e;
   }
-  let changed = false;
-  for (const p of raw) {
-    if (Array.isArray(p.body)) {
-      await Deno.writeTextFile(`${postsDir}/${p.slug}.md`, p.body.join("\n\n") + "\n");
-      delete p.body;
-      changed = true;
-    }
-  }
-  if (changed) await saveIndex(raw);
-  return raw;
 }
 
 async function saveIndex(posts) {
@@ -73,8 +40,9 @@ function sorted(posts) {
 async function loadBody(slug) {
   try {
     return await Deno.readTextFile(`${postsDir}/${slug}.md`);
-  } catch {
-    return null;
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) return null;
+    throw e;
   }
 }
 
@@ -117,10 +85,6 @@ function html(body, status = 200) {
   return new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8" } });
 }
 
-function cleanTitle(t) {
-  return typeof t === "string" ? t.trim().slice(0, 200) : "";
-}
-
 function layout(body, extra = "", title = "本") {
   return `<!doctype html>
 <html lang="en">
@@ -128,8 +92,8 @@ function layout(body, extra = "", title = "本") {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(title)}</title>
-<link rel="icon" type="image/svg+xml" href="/assets/cat.svg">
 <link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/theme.js"></script>
 <link rel="stylesheet" href="/blog.css">
 </head>
 <body>
@@ -169,77 +133,43 @@ function notFoundPage(name) {
   </main>`);
 }
 
-function dashboardPage(name) {
-  return layout(`<main class="wrap wide">
-    <div class="dashhead">
-      <a class="up" href="/">../</a>
-      <h1>dashboard</h1>
-    </div>
-
-    <form id="login" class="hidden">
-      <input id="pw" type="password" placeholder="token" autocomplete="off">
-      <button type="submit">unlock</button>
-    </form>
-
-    <div id="main" class="hidden">
-      <section class="panel">
-        <h2>blog name</h2>
-        <form id="settings" class="inline">
-          <input id="sitename" maxlength="80" placeholder="blog" value="${esc(name)}">
-          <button type="submit">rename</button>
-          <span class="status" id="settingsstatus"></span>
-        </form>
-      </section>
-
-      <section class="panel">
-        <h2 id="editorhead">new post</h2>
-        <form id="editor" class="editor">
-          <input id="title" class="titleinput" placeholder="title" maxlength="200" required autocomplete="off">
-          <div class="toolbar" role="toolbar" aria-label="formatting">
-            <button type="button" data-cmd="bold" title="bold (ctrl+b)"><b>b</b></button>
-            <button type="button" data-cmd="italic" title="italic (ctrl+i)"><i>i</i></button>
-            <button type="button" data-cmd="strike" title="strikethrough"><s>s</s></button>
-            <span class="sep"></span>
-            <button type="button" data-cmd="h2" title="heading">h2</button>
-            <button type="button" data-cmd="h3" title="small heading">h3</button>
-            <button type="button" data-cmd="quote" title="quote">&gt;</button>
-            <span class="sep"></span>
-            <button type="button" data-cmd="ul" title="list">&bull; list</button>
-            <button type="button" data-cmd="ol" title="numbered list">1. list</button>
-            <button type="button" data-cmd="code" title="code">&lt;/&gt;</button>
-            <button type="button" data-cmd="rule" title="divider">&mdash;</button>
-            <span class="sep"></span>
-            <button type="button" data-cmd="link" title="link (ctrl+k)">link</button>
-            <button type="button" data-cmd="image" title="attach picture">picture</button>
-            <input type="file" id="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden>
-          </div>
-          <div class="panes">
-            <div class="pane">
-              <textarea id="md" placeholder="start writing..." required data-max="${maxPost}"></textarea>
-            </div>
-            <div class="pane">
-              <div class="markdown-body previewbody" id="preview"><p class="muted">nothing yet</p></div>
-            </div>
-          </div>
-          <div class="actions">
-            <button type="submit" id="save">publish</button>
-            <button type="button" id="cancel" class="ghost hidden">cancel edit</button>
-            <span class="status" id="status">ready</span>
-            <span class="counter" id="counter"></span>
-          </div>
-        </form>
-      </section>
-
-      <section class="panel">
-        <h2>posts</h2>
-        <table id="list"><tbody></tbody></table>
-      </section>
-    </div>
-  </main>`, `<script src="/dashboard.js"></script>`);
+function status(msg, err) {
+  return `<span class="status ${err ? "err" : "ok"}" id="status">${esc(msg)}</span>`;
 }
 
-function sniffImage(bytes) {
-  const b = bytes;
+function dashPage(posts, msg = "") {
+  const rows = posts.map((p) => `<tr>
+    <td class="d">${esc(p.date)}</td>
+    <td><a href="/${esc(p.slug)}.md">${esc(p.title)}</a></td>
+    <td class="rows"><a href="/e/${esc(p.slug)}">edit</a><form method="post" action="/d/${esc(p.slug)}" data-title="${esc(p.title)}"><button class="del">delete</button></form></td>
+  </tr>`).join("");
+  return layout(`<main class="wrap dash">
+    <p class="bar"><a href="/new">new post</a>${status(msg)}</p>
+    ${rows ? `<table><tbody>${rows}</tbody></table>` : `<p class="muted">nothing posted yet.</p>`}
+  </main>`, `<script src="/dashboard.js"></script>`, "dashboard");
+}
+
+const tools = [
+  ["bold", "<b>b</b>"], ["italic", "<i>i</i>"], ["strike", "<s>s</s>"], ["h2", "h2"], ["h3", "h3"], ["quote", "&gt;"],
+  ["ul", "&bull; list"], ["ol", "1. list"], ["code", "&lt;/&gt;"], ["rule", "&mdash;"], ["link", "link"], ["image", "picture"],
+].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join("");
+
+function editPage(slug, title, md, msg = "", err = false) {
+  return layout(`<main class="wrap dash wide">
+    <form method="post" id="editor"${slug ? "" : " data-new"}>
+      <p class="bar"><a href="/">../</a>${status(msg)}</p>
+      <input name="title" class="title" value="${esc(title)}" placeholder="title" maxlength="200" required autocomplete="off">
+      <div class="toolbar">${tools}<input type="file" id="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden></div>
+      <div class="panes">
+        <textarea name="md" id="md" placeholder="start writing..." required data-max="${maxPost}">${esc(md)}</textarea>
+        <div class="markdown-body" id="preview">${md.trim() ? marked.parse(md) : `<p class="muted">nothing yet</p>`}</div>
+      </div>
+      <p class="bar"><button>${slug ? "save" : "publish"}</button>${slug ? `<a href="/">cancel</a>` : ""}</p>
+    </form>
+  </main>`, `<script src="/dashboard.js"></script>`, slug || "new");
+}
+
+function sniffImage(b) {
   if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "png";
   if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "jpg";
   if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38) return "gif";
@@ -249,58 +179,34 @@ function sniffImage(bytes) {
 
 async function readLimited(req, limit) {
   if (Number(req.headers.get("content-length") ?? 0) > limit) return null;
-  if (!req.body) return new Uint8Array();
-  const chunks = [];
-  let size = 0;
-  for await (const chunk of req.body) {
-    size += chunk.length;
-    if (size > limit) return null;
-    chunks.push(chunk);
-  }
-  const out = new Uint8Array(size);
-  let off = 0;
-  for (const c of chunks) {
-    out.set(c, off);
-    off += c.length;
-  }
-  return out;
+  const bytes = new Uint8Array(await req.arrayBuffer());
+  return bytes.length > limit ? null : bytes;
 }
 
-async function readJson(req) {
-  const bytes = await readLimited(req, 2 * 1024 * 1024);
-  if (!bytes) return null;
-  try {
-    return JSON.parse(new TextDecoder().decode(bytes));
-  } catch {
-    return null;
-  }
+function postError(title, md) {
+  if (!title || !md.trim()) return "title and text are both needed";
+  if (md.length > maxPost) return `too long, cut ${(md.length - maxPost).toLocaleString()} characters`;
+  return "";
 }
 
-const unauthorized = () => new Response("unauthorized", { status: 401 });
-const bad = (msg = "bad request") => new Response(msg, { status: 400 });
+async function writeBody(slug, md) {
+  await Deno.writeTextFile(`${postsDir}/${slug}.md`, md.endsWith("\n") ? md : md + "\n");
+}
 
-Deno.serve({ port: Number(Deno.env.get("PORT") ?? 4600), hostname: "127.0.0.1" }, async (req) => {
+const see = (to) => new Response(null, { status: 303, headers: { location: to } });
+
+async function site(req) {
   const url = new URL(req.url);
   const path = url.pathname;
-  const method = req.method;
+  if (req.method !== "GET") return new Response("not found", { status: 404 });
 
-  if (method === "GET" && path === "/") {
-    return html(indexPage((await loadSettings()).name, sorted(await loadIndex())));
-  }
+  if (path === "/") return html(indexPage((await loadSettings()).name, sorted(await loadIndex())));
 
-  if (method === "GET" && path === "/dashboard") {
-    return html(dashboardPage((await loadSettings()).name));
-  }
-
-  if (method === "GET" && path === "/dashboard.js") {
-    return new Response(dashboardJs, { headers: { "content-type": "text/javascript; charset=utf-8" } });
-  }
-
-  if (method === "GET" && path === "/blog.css") {
+  if (path === "/blog.css") {
     return new Response(blogCss, { headers: { "content-type": "text/css; charset=utf-8" } });
   }
 
-  if (method === "GET" && path.startsWith("/images/")) {
+  if (path.startsWith("/images/")) {
     const name = path.slice("/images/".length);
     if (!imagePattern.test(name)) return new Response("not found", { status: 404 });
     try {
@@ -317,123 +223,115 @@ Deno.serve({ port: Number(Deno.env.get("PORT") ?? 4600), hostname: "127.0.0.1" }
     }
   }
 
-  if (path === "/api/check" && method === "GET") {
-    return (await authed(req)) ? new Response("ok") : unauthorized();
+  if (path.startsWith("/api/")) return new Response("not found", { status: 404 });
+
+  const { name } = await loadSettings();
+  const postMatch = path.match(/^\/([^/]+)\.md$/);
+  if (postMatch) {
+    const slug = postMatch[1];
+    const posts = await loadIndex();
+    const post = posts.find((p) => p.slug === slug);
+    const md = post ? await loadBody(slug) : null;
+    if (post && md !== null) return html(postPage(name, post, md));
+    const moved = posts.find((p) => p.aliases?.includes(slug));
+    if (moved) return Response.redirect(`${url.origin}/${moved.slug}.md`, 301);
+    return html(notFoundPage(name), 404);
   }
 
-  if (path === "/api/posts" && method === "GET") {
-    return Response.json(sorted(await loadIndex()));
+  const bareMatch = path.match(/^\/([^/]+)$/);
+  if (bareMatch) {
+    const post = (await loadIndex()).find((p) => p.slug === bareMatch[1] || p.aliases?.includes(bareMatch[1]));
+    if (post) return Response.redirect(`${url.origin}/${post.slug}.md`, 301);
   }
 
-  if (path === "/api/settings" && method === "PUT") {
-    if (!(await authed(req))) return unauthorized();
-    const body = await readJson(req);
-    const name = typeof body?.name === "string" ? body.name.trim().slice(0, 80) : "";
-    if (!name) return bad("name can't be empty");
-    await Deno.writeTextFile(settingsFile, JSON.stringify({ name }, null, 2));
-    return Response.json({ name });
+  return html(notFoundPage(name), 404);
+}
+
+async function admin(req) {
+  const url = new URL(req.url);
+  const path = url.pathname;
+  const get = req.method === "GET";
+
+  if (!get && req.method !== "POST") return new Response("not found", { status: 404 });
+  if (!get && req.headers.get("sec-fetch-site") === "cross-site") return new Response("forbidden", { status: 403 });
+
+  if (get && path === "/") {
+    return html(dashPage(sorted(await loadIndex()), url.searchParams.get("m") ?? ""));
   }
 
-  if (path === "/api/preview" && method === "POST") {
-    if (!(await authed(req))) return unauthorized();
-    const body = await readJson(req);
-    return html(marked.parse(typeof body?.md === "string" ? body.md : ""));
+  if (get && path === "/dashboard.js") {
+    return new Response(dashboardJs, { headers: { "content-type": "text/javascript; charset=utf-8" } });
   }
 
-  if (path === "/api/images" && method === "POST") {
-    if (!(await authed(req))) return unauthorized();
+  if (get && path === "/new") return html(editPage("", "", ""));
+
+
+  if (path === "/preview" && !get) return html(marked.parse(await req.text()));
+
+  if (path === "/images" && !get) {
     const bytes = await readLimited(req, maxImage);
     if (!bytes) return new Response("picture is too big (max 15 MB)", { status: 413 });
     const ext = sniffImage(bytes);
-    if (!ext) return bad("only png, jpg, gif and webp pictures are allowed");
+    if (!ext) return new Response("only png, jpg, gif and webp pictures are allowed", { status: 400 });
     const id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
     await Deno.writeFile(`${imagesDir}/${id}.${ext}`, bytes);
     return Response.json({ url: `/images/${id}.${ext}` });
   }
 
-  if (path === "/api/posts" && method === "POST") {
-    if (!(await authed(req))) return unauthorized();
-    const body = await readJson(req);
-    const title = cleanTitle(body?.title);
-    const md = body?.md;
-    if (!title || typeof md !== "string" || !md.trim()) return bad();
-    if (md.length > maxPost) return bad(`posts can be at most ${maxPost} characters`);
+  if (path === "/new" && !get) {
+    const form = await req.formData();
+    const title = String(form.get("title") ?? "").trim().slice(0, 200);
+    const md = String(form.get("md") ?? "");
+    const err = postError(title, md);
+    if (err) return html(editPage("", title, md, err, true), 400);
     const posts = await loadIndex();
     const slug = uniqueSlug(title, posts);
-    const post = { slug, title, date: today() };
-    await Deno.writeTextFile(`${postsDir}/${slug}.md`, md.endsWith("\n") ? md : md + "\n");
-    posts.push(post);
+    await writeBody(slug, md);
+    posts.push({ slug, title, date: today() });
     await saveIndex(posts);
-    return Response.json(post);
+    return see("/?m=published");
   }
 
-  const postApi = path.match(/^\/api\/posts\/([^/]+)$/);
-  if (postApi) {
-    const slug = postApi[1];
-    if (!slugPattern.test(slug)) return bad();
+  const m = path.match(/^\/([ed])\/([^/]+)$/);
+  if (m && slugPattern.test(m[2])) {
+    const slug = m[2];
+    const posts = await loadIndex();
+    const post = posts.find((p) => p.slug === slug);
 
-    if (method === "GET") {
-      if (!(await authed(req))) return unauthorized();
-      const post = (await loadIndex()).find((p) => p.slug === slug);
-      const md = post ? await loadBody(slug) : null;
-      if (!post || md === null) return new Response("not found", { status: 404 });
-      return Response.json({ ...post, md });
-    }
-
-    if (method === "PUT") {
-      if (!(await authed(req))) return unauthorized();
-      const body = await readJson(req);
-      const title = cleanTitle(body?.title);
-      const md = body?.md;
-      if (!title || typeof md !== "string" || !md.trim()) return bad();
-      if (md.length > maxPost) return bad(`posts can be at most ${maxPost} characters`);
-      const posts = await loadIndex();
-      const post = posts.find((p) => p.slug === slug);
-      if (!post) return new Response("not found", { status: 404 });
-      const newSlug = slugify(title) === slug ? slug : uniqueSlug(title, posts, post);
-      await Deno.writeTextFile(`${postsDir}/${newSlug}.md`, md.endsWith("\n") ? md : md + "\n");
-      if (newSlug !== slug) {
-        await Deno.remove(`${postsDir}/${slug}.md`).catch(() => {});
-        post.aliases = [...new Set([...(post.aliases ?? []), slug])].filter((a) => a !== newSlug);
-        post.slug = newSlug;
-      }
-      post.title = title;
-      post.updated = today();
-      await saveIndex(posts);
-      return Response.json(post);
-    }
-
-    if (method === "DELETE") {
-      if (!(await authed(req))) return unauthorized();
-      const posts = await loadIndex();
+    if (m[1] === "d" && !get) {
       await saveIndex(posts.filter((p) => p.slug !== slug));
-      await Deno.remove(`${postsDir}/${slug}.md`).catch(() => {});
-      return Response.json({ deleted: slug });
+      await Deno.remove(`${postsDir}/${slug}.md`).catch((e) => { if (!(e instanceof Deno.errors.NotFound)) throw e; });
+      return see("/?m=deleted");
+    }
+
+    if (m[1] === "e" && post) {
+      if (get) {
+        const md = await loadBody(slug);
+        if (md !== null) return html(editPage(slug, post.title, md.replace(/\n$/, ""), url.searchParams.get("m") ?? ""));
+      } else {
+        const form = await req.formData();
+        const title = String(form.get("title") ?? "").trim().slice(0, 200);
+        const md = String(form.get("md") ?? "");
+        const err = postError(title, md);
+        if (err) return html(editPage(slug, title, md, err, true), 400);
+        const newSlug = slugify(title) === slug ? slug : uniqueSlug(title, posts, post);
+        await writeBody(newSlug, md);
+        if (newSlug !== slug) {
+          await Deno.remove(`${postsDir}/${slug}.md`);
+          post.aliases = [...new Set([...(post.aliases ?? []), slug])].filter((a) => a !== newSlug);
+          post.slug = newSlug;
+        }
+        post.title = title;
+        post.updated = today();
+        await saveIndex(posts);
+        return see(`/e/${newSlug}?m=saved`);
+      }
     }
   }
 
-  if (method === "GET" && !path.startsWith("/api/")) {
-    const { name } = await loadSettings();
-    const postMatch = path.match(/^\/([^/]+)\.md$/);
-    if (postMatch) {
-      const slug = postMatch[1];
-      const posts = await loadIndex();
-      const post = posts.find((p) => p.slug === slug);
-      const md = post ? await loadBody(slug) : null;
-      if (post && md !== null) return html(postPage(name, post, md));
-      const moved = posts.find((p) => p.aliases?.includes(slug));
-      if (moved) return Response.redirect(`${url.origin}/${moved.slug}.md`, 301);
-      return html(notFoundPage(name), 404);
-    }
-
-    const bareMatch = path.match(/^\/([^/]+)$/);
-    if (bareMatch) {
-      const post = (await loadIndex()).find((p) => p.slug === bareMatch[1] || p.aliases?.includes(bareMatch[1]));
-      if (post) return Response.redirect(`${url.origin}/${post.slug}.md`, 301);
-    }
-
-    return html(notFoundPage(name), 404);
-  }
-
+  if (get) return site(req);
   return new Response("not found", { status: 404 });
-});
+}
+
+Deno.serve({ port: Number(Deno.env.get("PORT") ?? 4600), hostname: "127.0.0.1" }, site);
+Deno.serve({ port: Number(Deno.env.get("ADMIN_PORT") ?? 4606), hostname: "127.0.0.1" }, admin);

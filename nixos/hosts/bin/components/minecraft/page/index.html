@@ -9,100 +9,92 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="silly">
 <title>silly</title>
-<link rel="icon" type="image/svg+xml" href="/assets/cat.svg">
 <link rel="apple-touch-icon" href="/app/icon180.png">
 <link rel="manifest" href="/app/manifest.json">
 <link rel="stylesheet" href="/assets/style.css">
-<script>
-try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch{}
-</script>
 <link rel="stylesheet" href="/static/style.css?v=VERSION">
+<script src="/assets/theme.js"></script>
 </head>
 <body>
-<button id="theme" title="toggle theme"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
-<div class="p">
-<div class="list" id="list"></div>
-<div id="view" hidden>
-<div class="head">
-<button data-a="start">start</button>
-<button data-a="restart">restart</button>
-<button data-a="stop" class="danger">stop</button>
-</div>
-<div class="tabs"><a data-tab="console" href="/" class="on">console</a><a data-tab="players" href="/players">players</a><a data-tab="activity" href="/activity">activity</a><a data-tab="mods" href="/mods">mods</a><a data-tab="world" href="/world">world</a><a data-tab="stats" href="/stats">stats</a><a data-tab="tasks" href="/tasks">tasks</a><a data-tab="settings" href="/settings">settings</a><a href="/dashboard" class="r">dashboard</a></div>
-<section data-pane="console">
-<div class="tools">
-<input type="search" id="filter" placeholder="filter">
-<label title="only chat, joins and leaves; typing sends a message"><input type="checkbox" id="chat"> chat</label>
-<label><input type="checkbox" id="follow" checked> follow</label>
-<button id="clear">clear</button>
-</div>
+<div class="wrap">
+<p class="top"><a href="/dashboard" class="dim">servers</a> / <img id="icon" alt="" hidden><b id="name"></b> <span id="state" class="st"></span><span class="acts"><button type="button" data-a="start">start</button><button type="button" data-a="restart">restart</button><button type="button" data-a="stop" class="del">stop</button></span></p>
+<p id="meta" class="dim"></p>
+<p id="lag" class="warn"></p>
+<nav id="tabs"><a data-t="console">console</a><a data-t="players">players</a><a data-t="activity">activity</a><a data-t="mods">mods</a><a data-t="world">world</a><a data-t="stats">stats</a><a data-t="tasks">tasks</a><a data-t="settings">settings</a></nav>
+
+<section data-pane="console" hidden>
+<p class="tools"><input type="search" id="filter" placeholder="filter"><label class="b" title="only chat, joins and leaves; typing sends a message"><input type="checkbox" id="chat"> chat</label><label class="b"><input type="checkbox" id="follow" checked> follow</label><button type="button" id="clear">clear</button></p>
 <pre id="log"></pre>
-<div class="cmdbox"><input id="cmd" placeholder="command" autocomplete="off" spellcheck="false"></div>
-<div id="sugg"></div>
+<input id="cmd" placeholder="command" autocomplete="off" spellcheck="false">
+<p id="sugg"></p>
 </section>
+
 <section data-pane="players" hidden><div id="players"></div></section>
-<section data-pane="activity" hidden><div class="rows" id="activity"></div></section>
+
+<section data-pane="profile" hidden><div id="profile"></div></section>
+
+<section data-pane="activity" hidden><ul class="rows" id="activity"></ul></section>
+
 <section data-pane="mods" hidden>
-<div class="seg"><button data-k="mod" class="on">mods</button><button data-k="datapack">datapacks</button><button data-k="pack">resource pack</button></div>
-<div id="modview">
-<div class="tools"><input type="search" id="msearch" placeholder="search modrinth mods"><span id="mnote"></span></div>
-<div class="rows" id="mresults"></div>
-<div class="sec"><h2>installed</h2><span class="d" id="mcount"></span><span id="mall"></span></div>
-<div class="row" style="margin:.2rem 0 .4rem"><span id="mrestart" class="note sp" hidden></span><button id="mreload" hidden>reload now</button></div>
-<div class="rows" id="minstalled"></div>
+<nav id="kinds"><a data-k="mod">mods</a><a data-k="datapack">datapacks</a><a data-k="pack">resource pack</a></nav>
+<div id="modview" hidden>
+<p class="tools"><input type="search" id="msearch"><span id="mnote" class="dim"></span></p>
+<ul class="rows" id="mresults"></ul>
+<h2>installed <span id="mcount"></span><span id="mall"></span><button type="button" id="mreload" hidden>reload</button></h2>
+<ul class="rows" id="minstalled"></ul>
 </div>
 <div id="packview" hidden>
-<div class="sec"><h2>active pack</h2><span class="d" id="pstat"></span></div>
-<div class="rows" id="pcurrent"></div>
-<div class="form" style="margin:1rem 0 .4rem">
+<h2>active pack <span id="pstat"></span></h2>
+<ul class="rows" id="pcurrent"></ul>
+<div class="form">
 <label class="b"><input type="checkbox" id="preq"> players must accept it</label>
-<label class="wide">message on the download prompt<input class="f" id="pprompt" placeholder="optional" maxlength="200"></label>
+<label class="wide">prompt message<input id="pprompt" placeholder="optional" maxlength="200"></label>
 </div>
-<div class="row" style="margin-top:0"><span class="sp" id="pnote">changes restart the server if it is running</span><button id="psave">save</button></div>
-<div class="sec"><h2>add a pack</h2><button id="pupload">upload zip</button><input type="file" id="pfile" accept=".zip,application/zip" hidden></div>
-<div class="tools"><input type="search" id="psearch" placeholder="search modrinth resource packs"><span id="psnote"></span></div>
-<div class="rows" id="presults"></div>
+<p class="tools"><button type="button" id="psave">save</button><span class="dim">restarts the server if it is running</span></p>
+<h2>add a pack <button type="button" id="pupload">upload zip</button><input type="file" id="pfile" accept=".zip,application/zip" hidden></h2>
+<p class="tools"><input type="search" id="psearch" placeholder="search modrinth resource packs"><span id="psnote" class="dim"></span></p>
+<ul class="rows" id="presults"></ul>
 </div>
 </section>
+
 <section data-pane="world" hidden>
-<div class="note" id="wnote" hidden></div>
-<div class="kv" id="winfo"></div>
-<div class="sec"><h2>size</h2><span class="d" id="wtotal"></span></div>
-<div class="rows" id="wsize"></div>
-<div class="sec"><h2>quick actions</h2></div>
-<div class="rows" id="wquick"></div>
-<div class="sec"><h2>game rules</h2><input class="f" id="wfilter" type="search" placeholder="filter"><button id="wdefaults">defaults</button></div>
-<div class="rows" id="wrules"></div>
-<div class="sec"><h2>manage</h2><span class="d">a backup is made before every change</span></div>
-<div class="rows" id="wmanage"></div>
+<p class="warn" id="wnote"></p>
+<dl id="winfo"></dl>
+<h2>size <span id="wtotal"></span></h2>
+<ul class="rows" id="wsize"></ul>
+<details><summary>game rules</summary>
+<p class="tools"><input id="wfilter" type="search" placeholder="filter"><button type="button" id="wdefaults">defaults</button></p>
+<ul class="rows" id="wrules"></ul>
+</details>
+<h2>manage <span>a backup is made before every change</span></h2>
+<ul class="rows" id="wmanage"></ul>
 <input type="file" id="wfile" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip" hidden>
 </section>
-<section data-pane="stats" hidden><div class="charts" id="charts"></div>
-<div class="sec"><h2>leaderboard</h2><select class="f" id="lbby"></select></div>
-<div class="rows" id="lb"></div>
+
+<section data-pane="stats" hidden>
+<dl id="now"></dl>
+<div id="charts"></div>
 </section>
+
 <section data-pane="tasks" hidden>
-<div class="rows" id="tasks"></div>
-<div class="sec"><h2>backups</h2><span class="d">last 7 kept</span></div>
-<div class="rows" id="backups"></div>
-<div class="sec"><h2>crashes</h2><span class="d">reports and failed starts</span></div>
-<div class="rows" id="crashes"></div>
+<ul class="rows" id="tasks"></ul>
+<h2>backups <span>last 7 kept</span></h2>
+<ul class="rows" id="backups"></ul>
+<h2>crashes</h2>
+<ul class="rows" id="crashes"></ul>
 </section>
+
 <section data-pane="settings" hidden>
-<div class="sec"><h2>server icon</h2><button id="iupload">upload image</button><input type="file" id="ifile" accept="image/*,.png,.jpg,.jpeg,.gif,.webp" hidden></div>
+<h2>icon <button type="button" id="iupload">upload</button><input type="file" id="ifile" accept="image/*" hidden></h2>
 <div class="icur" id="icur"></div>
 <div class="icons" id="ilist"></div>
-<div class="sec"><h2>properties</h2></div>
+<h2>properties</h2>
 <div class="form" id="pform"></div>
-<details><summary>all of server.properties</summary><textarea id="props" spellcheck="false"></textarea></details>
-<div class="row"><span class="sp" id="pstate">server.properties</span><button id="reload">reload</button><button id="save">save</button></div>
+<details><summary>server.properties</summary><textarea id="props" spellcheck="false"></textarea></details>
+<p class="tools"><button type="button" id="save">save</button><button type="button" id="reload">reload</button><span id="pstate" class="dim"></span></p>
 </section>
 </div>
-</div>
-<div id="modal" hidden><div class="box"><div style="display:flex;justify-content:flex-end"><button id="mclose">close</button></div><div id="mbody"></div></div></div>
-<nav id="nav"><a data-tab="console" href="/">console</a><a data-tab="players" href="/players">players</a><a data-tab="world" href="/world">world</a><a data-tab="tasks" href="/tasks">tasks</a><a id="more">more</a></nav>
-<div id="sheet" hidden><div class="sbox"><div class="sgrid"><a data-tab="activity" href="/activity">activity</a><a data-tab="mods" href="/mods">mods</a><a data-tab="stats" href="/stats">stats</a><a data-tab="settings" href="/settings">settings</a><a href="/dashboard" class="w">dashboard</a></div><div class="spower"><button data-a="start">start</button><button data-a="restart">restart</button><button data-a="stop" class="danger">stop</button></div><button id="stheme">light mode</button></div></div>
-<div id="toasts"></div>
+<p id="msg"></p>
 <script src="/static/common.js?v=VERSION"></script>
 <script src="/static/app.js?v=VERSION"></script>
 </body>

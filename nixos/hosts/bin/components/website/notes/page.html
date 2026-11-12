@@ -1,0 +1,43 @@
+{{define "top"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>{{.Title}}</title>
+<link rel="apple-touch-icon" href="/static/icon.png">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/static/notes.css">
+<script src="/assets/theme.js"></script>
+<script src="/static/notes.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+<nav class="nav"><a href="/">notes</a><a href="/today">today</a></nav>
+{{end}}
+
+{{define "end"}}</div>
+</body>
+</html>
+{{end}}
+
+{{define "home"}}{{template "top" .}}
+<form><input id="find" name="q" value="{{.Q}}" placeholder="find or new" autocomplete="off" spellcheck="false"></form>
+<ul class="list">{{range .Notes}}<li><a href="/n/{{path .}}">{{.}}</a></li>{{end}}<li id="new"{{if not .New}} hidden{{end}}><a href="/e/{{path .New}}">new: {{.New}}</a></li></ul>
+{{template "end"}}{{end}}
+
+{{define "view"}}{{template "top" .}}
+<p class="head"><span>{{.Name}}</span><a href="/e/{{path .Name}}" id="edit">edit</a></p>
+<article class="prose">{{.HTML}}</article>
+{{if .Back}}<h2>linked from</h2>
+<ul class="list">{{range .Back}}<li><a href="/n/{{path .}}">{{.}}</a></li>{{end}}</ul>{{end}}
+{{template "end"}}{{end}}
+
+{{define "edit"}}{{template "top" .}}
+<form method="post" id="text">
+<input name="name" value="{{.Name}}" class="name" autocomplete="off" spellcheck="false">
+<textarea name="text" autofocus>
+{{.Text}}</textarea>
+<p class="bar"><button>save</button><a href="/n/{{path .Name}}">cancel</a><button formaction="/d/{{path .Name}}" onclick="return confirm('delete?')" class="del">delete</button></p>
+</form>
+{{template "end"}}{{end}}

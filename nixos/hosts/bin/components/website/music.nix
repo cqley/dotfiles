@@ -96,9 +96,13 @@ in
     enableACME = true;
     locations."/".proxyPass = "http://127.0.0.1:4533";
     locations."/assets/".alias = "/etc/assets/";
-    locations."= /downloader".return = "301 $scheme://$host/downloader/";
-    locations."/downloader/" = {
-      proxyPass = "http://127.0.0.1:4534/";
+  };
+
+  services.nginx.virtualHosts."downloader" = {
+    listen = [{ addr = "10.0.0.1"; port = 8094; }];
+    locations."/assets/".alias = "/etc/assets/";
+    locations."/" = {
+      proxyPass = "http://127.0.0.1:4534";
       extraConfig = ''
         proxy_read_timeout 1800s;
         proxy_send_timeout 1800s;

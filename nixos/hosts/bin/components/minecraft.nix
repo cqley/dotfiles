@@ -117,6 +117,14 @@ let
       level=''${level:-world}
       mkdir -p "$level/datapacks"
       chmod g+rwx "$level" "$level/datapacks"
+      if compgen -G "mods/squaremap*.jar" > /dev/null; then
+        mkdir -p squaremap
+        if [ -e squaremap/config.yml ]; then
+          sed -i -e "/internal-webserver:/,/port:/ s/enabled: true/enabled: false/" -e "s/flush-json-immediately: false/flush-json-immediately: true/" squaremap/config.yml
+        else
+          printf "settings:\n  internal-webserver:\n    enabled: false\n    flush-json-immediately: true\n" > squaremap/config.yml
+        fi
+      fi
     '';
     serviceConfig = sandbox // {
       ExecStart = "${start}";
@@ -127,6 +135,9 @@ let
       StateDirectory = "minecraft/%i";
       StateDirectoryMode = "0770";
       UMask = "0007";
+      OOMScoreAdjust = -500;
+      CPUWeight = 400;
+      IOWeight = 400;
       WorkingDirectory = "${root}/%i";
       StandardInput = "socket";
       StandardOutput = "journal";
@@ -307,6 +318,15 @@ let
   page = ./minecraft/page;
   site = ./minecraft/public;
 
+  font = pkgs.runCommand "mcfont" { nativeBuildInputs = [ (pkgs.python3.withPackages (p: [ p.fonttools p.brotli ])) ]; } ''
+    mkdir $out
+    for f in 0:regular 4:bold; do
+      pyftsubset ${pkgs.monocraft}/share/fonts/truetype/*Monocraft-no-ligatures.ttc --font-number=''${f%%:*} \
+        --unicodes="U+0020-007E,U+00A0-00FF,U+2013-2014,U+2018-201D,U+2022,U+2026,U+2190-2193,U+2665,U+2605,U+2715,U+25B2,U+25BC" \
+        --layout-features="" --flavor=woff2 --output-file=$out/''${f##*:}.woff2
+    done
+  '';
+
   each = ''
     for cfg in ${root}/*/server.json; do
       [ -f "$cfg" ] || continue
@@ -457,6 +477,7 @@ in
     enableACME = true;
     locations."/assets/".alias = "/etc/assets/";
     locations."/static/".alias = "${site}/";
+    locations."/fonts/".alias = "${font}/";
     locations."/".proxyPass = "http://127.0.0.1:4604";
   };
 }
