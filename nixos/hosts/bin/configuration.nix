@@ -16,6 +16,7 @@
     ./components/website/music.nix
     ./components/website/filehost.nix
     ./components/website/notes.nix
+    ./components/website/git.nix
     ../../modules/system/core.nix
     ../../modules/system/editor.nix
     ../../modules/misc/public.nix
