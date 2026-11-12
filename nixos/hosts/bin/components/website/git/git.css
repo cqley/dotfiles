@@ -1,0 +1,507 @@
+:root {
+  --bg: #fff;
+  --fg: #222;
+  --acc: #f2b8e2;
+  --dim: #888;
+  --line: #ddd;
+  --code: #f6f6f6;
+  --add: #5a5;
+  --del: #e33;
+  color-scheme: light;
+}
+
+:root[data-theme=dark] {
+  --bg: #161616;
+  --fg: #ddd;
+  --acc: #f2b8e2;
+  --dim: #888;
+  --line: #333;
+  --code: #222;
+  --add: #6c6;
+  --del: #f66;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 64rem;
+  padding: 1.5rem 1rem 3rem;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.4 "Libertinus Serif", serif;
+}
+
+a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--acc);
+  text-decoration: underline;
+}
+
+header,
+nav,
+.path {
+  font-style: italic;
+}
+
+header .site {
+  font-weight: bold;
+}
+
+nav {
+  margin: .3rem 0 1.2rem;
+  padding-bottom: .4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+nav a.on {
+  color: var(--acc);
+  text-decoration: underline;
+}
+
+header {
+  margin-bottom: .3rem;
+}
+
+header + :not(nav) {
+  margin-top: 1.2rem;
+}
+
+h2 {
+  margin: 1.6rem 0 .3rem;
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: bold;
+}
+
+p {
+  margin: .6rem 0;
+}
+
+.dim {
+  color: var(--dim);
+}
+
+.r {
+  text-align: right;
+  white-space: nowrap;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td {
+  padding: .3rem .8rem .3rem 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: baseline;
+}
+
+td:last-child {
+  padding-right: 0;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+.repos td:first-child {
+  padding-left: 1rem;
+  font-weight: bold;
+  white-space: nowrap;
+  width: 1%;
+}
+
+.log td:first-child,
+.tree td:first-child {
+  white-space: nowrap;
+}
+
+.log td:first-child {
+  width: 1%;
+}
+
+.log td:nth-child(2) {
+  overflow-wrap: anywhere;
+}
+
+.tree .msg {
+  width: 100%;
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log .dim {
+  white-space: nowrap;
+}
+
+.ws,
+.ws a {
+  color: var(--dim);
+}
+
+.ws a:hover {
+  color: var(--acc);
+}
+
+.stat {
+  width: auto;
+  font: .85rem/1.4 "Courier Prime", monospace;
+}
+
+.stat td:last-child {
+  overflow-wrap: anywhere;
+}
+
+.stat td {
+  border: none;
+  padding: 0 .8rem 0 0;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: .25rem .5rem;
+  margin: 1.2rem 0;
+}
+
+dt {
+  font-style: italic;
+  color: var(--dim);
+}
+
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+code,
+pre,
+.sha {
+  font-family: "Courier Prime", monospace;
+  font-size: .85rem;
+}
+
+code {
+  padding: .05rem .3rem;
+  border: 1px solid var(--line);
+  background: var(--code);
+}
+
+dd code {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+pre {
+  margin: .6rem 0;
+  padding: .6rem;
+  border: 1px solid var(--line);
+  background: var(--code);
+  line-height: 1.4;
+  overflow-x: auto;
+  tab-size: 4;
+}
+
+.readme,
+.msg {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.blob {
+  display: flex;
+  border: 1px solid var(--line);
+  background: var(--code);
+}
+
+.blob pre {
+  margin: 0;
+  border: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.blob .ln {
+  flex: none;
+  padding-right: .5rem;
+  border-right: 1px solid var(--line);
+  text-align: right;
+  user-select: none;
+}
+
+.ln a {
+  color: var(--dim);
+}
+
+.ln a:target {
+  color: var(--acc);
+}
+
+.add {
+  color: var(--add);
+}
+
+.del {
+  color: var(--del);
+}
+
+dd code {
+  user-select: all;
+}
+
+.file {
+  margin: 1.2rem 0;
+  border: 1px solid var(--line);
+  scroll-margin-top: 1rem;
+}
+
+.file:target {
+  border-color: var(--acc);
+}
+
+.fname {
+  margin: 0;
+  padding: .4rem .6rem;
+  background: var(--code);
+  font-family: "Courier Prime", monospace;
+  font-size: .85rem;
+  overflow-wrap: anywhere;
+}
+
+.scroll {
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+}
+
+table.diff {
+  font: .85rem/1.45 "Courier Prime", monospace;
+}
+
+table.diff td {
+  padding: 0 .6rem;
+  border: none;
+  white-space: pre;
+  tab-size: 4;
+}
+
+table.diff td:last-child {
+  width: 100%;
+}
+
+table.diff .n {
+  min-width: 2.5rem;
+  color: var(--dim);
+  text-align: right;
+  user-select: none;
+}
+
+table.diff .n + .n {
+  border-right: 1px solid var(--line);
+}
+
+table.diff .gap td {
+  padding: .15rem .6rem;
+  background: var(--code);
+  color: var(--dim);
+}
+
+.img img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+}
+
+.md {
+  padding: .2rem 1.2rem;
+  border: 1px solid var(--line);
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+.md h1,
+.md h2,
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+  margin: 1.4rem 0 .6rem;
+  font-style: normal;
+  line-height: 1.25;
+}
+
+.md h1 {
+  font-size: 1.6rem;
+}
+
+.md h2 {
+  font-size: 1.3rem;
+}
+
+.md h1,
+.md h2 {
+  padding-bottom: .3rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.md h3 {
+  font-size: 1.1rem;
+}
+
+.md h4,
+.md h5,
+.md h6 {
+  font-size: 1rem;
+}
+
+.md > :first-child {
+  margin-top: 1rem;
+}
+
+.md p,
+.md ul,
+.md ol,
+.md blockquote,
+.md pre,
+.md .tw,
+.md details {
+  margin: .8rem 0;
+}
+
+.md ul,
+.md ol {
+  padding-left: 1.6rem;
+}
+
+.md li > ul,
+.md li > ol {
+  margin: 0;
+}
+
+.md a {
+  text-decoration: underline;
+}
+
+.md blockquote {
+  margin-left: 0;
+  padding: 0 1rem;
+  border-left: 3px solid var(--line);
+  color: var(--dim);
+}
+
+.md hr {
+  border: none;
+  border-top: 1px solid var(--line);
+}
+
+.md pre code {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: inherit;
+}
+
+.md .tw {
+  overflow-x: auto;
+}
+
+.md table:has(img) {
+  width: 100%;
+}
+
+.md table {
+  width: auto;
+}
+
+.md th,
+.md td,
+.md tr:last-child td {
+  vertical-align: middle;
+  padding: .35rem .8rem;
+  border: 1px solid var(--line);
+}
+
+.md th {
+  background: var(--code);
+}
+
+.md img {
+  vertical-align: middle;
+  max-width: 100%;
+  height: auto;
+}
+
+.md input {
+  margin: 0 .3rem 0 0;
+}
+
+.md summary {
+  cursor: pointer;
+}
+
+#theme {
+  position: fixed;
+  top: .6rem;
+  right: .7rem;
+  border: none;
+  background: none;
+  padding: .3rem;
+  line-height: 0;
+  color: var(--dim);
+  opacity: .25;
+  cursor: pointer;
+}
+
+#theme:hover,
+#theme:focus-visible {
+  opacity: 1;
+  color: var(--acc);
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 1rem .75rem 2rem;
+  }
+
+  dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  dd {
+    margin-bottom: .4rem;
+  }
+
+  dd code {
+    white-space: normal;
+    word-break: break-all;
+  }
+
+  .tree .msg,
+  .log td.dim {
+    display: none;
+  }
+
+  .repos td:first-child {
+    padding-left: 0;
+  }
+}
