@@ -6,6 +6,19 @@
   --line: #ddd;
   --err: #e33;
   --ok: #5a5;
+  --code: #f6f6f6;
+  color-scheme: light;
+}
+
+:root[data-theme=dark] {
+  --bg: #161616;
+  --fg: #ddd;
+  --dim: #888;
+  --line: #333;
+  --err: #f66;
+  --ok: #6c6;
+  --code: #222;
+  color-scheme: dark;
 }
 
 * {
@@ -305,4 +318,27 @@ label:has(> input[type=radio]) {
   align-items: center;
   gap: .45rem;
   cursor: pointer;
+}
+
+#theme {
+  position: fixed;
+  top: calc(.6rem + env(safe-area-inset-top, 0px));
+  right: calc(.7rem + env(safe-area-inset-right, 0px));
+  z-index: 20;
+  min-height: 0;
+  margin: 0;
+  border: none !important;
+  background: none !important;
+  padding: .3rem;
+  line-height: 0;
+  color: var(--dim);
+  opacity: .25;
+  cursor: pointer;
+  transition: opacity .2s, color .2s;
+}
+
+#theme:hover,
+#theme:focus-visible {
+  opacity: 1;
+  color: var(--acc);
 }

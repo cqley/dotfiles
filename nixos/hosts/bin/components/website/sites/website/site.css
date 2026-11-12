@@ -1,0 +1,93 @@
+@font-face {
+  font-family: "Courier Prime";
+  src: url("/fonts/CourierPrime-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  src: url("/fonts/CourierPrime-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-display: swap;
+}
+
+html {
+  scrollbar-gutter: stable both-edges;
+}
+
+:root {
+  --bg: #fff;
+  --fg: #222;
+  --dim: #888;
+  --acc: #f2b8e2;
+  color-scheme: light;
+}
+
+:root[data-theme=dark] {
+  --bg: #161616;
+  --fg: #ddd;
+  --dim: #888;
+  --acc: #f2b8e2;
+  color-scheme: dark;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.6 "Courier Prime", monospace;
+  max-width: 600px;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+p {
+  margin-bottom: 1.5rem;
+}
+
+a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--dim);
+  text-underline-offset: .2em;
+}
+
+a:hover,
+a:focus-visible {
+  background: var(--acc);
+  color: #111;
+  outline: none;
+}
+
+.dim {
+  color: var(--dim);
+}
+
+#theme {
+  position: fixed;
+  top: .6rem;
+  right: .7rem;
+  border: 0;
+  background: none;
+  padding: .3rem;
+  line-height: 0;
+  color: var(--dim);
+  opacity: .3;
+  cursor: pointer;
+}
+
+#theme:hover {
+  opacity: 1;
+  color: var(--acc);
+}

@@ -6,7 +6,20 @@
   --line: #ddd;
   --err: #e33;
   --ok: #5a5;
+  --code: #f6f6f6;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+
+:root[data-theme=dark] {
+  --bg: #161616;
+  --fg: #ddd;
+  --dim: #888;
+  --line: #333;
+  --err: #f66;
+  --ok: #6c6;
+  --code: #222;
+  color-scheme: dark;
 }
 
 html,
@@ -90,7 +103,6 @@ a:active {
 #info a,
 .normal a,
 #file-uploader a,
-#footer a,
 .upload a,
 .upload a:hover {
   color: var(--fg) !important;
@@ -103,7 +115,6 @@ a:active {
 #info a:hover,
 .normal a:hover,
 #file-uploader a:hover,
-#footer a:hover,
 .upload a:hover {
   color: var(--acc) !important;
 }
@@ -115,9 +126,7 @@ a:active {
 }
 
 #footer {
-  color: var(--dim) !important;
-  font-size: .75rem !important;
-  margin-top: 1.5rem;
+  display: none !important;
 }
 
 div.dz-default,
@@ -367,7 +376,7 @@ input[type=radio]:checked::before {
 
 #main pre,
 #main code {
-  background: #f6f6f6 !important;
+  background: var(--code) !important;
   border: none !important;
   border-radius: 0 !important;
 }
@@ -396,12 +405,6 @@ input[type=radio]:checked::before {
   gap: .6rem;
 }
 
-#footer,
-#footer a,
-#footer a:visited {
-  color: var(--dim) !important;
-}
-
 .oopscontent img,
 .error-404 img {
   max-width: 100%;
@@ -412,6 +415,35 @@ input[type=radio]:checked::before {
   #container_container {
     margin: 2rem auto !important;
   }
+}
+
+#inner_content,
+#normal-content,
+#normal-code {
+  width: auto !important;
+  min-width: 0;
+  max-width: 100% !important;
+}
+
+.display-image,
+.display-video,
+.display-pdf,
+.display-audio,
+.display-file {
+  display: block;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  box-sizing: border-box;
+}
+
+.display-image,
+.display-video {
+  width: auto;
+  height: auto;
+}
+
+.display-video {
+  max-height: 70vh;
 }
 
 #main.paste {
@@ -489,4 +521,27 @@ input[type=radio]:checked::before {
 #main.paste textarea {
   display: block;
   margin: 0 !important;
+}
+
+#theme {
+  position: fixed;
+  top: calc(.6rem + env(safe-area-inset-top, 0px));
+  right: calc(.7rem + env(safe-area-inset-right, 0px));
+  z-index: 20;
+  min-height: 0;
+  margin: 0;
+  border: none !important;
+  background: none !important;
+  padding: .3rem;
+  line-height: 0;
+  color: var(--dim);
+  opacity: .25;
+  cursor: pointer;
+  transition: opacity .2s, color .2s;
+}
+
+#theme:hover,
+#theme:focus-visible {
+  opacity: 1;
+  color: var(--acc);
 }

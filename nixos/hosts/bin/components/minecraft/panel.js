@@ -147,6 +147,7 @@ async function status(name, prevMap = cpuPrev) {
     cpu: Math.round(cpu),
     since,
     lag: lagging,
+    tick: info ? tickNow[name] ?? null : null,
     icon: (await Deno.stat(`${root}/${name}/server-icon.png`).catch(() => null))?.mtime?.getTime() ?? null,
     players: info ? {
       online: online ? online.length : info.players?.online ?? 0,
@@ -309,6 +310,21 @@ async function updateServer(name, b) {
   return c;
 }
 
+const tickLine = /\]: (The game is (running|frozen|sprinting)|Target tick rate: |Percentiles: P50: )|^Average time per tick: /;
+const tickNow = {};
+const tickNum = (v) => Number(v.replace(",", "."));
+
+async function ticks(name) {
+  const t = Math.floor(Date.now() / 1000);
+  await command(name, "tick query");
+  await new Promise((r) => setTimeout(r, 1500));
+  const { out } = await run("journalctl", ["-u", `minecraft@${name}.service`, "--since", `@${t}`, "-o", "cat", "--no-pager", "-g", "Average time per tick|Percentiles: P50"]);
+  const avg = [...out.matchAll(/Average time per tick: ([\d.,]+)ms/g)].at(-1)?.[1];
+  const p95 = [...out.matchAll(/P95: ([\d.,]+)ms/g)].at(-1)?.[1];
+  if (avg === undefined) return null;
+  return { avg: tickNum(avg), p95: p95 === undefined ? null : tickNum(p95) };
+}
+
 function logs(name, req) {
   const child = new Deno.Command("journalctl", {
     args: ["-u", `minecraft@${name}.service`, "-f", "-n", "300", "-o", "cat", "--no-pager"],
@@ -324,7 +340,7 @@ function logs(name, req) {
       buf += chunk;
       const lines = buf.split("\n");
       buf = lines.pop();
-      for (const l of lines) ctl.enqueue(enc.encode(`data: ${l}\n\n`));
+      for (const l of lines) if (!tickLine.test(l)) ctl.enqueue(enc.encode(`data: ${l}\n\n`));
     },
   }));
   return new Response(body, { headers: { "content-type": "text/event-stream", "cache-control": "no-cache", "x-accel-buffering": "no" } });
@@ -1102,7 +1118,9 @@ async function sample() {
     const s = await status(name, samplePrev).catch(() => null);
     if (!s) continue;
     const list = history[name] ??= [];
-    list.push([Date.now(), s.players?.online ?? 0, s.used, s.cpu]);
+    const tk = s.ready ? await ticks(name).catch(() => null) : null;
+    tickNow[name] = tk;
+    list.push([Date.now(), s.players?.online ?? 0, s.used, s.cpu, tk?.avg ?? null, tk?.p95 ?? null]);
     if (list.length > 1440) list.splice(0, list.length - 1440);
   }
   await Deno.writeTextFile(`${histFile}.tmp`, JSON.stringify(history)).then(() => Deno.rename(`${histFile}.tmp`, histFile)).catch(() => {});
@@ -1124,7 +1142,7 @@ async function route(req) {
   const parts = url.pathname.split("/").filter(Boolean).map(decodeURIComponent);
   if (url.pathname === "/") return new Response(null, { status: 302, headers: { location: "/dashboard" } });
   if (/^\/dashboard\/?$/.test(url.pathname)) return html(dashboardPage);
-  const tabs = url.pathname.match(/^\/([a-z0-9]{1,16})(\/(players|activity|mods(\/(datapacks|resourcepack))?|world|stats|tasks|settings))?\/?$/);
+  const tabs = url.pathname.match(/^\/([a-z0-9]{1,16})(\/(players(\/[A-Za-z0-9_]{1,16})?|activity|mods(\/(datapacks|resourcepack))?|world|stats|tasks|settings))?\/?$/);
   if (tabs && validName(tabs[1])) return html(page);
   if (parts[0] !== "api") return text("not found", 404);
   if (parts[1] === "servers" && !parts[2] && req.method === "GET") {
@@ -1344,7 +1362,9 @@ async function cached(key, ttl, fn) {
 }
 
 async function publicServers() {
-  return Promise.all([...names].filter((n) => servers[n].public !== false).map(async (n) => {
+  const day = Date.now() - 86400000;
+  const act = (n) => (history[n] ?? []).filter(([t]) => t > day).reduce((a, [, c]) => a + (c || 0), 0);
+  const list = await Promise.all([...names].filter((n) => servers[n].public !== false).map(async (n) => {
     const s = await status(n);
     return {
       name: n,
@@ -1355,14 +1375,49 @@ async function publicServers() {
       icon: s.icon,
       players: s.players ? { online: s.players.online, max: s.players.max, list: s.players.list } : null,
       worlds: await worlds(n),
+      map: await hasMap(n),
     };
   }));
+  return list.sort((a, b) => (b.players?.online ?? 0) - (a.players?.online ?? 0) || act(b.name) - act(a.name) || b.online - a.online);
+}
+
+async function skinOf(name, player) {
+  const byName = Object.fromEntries(Object.entries(await uuidMap(name)).map(([u, n]) => [n, u]));
+  const uuid = byName[player] ?? Object.keys(uuidNames).find((u) => uuidNames[u] === player);
+  if (!uuid) return null;
+  return cached(`skin:${uuid}`, 3600000, async () => {
+    const r = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid.replace(/-/g, "")}`, { headers: { "user-agent": agent } });
+    if (r.status !== 200) throw new Error(`mojang ${r.status}`);
+    const t = JSON.parse(atob((await r.json()).properties.find((x) => x.name === "textures").value));
+    const s = t.textures?.SKIN;
+    return s ? { url: s.url.replace(/^http:/, "https:"), slim: s.metadata?.model === "slim" } : { url: null, slim: false };
+  });
+}
+
+const mapTypes = { html: "text/html; charset=utf-8", js: "text/javascript", css: "text/css", json: "application/json", png: "image/png", ico: "image/x-icon", svg: "image/svg+xml", webp: "image/webp", map: "application/json" };
+
+async function mapFile(name, rest) {
+  if (rest.some((x) => x === ".." || x.includes("\0") || x.startsWith("."))) return text("not found", 404);
+  const path = `${root}/${name}/squaremap/web/${rest.join("/") || "index.html"}`;
+  const type = mapTypes[path.split(".").pop()];
+  if (!type) return text("not found", 404);
+  const data = await Deno.readFile(path).catch(() => null);
+  if (!data) return text("not found", 404);
+  return new Response(data, { headers: { "content-type": type, "cache-control": /\/tiles\/.*\.png$/.test(path) ? "public, max-age=30" : "no-cache" } });
+}
+
+async function hasMap(name) {
+  return await Deno.stat(`${root}/${name}/squaremap/web/index.html`).then(() => true, () => false);
 }
 
 async function publicRoute(req) {
   if (req.method !== "GET") return text("method not allowed", 405);
   const url = new URL(req.url);
   const parts = url.pathname.split("/").filter(Boolean).map(decodeURIComponent);
+  if (parts[0] === "map" && names.has(parts[1]) && servers[parts[1]].public !== false) {
+    if (parts.length === 2 && !url.pathname.endsWith("/")) return Response.redirect(`https://${publicHost}/map/${parts[1]}/`, 301);
+    return mapFile(parts[1], parts.slice(2));
+  }
   if (parts[0] !== "api") return new Response(publicPage, { headers: { "content-type": "text/html; charset=utf-8" } });
   if (parts[1] === "servers" && parts.length === 2) return Response.json(await cached("servers", 10000, publicServers));
   const name = parts[1];
@@ -1377,6 +1432,10 @@ async function publicRoute(req) {
     return Response.json(await cached(`lb:${name}:${all}`, 30000, () => leaderboard(name, all)));
   }
   if (action === "history") return Response.json((history[name] ?? []).map(([t, p]) => [t, p]));
+  if (action === "skin" && validPlayer(parts[3])) {
+    const s = await skinOf(name, parts[3]).catch(() => null);
+    return s ? Response.json(s) : text("no skin", 404);
+  }
   if (action === "profile" && validPlayer(parts[3])) {
     const known = await cached(`known:${name}`, 30000, async () => Object.keys(await gameStats(name, true)));
     if (!known.includes(parts[3])) return text("unknown player", 404);

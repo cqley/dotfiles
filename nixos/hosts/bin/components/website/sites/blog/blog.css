@@ -1,7 +1,3 @@
-.hidden {
-  display: none !important;
-}
-
 .markdown-body img {
   display: block;
   max-width: 100%;
@@ -11,13 +7,13 @@
 }
 
 .markdown-body pre {
-  background: #f6f6f6;
+  background: var(--code);
   padding: .6rem .8rem;
   overflow-x: auto;
 }
 
 .markdown-body code {
-  background: #f6f6f6;
+  background: var(--code);
   padding: 0 .25rem;
 }
 
@@ -60,175 +56,6 @@
   text-decoration-color: var(--acc);
 }
 
-.wrap.wide {
-  max-width: 64rem;
-}
-
-.dashhead {
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.dashhead h1 {
-  margin: 0;
-}
-
-.panel {
-  margin-bottom: 2.5rem;
-}
-
-form.inline {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-bottom: 0;
-}
-
-form.inline input {
-  flex: 1;
-  min-width: 12rem;
-}
-
-.editor {
-  gap: 0;
-  margin-bottom: 0;
-}
-
-.titleinput {
-  font-size: 1.15em;
-  padding: .6rem .7rem;
-  border-bottom: 0;
-}
-
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: .25rem;
-  padding: .35rem;
-  border: 1px solid var(--line);
-  background: #fafafa;
-}
-
-.toolbar button {
-  align-self: auto;
-  color: var(--fg);
-  background: transparent;
-  border-color: transparent;
-  padding: .2rem .5rem;
-  min-width: 2rem;
-}
-
-.toolbar button:hover,
-.toolbar button:focus-visible {
-  border-color: var(--acc);
-  color: var(--acc);
-}
-
-.toolbar .sep {
-  width: 1px;
-  align-self: stretch;
-  background: var(--line);
-  margin: 0 .2rem;
-}
-
-.panes {
-  display: grid;
-  grid-template-columns: 1fr;
-  border: 1px solid var(--line);
-  border-top: 0;
-}
-
-.pane {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.pane + .pane {
-  border-top: 1px solid var(--line);
-}
-
-
-.pane textarea {
-  border: 0;
-  min-height: 24rem;
-  padding: .7rem;
-  line-height: 1.6;
-  resize: vertical;
-}
-
-.pane textarea.drop {
-  background: #fdf0f8;
-  outline: 2px dashed var(--acc);
-  outline-offset: -6px;
-}
-
-.previewbody {
-  padding: .7rem;
-  min-height: 12rem;
-  max-height: 40rem;
-  overflow-y: auto;
-}
-
-@media (min-width: 900px) {
-  .panes {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .pane + .pane {
-    border-top: 0;
-    border-left: 1px solid var(--line);
-  }
-
-  .previewbody {
-    max-height: none;
-    height: 0;
-    flex: 1;
-  }
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: .8rem;
-  margin-top: .8rem;
-}
-
-.actions button {
-  align-self: auto;
-}
-
-button.ghost {
-  color: var(--dim);
-}
-
-.counter {
-  margin-left: auto;
-}
-
-
-.rowactions {
-  text-align: right;
-  white-space: nowrap;
-}
-
-.rowactions a {
-  font-size: .85em;
-  margin-left: .8rem;
-}
-
-.rowactions .edit {
-  color: var(--dim);
-}
-
-.rowactions .edit:hover {
-  color: var(--acc);
-}
-
 .wrap.post {
   max-width: 48rem;
 }
@@ -237,16 +64,98 @@ button.ghost {
   overflow-wrap: anywhere;
 }
 
-.counter {
-  font-size: .8em;
+.dash .bar {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: baseline;
+  gap: 1.2rem;
+}
+
+.dash input:not([type=file]) {
+  flex: 1;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: .3rem 0;
+}
+
+.dash .bar a, .dash button {
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  background: none;
   color: var(--dim);
-  font-variant-numeric: tabular-nums;
 }
 
-.counter.near {
-  color: #c80;
+.dash .bar a:hover, .dash button:hover {
+  color: var(--acc);
 }
 
-.counter.over {
+.dash .del:hover {
   color: var(--err);
+}
+
+td.d, .rows {
+  width: 1%;
+}
+
+.rows {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rows a, .rows form {
+  display: inline;
+  margin-left: .8rem;
+  color: var(--dim);
+  font-size: .85em;
+}
+
+.rows a:hover {
+  color: var(--acc);
+}
+
+.wrap.wide {
+  max-width: 64rem;
+}
+
+.dash .title {
+  font-size: 1.15em;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem 1rem;
+}
+
+.panes {
+  display: grid;
+  gap: 1rem;
+}
+
+.panes textarea {
+  min-height: 75vh;
+  line-height: 1.6;
+}
+
+.panes textarea.drop {
+  outline: 2px dashed var(--acc);
+  outline-offset: -6px;
+}
+
+#preview {
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 900px) {
+  .panes {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #preview {
+    max-height: none;
+    height: 0;
+    min-height: 100%;
+  }
 }

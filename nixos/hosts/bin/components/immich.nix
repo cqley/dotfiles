@@ -8,6 +8,7 @@
     enable = true;
     package = pkgs-unstable.immich;
     host = "127.0.0.1";
+    machine-learning.enable = false;
   };
 
   services.nginx.virtualHosts."immich" = {

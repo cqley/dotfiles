@@ -1,0 +1,146 @@
+body {
+  font-family: "Libertinus Serif", serif;
+  font-size: 17px;
+}
+
+.wrap {
+  max-width: 44rem;
+  margin: 2rem auto 4rem;
+}
+
+.nav a {
+  margin-right: 1.2rem;
+}
+
+.head, .bar a, .bar button {
+  color: var(--dim);
+}
+
+input#find, input.name {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: .3rem 0;
+  background: none;
+  width: 100%;
+}
+
+input.name {
+  font-size: 1.3rem;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+}
+
+.list li {
+  padding: .1rem 0;
+}
+
+.list a {
+  display: block;
+  padding: .05rem .4rem;
+  margin: 0 -.4rem;
+}
+
+.list a.sel {
+  background: var(--acc);
+  color: #111;
+}
+
+#new a {
+  color: var(--dim);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.bar {
+  display: flex;
+  align-items: baseline;
+  gap: 1.2rem;
+  margin: 0;
+}
+
+.bar button {
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  background: none;
+  font: inherit;
+  display: inline;
+}
+
+.bar a:hover, .bar button:hover {
+  color: var(--acc);
+}
+
+.bar .del {
+  margin-left: auto;
+}
+
+.prose {
+  margin-bottom: 3rem;
+  overflow-wrap: break-word;
+}
+
+.prose h1, .prose h2, .prose h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--fg);
+  border: 0;
+  margin: 1.5rem 0 .6rem;
+}
+
+.prose a {
+  text-decoration: underline;
+  text-decoration-color: var(--acc);
+}
+
+.prose ul, .prose ol {
+  padding-left: 1.4rem;
+}
+
+.prose li:has(> input) {
+  list-style: none;
+}
+
+.prose li > input {
+  margin: 0 .5rem 0 -1.4rem;
+}
+
+.prose code, .prose pre, textarea {
+  font-family: "Courier Prime", monospace;
+}
+
+.prose code, .prose pre {
+  background: var(--code);
+}
+
+.prose pre {
+  padding: .8rem 1rem;
+  overflow-x: auto;
+}
+
+.prose blockquote {
+  margin: 0 0 1.2rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--line);
+  color: var(--dim);
+}
+
+.prose img {
+  max-width: 100%;
+}
+
+textarea {
+  min-height: 70vh;
+  font-size: 15px;
+  border: 0;
+  padding: .5rem 0;
+  background: none;
+  resize: none;
+}

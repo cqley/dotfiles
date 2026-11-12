@@ -1,101 +1,83 @@
-function openModal(...nodes){const b=$("mbody");b.innerHTML="";b.append(...nodes);$("modal").hidden=false;}
-function closeModal(){$("modal").hidden=true;}
-$("modal").onclick=(e)=>{if(e.target===$("modal"))closeModal();};
-$("mclose").onclick=closeModal;
-addEventListener("keydown",(e)=>{if(e.key==="Escape")closeModal();});
-const icons={};
+const rows={};
+let names=null;
+const versionLists={};
+const versions=async(type)=>versionLists[type]??=await json("versions?type="+type);
+async function fillVersions(s,type,v){
+  s.disabled=true;
+  try{s.replaceChildren(...(await versions(type)).map((x)=>new Option(x,x)));if(v)s.value=v;}catch(e){msg(e.message,true);}
+  s.disabled=false;
+}
+const memOptions=(s,v)=>{s.replaceChildren(...Array.from({length:16},(_,i)=>new Option((i+1)+" GB",(i+1)+"G")));s.value=v;};
 async function load(){
   let list;
-  try{list=await (await api("servers")).json();}catch(e){return;}
-  const box=$("list");box.innerHTML="";
+  try{list=await json("servers");}catch{return;}
   const on=list.reduce((a,s)=>a+(s.players?s.players.online:0),0);
-  $("total").textContent=list.length?list.length+" server"+(list.length>1?"s":"")+(on?" · "+on+" playing":""):"";
-  if(!list.length)box.append(el("div","empty","no servers yet"));
-  for(const s of list){
-    const ph=phase(s);
-    const d=el("a","srv "+ph);d.href="/"+encodeURIComponent(s.name);
-    const top=el("div","top");
-    const ik=s.name+s.icon;
-    if(s.icon&&!icons[ik])icons[ik]=img("/api/"+encodeURIComponent(s.name)+"/icon/current?v="+s.icon,"si");
-    if(s.icon)top.append(icons[ik]);
-    top.append(el("span","dot"),el("span",null,s.name),el("span","state",ph));
-    const bar=el("div","bar"),i=el("i");bar.append(i);
-    i.style.width=Math.min(100,s.used/s.limit*100)+"%";
-    d.append(top,el("div","meta",s.type+" "+s.version+" · port "+s.port+(s.players?" · "+s.players.online+"/"+s.players.max+" players":"")),bar,el("div","meta",(s.used?gb(s.used):"0 GB")+" / "+s.memory+" · "+s.cpu+"% cpu"+(s.since?" · up "+ago(s.since):"")));
-    const acts=el("div","acts");
-    acts.onclick=(e)=>{e.preventDefault();e.stopPropagation();};
-    const up=s.state==="active"||s.state==="activating";
-    const power=btn(up?"stop":"start",async()=>{
-      if(up&&s.players&&s.players.online&&!confirm("stop "+s.name+"? "+s.players.online+" online"))return;
-      await post(s.name+"/"+(up?"stop":"start"));toast((up?"stopping ":"starting ")+s.name);setTimeout(load,800);
-    },up?"danger":"");
-    if(s.state==="deactivating")power.disabled=true;
-    acts.append(power,el("span","sp"),btn("edit",()=>editServer(s)));
-    d.append(acts);
-    box.append(d);
+  $("total").textContent=list.length?list.length+(on?" · "+on+" playing":""):"";
+  const key=list.map((s)=>s.name).join();
+  if(key!==names){
+    names=key;
+    $("list").replaceChildren(...list.map((s)=>rows[s.name]=li(el("div","line"))));
+    if(!list.length)$("list").append(li(el("span","dim","no servers yet")));
   }
+  for(const s of list)draw(rows[s.name],s);
 }
-const versionLists={};
-async function versions(type){return versionLists[type]??=await (await api("versions?type="+type)).json();}
-function field(label,input){const l=el("label");l.append(document.createTextNode(label),input);return l;}
-function check(label,on){const l=el("label","b"),i=el("input");i.type="checkbox";i.checked=!!on;l.append(i,document.createTextNode(label));l.input=i;return l;}
-function pick(values,v){const s=el("select","f");for(const [val,txt] of values){const o=el("option",null,txt);o.value=val;s.append(o);}if(v!=null)s.value=v;return s;}
-const memSelect=(v)=>pick(Array.from({length:16},(_,i)=>[(i+1)+"G",(i+1)+" GB"]),v);
-function timeInput(v){const i=el("input","f");i.type="time";i.value=v||"";return i;}
-async function fillVersions(sel_,type,v){sel_.disabled=true;try{const l=await versions(type);sel_.innerHTML="";for(const x of l){const o=el("option",null,x);o.value=x;sel_.append(o);}if(v)sel_.value=v;}catch(e){toast(e.message,"err");}sel_.disabled=false;}
-let newBuilt=false;
-function buildNew(){
-  if(newBuilt)return;
-  newBuilt=true;
-  const name=el("input","f");name.placeholder="a–z, 0–9";name.maxLength=16;name.autocapitalize="off";name.spellcheck=false;
-  const type=pick([["fabric","fabric"],["vanilla","vanilla"]],"fabric");
-  const ver=el("select","f");
-  type.onchange=()=>fillVersions(ver,type.value);
-  const mem=memSelect("4G");
-  const port=el("input","f");port.placeholder="auto";port.inputMode="numeric";
-  const backup=timeInput(null),restart=timeInput("04:00");
-  const auto=check("start on boot",true),pub=check("public stats",true),now=check("start now",true);
-  $("nform").append(field("name",name),field("type",type),field("version",ver),field("memory",mem),field("port",port),field("backup",backup),field("restart",restart),auto,pub,now);
-  fillVersions(ver,"fabric");
-  $("ngo").append(btn("create",async()=>{
-    $("nstate").textContent="downloading…";
-    try{
-      const body={name:name.value.trim(),type:type.value,version:ver.value,memory:mem.value,port:port.value.trim()?Number(port.value):null,backup:backup.value||null,restart:restart.value||null,autostart:auto.input.checked,public:pub.input.checked,start:now.input.checked};
-      const r=await (await api("servers",{method:"POST",body:JSON.stringify(body)})).json();
-      toast(r.name+" created · port "+r.port,"ok");
-      name.value="";port.value="";
-      load();
-    }finally{$("nstate").textContent="";}
-  }));
+function draw(r,s){
+  r.s=s;
+  const ph=phase(s),up=s.state==="active"||s.state==="activating";
+  const a=el("a",null,s.name);a.href="/"+encodeURIComponent(s.name);
+  const meta=[s.type+" "+s.version,"port "+s.port,s.players&&s.players.online+"/"+s.players.max,up&&gb(s.used)+" / "+s.memory,up&&s.cpu+"% cpu",s.tick&&ms(s.tick.avg)].filter(Boolean).join(" · ");
+  const power=btn(up?"stop":"start",async()=>{
+    if(up&&s.players&&s.players.online&&!confirm("stop "+s.name+"? "+s.players.online+" online"))return;
+    await post(s.name+"/"+(up?"stop":"start"));msg((up?"stopping ":"starting ")+s.name);setTimeout(load,800);
+  },up?"del":"");
+  power.disabled=s.state==="deactivating";
+  const n=el("span","n");
+  if(s.icon)n.append(img("/api/"+encodeURIComponent(s.name)+"/icon/current?v="+s.icon),document.createTextNode(" "));
+  n.append(a," ",el("span","st "+ph,ph));
+  r.firstChild.replaceChildren(n,el("span","dim",meta),power,btn(r.form?"close":"edit",()=>edit(r)));
 }
-function editServer(s){
-  const up=s.state!=="inactive"&&s.state!=="failed";
-  const f=el("div","form");
-  const mem=memSelect(s.memory);
-  const ver=pick([[s.version,s.version]],s.version);
-  if(!up)fillVersions(ver,s.type,s.version);else ver.disabled=true;
-  const port=el("input","f");port.value=String(s.port);port.inputMode="numeric";
-  const backup=timeInput(s.backup),restart=timeInput(s.restart);
+function field(label,input){const l=el("label");l.append(label,input);return l;}
+function check(label,on){const l=el("label","b"),i=el("input");i.type="checkbox";i.checked=!!on;l.append(i," "+label);l.input=i;return l;}
+function time(v){const i=el("input");i.type="time";i.value=v||"";return i;}
+function edit(r){
+  if(r.form){r.form.remove();r.form=null;draw(r,r.s);return;}
+  const s=r.s,up=s.state!=="inactive"&&s.state!=="failed";
+  const f=el("form","form");
+  const mem=el("select");memOptions(mem,s.memory);
+  const ver=el("select");ver.append(new Option(s.version,s.version));
+  if(up)ver.disabled=true;else fillVersions(ver,s.type,s.version);
+  const port=el("input");port.value=String(s.port);port.inputMode="numeric";
+  const backup=time(s.backup),restart=time(s.restart);
   const auto=check("start on boot",s.autostart),pub=check("public stats",s.public);
-  f.append(field("memory",mem),field(up?"version · stop first":"version",ver),field("port",port),field("backup",backup),field("restart",restart),auto,pub);
-  const save=btn("save",async()=>{
+  const bar=el("p","tools wide");
+  bar.append(btn("save",async()=>{
     const body={memory:mem.value,port:Number(port.value),backup:backup.value||null,restart:restart.value||null,autostart:auto.input.checked,public:pub.input.checked};
-    if(!up&&ver.value!==s.version){if(!confirm("switch to "+ver.value+"? worlds can't go back"))return;body.version=ver.value;$("mbody").append(el("div","note","downloading…"));}
+    if(!up&&ver.value!==s.version){if(!confirm("switch to "+ver.value+"? worlds can't go back"))return;body.version=ver.value;msg("downloading "+ver.value);}
     await api(s.name+"/config",{method:"PUT",body:JSON.stringify(body)});
-    toast(s.name+" saved"+(up&&(body.memory!==s.memory||body.port!==s.port)?" · restart to apply":""),"ok");
-    closeModal();load();
-  });
-  const del=btn("delete",async()=>{
+    msg(s.name+" saved"+(up&&(body.memory!==s.memory||body.port!==s.port)?", restart to apply":""));
+    edit(r);load();
+  }),btn("delete",async()=>{
     if(prompt("type "+s.name+" to delete it. a backup is kept")!==s.name)return;
     await api(s.name,{method:"DELETE"});
-    toast("deleting "+s.name,"ok");closeModal();
-    setTimeout(load,4000);
-  },"danger");
-  const h=el("div","mhead"),t=el("div","t",s.name);
-  t.append(el("small",null,s.type+" "+s.version+(s.loader?" · loader "+s.loader:"")));
-  h.append(t);
-  const row=el("div","row");row.append(del,el("span","sp"),save);
-  openModal(h,f,row);
+    msg("deleting "+s.name);edit(r);setTimeout(load,4000);
+  },"del"),el("span","dim",s.type+" "+s.version+(s.loader?" · loader "+s.loader:"")));
+  f.append(field("memory",mem),field(up?"version (stop first)":"version",ver),field("port",port),field("backup",backup),field("restart",restart),auto,pub,bar);
+  f.onsubmit=(e)=>e.preventDefault();
+  r.form=f;r.append(f);draw(r,s);
 }
-buildNew();
+const nf=$("nform");
+memOptions(nf.memory,"4G");
+fillVersions(nf.version,"fabric");
+nf.type.onchange=()=>fillVersions(nf.version,nf.type.value);
+nf.onsubmit=async(e)=>{
+  e.preventDefault();
+  const b=nf.querySelector("button");b.disabled=true;$("nstate").textContent="downloading…";
+  try{
+    const body={name:nf.name.value.trim(),type:nf.type.value,version:nf.version.value,memory:nf.memory.value,port:nf.port.value.trim()?Number(nf.port.value):null,backup:nf.backup.value||null,restart:nf.restart.value||null,autostart:nf.autostart.checked,public:nf.public.checked,start:nf.start.checked};
+    const r=await (await api("servers",{method:"POST",body:JSON.stringify(body)})).json();
+    msg(r.name+" created on port "+r.port);
+    nf.name.value="";nf.port.value="";$("new").open=false;load();
+  }catch(e){msg(e.message,true);}
+  b.disabled=false;$("nstate").textContent="";
+};
 load();setInterval(load,3000);

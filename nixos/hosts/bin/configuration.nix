@@ -15,6 +15,7 @@
     ./components/website/blog.nix
     ./components/website/music.nix
     ./components/website/filehost.nix
+    ./components/website/notes.nix
     ../../modules/system/core.nix
     ../../modules/system/editor.nix
     ../../modules/misc/public.nix
@@ -64,6 +65,7 @@
   ];
 
   services.nscd.enable = false;
+  services.journald.extraConfig = "SystemMaxUse=500M";
   system.nssModules = lib.mkForce [];
 
   programs.nix-ld.enable = true;
