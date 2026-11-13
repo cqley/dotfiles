@@ -150,15 +150,6 @@ tr:last-child td {
   white-space: nowrap;
 }
 
-.ws,
-.ws a {
-  color: var(--dim);
-}
-
-.ws a:hover {
-  color: var(--acc);
-}
-
 .stat {
   width: auto;
   font: .85rem/1.4 "Courier Prime", monospace;
@@ -252,7 +243,8 @@ pre {
   color: var(--dim);
 }
 
-.ln a:target {
+.ln a:target,
+.ln a.on {
   color: var(--acc);
 }
 
@@ -504,4 +496,25 @@ table.diff .gap td {
   .repos td:first-child {
     padding-left: 0;
   }
+}
+
+#find {
+  display: block;
+  width: 100%;
+  margin: 0 0 .6rem;
+  padding: .3rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  outline: none;
+}
+
+#find:focus {
+  border-color: var(--acc);
+}
+
+#find[hidden] {
+  display: none;
 }

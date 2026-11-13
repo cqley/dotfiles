@@ -235,20 +235,20 @@ uh() { printf '%s\n' "$1" | awk "$E"'{ print e(u($0)) }'; }
 g() { git -C "$d" "$@"; }
 md() { awk "$E$M" base="$o/$r" ref="$(uh "$ref")" dir="$1"; }
 
-csp="Content-Security-Policy: default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self' https:; base-uri 'none'; form-action 'none'"
+csp="Content-Security-Policy: default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' https:; base-uri 'none'; form-action 'none'"
 
 top() {
 	[ -n "$status" ] && printf 'Status: %s\n' "$status"
 	printf 'Content-Type: text/html; charset=utf-8\n%s\n' "$csp"
 	[ -n "$cache" ] && printf '%s\n' "$cache"
 	printf '\n'
-	printf '<!doctype html>\n<html lang=en>\n<meta charset=utf-8>\n<meta name=viewport content="width=device-width,initial-scale=1">\n<title>%s</title>\n<link rel=stylesheet href=/git.css>\n<script src=/assets/theme.js></script>\n<header><a href=/ class=site>git</a>' "$(h "$1")"
+	printf '<!doctype html>\n<html lang=en>\n<meta charset=utf-8>\n<meta name=viewport content="width=device-width,initial-scale=1">\n<title>%s</title>\n<link rel=stylesheet href=/git.css>\n<script src=/assets/theme.js></script>\n<script src=/git.js defer></script>\n<header><a href=/ class=site>git</a>' "$(h "$1")"
 	[ -n "$o" ] && printf ' / <a href="/%s/">%s</a>' "$o" "$o"
 	[ -n "$r" ] && printf ' / <a href="/%s/%s/">%s</a>' "$o" "$r" "$r"
 	printf '</header>\n'
 	[ -n "$r" ] || return 0
 	printf '<nav>'
-	for t in summary tree log refs; do
+	for t in summary tree commits refs; do
 		l=/$o/$r/
 		[ $t = summary ] || l=$l$t/
 		[ $t = "$tab" ] && c=' class=on' || c=
@@ -260,8 +260,8 @@ top() {
 
 nf() {
 	status='404 Not Found' tab='' r='' o='' cache=''
-	top 'not found'
-	printf '<p class=dim>not found</p>\n'
+	top 'no.'
+	printf '<p class=dim>no.</p>\n'
 	exit 0
 }
 
@@ -359,7 +359,7 @@ resolve() {
 
 commits() {
 	g log -z -n "$1" --format='%H%x09%h%x09%as%x09%an%x09%s' "$2" -- ${4:+"$4"} | tr '\n\0' ' \n' | awk -F '\t' "$E"'
-	NR > lim { print "</table>\n<p><a href=\"/" base "/log/" $1 "/" pp "\">older</a></p>"; done = 1; exit }
+	NR > lim { print "</table>\n<p><a href=\"/" base "/commits/" $1 "/" pp "\">older</a></p>"; done = 1; exit }
 	NR == 1 { print "<table class=log>" }
 	{ s = $5; for (i = 6; i <= NF; i++) s = s " " $i
 	  print "<tr><td><a href=\"/" base "/commit/" $1 "/\" class=sha>" $2 "</a></td><td>" e(s) "</td><td class=dim>" e($4) "</td><td class=r>" $3 "</td></tr>" }
@@ -425,8 +425,6 @@ summary() {
 		printf '<p class=dim>empty</p>\n'
 		return
 	}
-	printf '<h2>commits</h2>\n'
-	commits 11 "$sha" 10
 	path=
 	printf '<h2>tree</h2>\n'
 	listing
@@ -464,6 +462,7 @@ tree() {
 		case $PATH_INFO in */) ;; *) go "/$o/$r/tree/$(uh "$ref")/$(uh "${path:+$path/}")" ;; esac
 		top "$o/$r${path:+/$path}"
 		crumbs ''
+		printf '<input id=find placeholder=find autocomplete=off spellcheck=false hidden data-files="/%s/%s/files/%s/" data-base="/%s/%s/tree/%s/">\n' "$o" "$r" "$(uh "$ref")" "$o" "$r" "$(uh "$ref")"
 		listing
 	elif [ "$t" = blob ]; then
 		blob
@@ -491,7 +490,7 @@ blob() {
 	top "${path##*/} @ $ref"
 	s=$(g cat-file -s "$sha:$path")
 	raw="/$o/$r/raw/$(uh "$ref")/$(uh "$path")"
-	hist="/$o/$r/log/$(uh "$ref")/$(uh "$path")"
+	hist="/$o/$r/commits/$(uh "$ref")/$(uh "$path")"
 	info=$(printf '%s\n' "$s" | awk "$E"'{ print size($0) }')
 	view=
 	if [ -n "$(mime "$path")" ]; then
@@ -552,10 +551,10 @@ raw() {
 }
 
 log() {
-	tab=log
+	tab=commits
 	if [ -z "$1" ]; then
 		head_ref || nf
-		go "/$o/$r/log/$(uh "$ref")/"
+		go "/$o/$r/commits/$(uh "$ref")/"
 	fi
 	resolve "$1" || nf
 	path=${path%/}
@@ -565,10 +564,18 @@ log() {
 		top "history of ${path##*/}"
 		crumbs ' <span class=dim>· history</span>'
 	else
-		top "log @ $ref"
+		top "commits @ $ref"
 		printf '<p class=path>%s</p>\n' "$(h "$ref")"
 	fi
 	commits 51 "$sha" 50 "$path"
+}
+
+files() {
+	resolve "$1" || nf
+	[ -z "$path" ] || nf
+	fresh "$sha"
+	printf 'Content-Type: text/plain; charset=utf-8\nContent-Security-Policy: sandbox\n%s\n\n' "$cache"
+	g ls-tree -r -z "$sha" | tr '\n\0' '?\n' | awk '/^[0-9]+ blob / { print substr($0, index($0, "\t") + 1) }'
 }
 
 archive() {
@@ -590,9 +597,7 @@ commit() {
 	[ "$1" = "$sha" ] || go "/$o/$r/commit/$sha/"
 	pinned=1
 	fresh "$sha"
-	ws=
-	[ "$QUERY_STRING" = w ] && ws=-w
-	tab=log
+	tab=commits
 	top "$(g log -1 --format=%h "$sha") @ $o/$r"
 	g log -1 --format='%an%x09%ae%x09%ad%x09%P' --date=iso "$sha" | awk -F '\t' "$E"'
 	{ print "<dl>\n<dt>commit</dt><dd><code>" sha "</code> <a href=\"/" base "/tree/" sha "/\">browse</a></dd>\n<dt>author</dt><dd>" e($1) " &lt;" e($2) "&gt;</dd>\n<dt>date</dt><dd>" e($3) "</dd>"
@@ -602,17 +607,12 @@ commit() {
 	g log -1 --format=%B "$sha" | awk "$E"'{ a[NR] = $0 } END { n = NR; while (n > 1 && a[n] == "") n--; for (i = 1; i <= n; i++) printf "%s%s", e(a[i]), (i < n ? "\n" : "") }'
 	printf '</pre>\n'
 	p=$(g rev-parse -q --verify "$sha^1") || p=$(g hash-object -t tree /dev/null)
-	if [ -n "$ws" ]; then
-		printf '<p class=ws>whitespace hidden · <a href="?">show</a></p>\n'
-	else
-		printf '<p class=ws><a href="?w">hide whitespace</a></p>\n'
-	fi
-	g diff --no-color $ws --numstat -z "$p" "$sha" | tr '\n\0' '?\n' | awk -F '\t' "$E"'
+	g diff --no-color --numstat -z "$p" "$sha" | tr '\n\0' '?\n' | awk -F '\t' "$E"'
 	{ if ($3 == "") { getline x; getline y; $3 = x " → " y }
 	  if (!n++) print "<table class=stat>"
 	  print "<tr><td class=r>" ($1 == "-" ? "<span class=dim>bin</span>" : $1 == "0" ? "" : "<span class=add>+" $1 "</span>") "</td><td class=r>" ($2 == "-" || $2 == "0" ? "" : "<span class=del>-" $2 "</span>") "</td><td><a href=\"#f" n "\">" e($3) "</a></td></tr>" }
 	END { if (n) print "</table>" }'
-	g diff --no-color $ws "$p" "$sha" | head -n 5000 | awk "$E"'
+	g diff --no-color "$p" "$sha" | head -n 5000 | awk "$E"'
 	function show() {
 		if (shown) return
 		shown = 1
@@ -668,7 +668,7 @@ refs() {
 		g for-each-ref --sort=-creatordate --format='%(refname:short)%09%(objectname:short)%09%(creatordate:short)%09%(contents:subject)' "refs/$k" | awk -F '\t' "$E"'
 		NR == 1 { print "<h2>" t "</h2>\n<table class=log>" }
 		{ s = $4; for (i = 5; i <= NF; i++) s = s " " $i
-		  print "<tr><td><a href=\"/" base "/tree/" e(u($1)) "/\">" e($1) "</a></td><td><a href=\"/" base "/log/" e(u($1)) "/\">" e(s) "</a></td><td class=r>" $3 "</td><td class=r><a href=\"/" base "/archive/" e(u($1)) ".tar.gz\" class=dim>tar.gz</a></td></tr>" }
+		  print "<tr><td><a href=\"/" base "/tree/" e(u($1)) "/\">" e($1) "</a></td><td><a href=\"/" base "/commits/" e(u($1)) "/\">" e(s) "</a></td><td class=r>" $3 "</td><td class=r><a href=\"/" base "/archive/" e(u($1)) ".tar.gz\" class=dim>tar.gz</a></td></tr>" }
 		END { if (NR) print "</table>" }' t="$t" base="$o/$r"
 	done
 }
@@ -714,9 +714,11 @@ case $act in
 '') summary ;;
 tree) tree "$arg" ;;
 raw) raw "$arg" ;;
-log) log "${arg%/}" ;;
+commits) log "${arg%/}" ;;
+log) go "/$o/$r/commits/$(uh "$arg" | sed 1q)" ;;
 commit) commit "${arg%/}" ;;
 refs) refs "${arg%/}" ;;
+files) files "${arg%/}" ;;
 archive) archive "$arg" ;;
 *) nf ;;
 esac

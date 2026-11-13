@@ -54,6 +54,7 @@ in
     enableACME = true;
 
     locations."= /git.css".alias = "${./git/git.css}";
+    locations."= /git.js".alias = "${./git/git.js}";
     locations."/assets/".alias = "/etc/assets/";
 
     locations."/".extraConfig = ''
