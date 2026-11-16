@@ -117,7 +117,8 @@ let
       level=''${level:-world}
       mkdir -p "$level/datapacks"
       chmod g+rwx "$level" "$level/datapacks"
-      if compgen -G "mods/squaremap*.jar" > /dev/null; then
+      set -- mods/squaremap*.jar
+      if [ -e "$1" ]; then
         mkdir -p squaremap
         if [ -e squaremap/config.yml ]; then
           yq -i '.settings."internal-webserver".enabled = false | .settings."internal-webserver".bind = "127.0.0.1"' squaremap/config.yml
