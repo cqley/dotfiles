@@ -24,8 +24,8 @@ function back(s,  n) {
 	while (match(s, /\001[0-9]+\002/)) { n = substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, 1, RSTART - 1) ((n in T && !(n in NOW)) ? "<a href=\"" e(T[n]) "\">" P[n] "</a>" : P[n]) substr(s, RSTART + RLENGTH) }
 	return s
 }
-function page(u) { return index(u, "/" base "/raw/") == 1 ? "/" base "/tree/" substr(u, length(base) + 7) : "" }
-function pic(s, u) { P[++np] = s; if (page(u) != "") T[np] = page(u); return "\001" np "\002" }
+function page(x) { return index(x, "/" base "/raw/") == 1 ? "/" base "/tree/" substr(x, length(base) + 7) : "" }
+function pic(s, x) { P[++np] = s; if (page(x) != "") T[np] = page(x); return "\001" np "\002" }
 function bare(s) { gsub(/\001[0-9]+\002/, "", s); return s }
 function url(s, img,  t, n, k, m, sg, st, tail) {
 	gsub(/^[ \t]+|[ \t]+$/, "", s)
