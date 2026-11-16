@@ -21,6 +21,15 @@ let
 
   ssh = script "ssh";
   web = script "web";
+
+  fcgi = ''
+    client_max_body_size 100m;
+    fastcgi_read_timeout 300s;
+    include ${config.services.nginx.package}/conf/fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME ${web};
+    fastcgi_param PATH_INFO $uri;
+    fastcgi_pass unix:${config.services.fcgiwrap.instances.git.socket.address};
+  '';
 in
 {
   users.groups.git = { };
@@ -50,6 +59,58 @@ in
     socket.group = config.services.nginx.group;
   };
 
+  systemd.services.fcgiwrap-git.serviceConfig = {
+    PrivateNetwork = true;
+    IPAddressDeny = "any";
+    RestrictAddressFamilies = "AF_UNIX";
+    ProtectSystem = "strict";
+    ProtectHome = true;
+    PrivateTmp = true;
+    PrivateDevices = true;
+    ProtectProc = "invisible";
+    ProcSubset = "pid";
+    ProtectKernelTunables = true;
+    ProtectKernelModules = true;
+    ProtectKernelLogs = true;
+    ProtectControlGroups = true;
+    ProtectClock = true;
+    ProtectHostname = true;
+    NoNewPrivileges = true;
+    CapabilityBoundingSet = "";
+    RestrictNamespaces = true;
+    RestrictRealtime = true;
+    RestrictSUIDSGID = true;
+    LockPersonality = true;
+    MemoryDenyWriteExecute = true;
+    SystemCallArchitectures = "native";
+    SystemCallFilter = [ "@system-service" "~@privileged" ];
+    NoExecPaths = "/";
+    ExecPaths = "/nix/store";
+    MemoryMax = "1G";
+  };
+
+  systemd.services.gittrash = {
+    startAt = "daily";
+    serviceConfig = {
+      Type = "oneshot";
+      User = "git";
+      Group = "git";
+      ProtectSystem = "strict";
+      ReadWritePaths = root;
+      PrivateNetwork = true;
+      NoNewPrivileges = true;
+    };
+    path = [ pkgs.findutils ];
+    script = ''
+      [ -d ${root}/.trash ] || exit 0
+      find ${root}/.trash -mindepth 2 -maxdepth 2 -name '*.git' -mtime +6 -exec rm -rf {} +
+    '';
+  };
+
+  services.nginx.appendHttpConfig = ''
+    limit_req_zone $binary_remote_addr zone=githeavy:1m rate=1r/s;
+  '';
+
   services.nginx.virtualHosts.${host} = {
     forceSSL = true;
     enableACME = true;
@@ -58,13 +119,11 @@ in
     locations."= /git.js".alias = "${./git/git.js}";
     locations."/assets/".alias = "/etc/assets/";
 
-    locations."/".extraConfig = ''
-      client_max_body_size 100m;
-      fastcgi_read_timeout 300s;
-      include ${config.services.nginx.package}/conf/fastcgi_params;
-      fastcgi_param SCRIPT_FILENAME ${web};
-      fastcgi_param PATH_INFO $uri;
-      fastcgi_pass unix:${config.services.fcgiwrap.instances.git.socket.address};
+    locations."/".extraConfig = fcgi;
+    locations."~ ^/[^/]+/[^/]+/(archive/|info/refs$|git-upload-pack$)".extraConfig = ''
+      limit_req zone=githeavy burst=20 nodelay;
+      limit_req_status 429;
+      ${fcgi}
     '';
   };
 }

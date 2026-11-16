@@ -17,6 +17,7 @@ die() {
 
 user=$1
 valid "$user" || die 'bad user'
+trash=$GITROOT/.trash/$user
 
 repo() {
 	a=${1#\'}
@@ -60,7 +61,9 @@ git@$GITSSH
   public <repo>        show it on https://$GITHOST
   private <repo>       hide it again
   desc <repo> <text>   set the description
-  rm <repo>            delete it
+  rename <repo> <new>  rename it
+  rm <repo>            delete it, gone for good after 7 days
+  restore <repo>       bring it back
 
 pushing to a missing repo makes it, private.
 eof
@@ -98,6 +101,11 @@ ls)
 		[ -f "$rd/description" ] && x=$(sed 1q "$rd/description")
 		printf '%-24s %-8s %s\n' "${n%.git}" "$v" "$x"
 	done
+	for rd in "$trash"/*.git; do
+		[ -f "$rd/HEAD" ] || continue
+		n=${rd##*/}
+		printf '%-24s %s\n' "${n%.git}" trash
+	done
 	;;
 new)
 	mine "$@"
@@ -124,10 +132,27 @@ desc)
 	exists
 	printf '%s\n' "$*" | cut -c1-200 >"$d/description"
 	;;
+rename)
+	[ $# -eq 2 ] || die 'usage: rename <repo> <new>'
+	mine "$1"
+	exists
+	f=$d
+	repo "$2" && [ "$o" = "$user" ] || die 'bad name'
+	[ -e "$d" ] && die 'exists'
+	mv "$f" "$d" || die 'could not rename'
+	printf 'git@%s:%s/%s\n' "$GITSSH" "$o" "$r"
+	;;
 rm)
 	mine "$@"
 	exists
-	rm -rf "$d"
+	(umask 077 && mkdir -p "$trash") && rm -rf "$trash/$r.git" && mv "$d" "$trash/" && touch "$trash/$r.git" || die 'could not delete'
+	printf 'gone for good in 7 days, until then: restore %s\n' "$r"
+	;;
+restore)
+	mine "$@"
+	[ -f "$trash/$r.git/HEAD" ] || die 'not in the trash'
+	[ -e "$d" ] && die 'exists'
+	mv "$trash/$r.git" "$d" || die 'could not restore'
 	;;
 *)
 	usage
