@@ -84,8 +84,14 @@ git-upload-pack | git-upload-archive)
 git-receive-pack)
 	[ $# -eq 1 ] && repo "$1" && [ "$o" = "$user" ] || die 'not yours'
 	create
+	old=$(git -C "$d" for-each-ref --format='%(objectname)' refs/heads refs/tags)
 	git receive-pack "$d"
 	s=$?
+	for x in $old; do
+		[ -n "$(git -C "$d" for-each-ref --contains "$x" --count=1 refs/heads refs/tags)" ] && continue
+		git -C "$d" repack -a -d -q && git -C "$d" prune --expire=now
+		break
+	done
 	if ! git -C "$d" rev-parse -q --verify HEAD >/dev/null; then
 		b=$(git -C "$d" for-each-ref --count=1 --format='%(refname)' refs/heads)
 		[ -n "$b" ] && git -C "$d" symbolic-ref HEAD "$b"

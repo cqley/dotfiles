@@ -234,16 +234,18 @@ valid() {
 h() { printf '%s\n' "$1" | awk "$E"'{ print e($0) }'; }
 uh() { printf '%s\n' "$1" | awk "$E"'{ print e(u($0)) }'; }
 g() { git -C "$d" "$@"; }
-md() { awk "$E$M" base="$o/$r" ref="$(uh "$ref")" dir="$1"; }
+md() { DIR=$1 awk "$E$M"'BEGIN { dir = ENVIRON["DIR"] }' base="$o/$r" ref="$(uh "$ref")"; }
 
 csp="Content-Security-Policy: default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' https:; base-uri 'none'; form-action 'none'"
 
 top() {
+	title=$1
+	[ -n "$r" ] && [ "$1" != "$o/$r" ] && title="$1 · $o/$r"
 	[ -n "$status" ] && printf 'Status: %s\n' "$status"
 	printf 'Content-Type: text/html; charset=utf-8\n%s\n' "$csp"
 	[ -n "$cache" ] && printf '%s\n' "$cache"
 	printf '\n'
-	printf '<!doctype html>\n<html lang=en>\n<meta charset=utf-8>\n<meta name=viewport content="width=device-width,initial-scale=1">\n<title>%s</title>\n<link rel=stylesheet href=/git.css>\n<script src=/assets/theme.js></script>\n<script src=/git.js defer></script>\n<header><a href=/ class=site>git</a>' "$(h "$1")"
+	printf '<!doctype html>\n<html lang=en>\n<meta charset=utf-8>\n<meta name=viewport content="width=device-width,initial-scale=1">\n<title>%s</title>\n<link rel=stylesheet href=/git.css>\n<script src=/assets/theme.js></script>\n<script src=/git.js defer></script>\n<header><a href=/ class=site>git</a>' "$(h "$title")"
 	[ -n "$o" ] && printf ' / <a href="/%s/">%s</a>' "$o" "$o"
 	[ -n "$r" ] && printf ' / <a href="/%s/%s/">%s</a>' "$o" "$r" "$r"
 	printf '</header>\n'
@@ -367,7 +369,7 @@ commits() {
 	NR == 1 { print "<table class=log>" }
 	{ s = $5; for (i = 6; i <= NF; i++) s = s " " $i
 	  print "<tr><td><a href=\"/" base "/commit/" $1 "/\" class=sha>" $2 "</a></td><td>" e(s) "</td><td class=dim>" e($4) "</td><td class=r>" $3 "</td></tr>" }
-	END { if (NR && !done) print "</table>"; if (!NR) print "<p class=dim>no commits</p>" }' lim="$3" base="$o/$r" pp="$(uh "$4")"
+	END { if (NR && !done) print "</table>"; if (!NR) print "<p class=dim>none</p>" }' lim="$3" base="$o/$r" pp="$(uh "$4")"
 }
 
 listing() {
@@ -375,7 +377,8 @@ listing() {
 		g ls-tree -z "$sha:$path" | tr '\n\0' '?\n'
 		printf '\001\n'
 		g log -z --format='%x01%H%x09%as%x09%s' --name-only "$sha" -- ${path:+"$path"} | tr '\n\0' '?\n'
-	} | awk "$E"'
+	} | B="/$o/$r/tree/$ref/${path:+$path/}" P="${path:+$path/}" awk "$E"'
+	BEGIN { base = ENVIRON["B"]; pre = ENVIRON["P"] }
 	!sep && $0 == "\001" { sep = 1; if (!n) exit; next }
 	!sep {
 		t = index($0, "\t"); split(substr($0, 1, t - 1), m, " "); name = substr($0, t + 1); want[name] = 1; n++
@@ -401,7 +404,7 @@ listing() {
 		for (i = 1; i <= nf; i++) row(f[i], "<a href=\"" e(u(base f[i])) "\">" e(f[i]) (x[i] == "120000" ? " @" : "") "</a>")
 		if (!n) print "<tr><td class=dim>empty</td></tr>"
 		print "</table>"
-	}' base="/$o/$r/tree/$ref/${path:+$path/}" pre="${path:+$path/}" repo="$o/$r"
+	}' repo="$o/$r"
 }
 
 pin() { printf ' data-from="/%s/%s/%s/%s/" data-to="/%s/%s/%s/%s/"' "$o" "$r" "$1" "$(uh "$ref")" "$o" "$r" "$1" "$sha"; }
@@ -473,11 +476,12 @@ tree() {
 	fresh "$sha"
 	if [ "$t" = tree ]; then
 		case $PATH_INFO in */) ;; *) go "/$o/$r/tree/$(uh "$ref")/$(uh "${path:+$path/}")" ;; esac
-		top "$o/$r${path:+/$path}"
+		top "${path:-tree}"
 		crumbs ''
 		printf '<input id=find placeholder=find autocomplete=off spellcheck=false hidden data-files="/%s/%s/files/%s/" data-base="/%s/%s/tree/%s/">\n' "$o" "$r" "$(uh "$ref")" "$o" "$r" "$(uh "$ref")"
 		listing
 	elif [ "$t" = blob ]; then
+		case $PATH_INFO in */) go "/$o/$r/tree/$(uh "$ref")/$(uh "$path")" ;; esac
 		blob
 	else
 		nf
@@ -501,7 +505,7 @@ mime() {
 }
 
 blob() {
-	top "${path##*/} @ $ref"
+	top "$path"
 	s=$(g cat-file -s "$sha:$path")
 	raw="/$o/$r/raw/$(uh "$ref")/$(uh "$path")"
 	hist="/$o/$r/commits/$(uh "$ref")/$(uh "$path")"
@@ -575,10 +579,10 @@ log() {
 	case /$path/ in */./* | */../*) nf ;; *//*) [ -z "$path" ] || nf ;; esac
 	fresh "$sha"
 	if [ -n "$path" ]; then
-		top "history of ${path##*/}"
+		top "history of $path"
 		crumbs " <span class=dim>· history · $(count)</span>"
 	else
-		top "commits @ $ref"
+		top commits
 		printf '<p class=path%s>%s <span class=dim>· %s</span></p>\n' "$(pin commits)" "$(h "$ref")" "$(count)"
 	fi
 	commits 51 "$sha" 50 "$path"
@@ -612,7 +616,7 @@ commit() {
 	pinned=1
 	fresh "$sha"
 	tab=commits
-	top "$(g log -1 --format=%h "$sha") @ $o/$r"
+	top "$(g log -1 --format=%h "$sha")"
 	g log -1 --format='%an%x09%ae%x09%ad%x09%P' --date=iso "$sha" | awk -F '\t' "$E"'
 	{ print "<dl>\n<dt>commit</dt><dd><code>" sha "</code> <a href=\"/" base "/tree/" sha "/\">browse</a></dd>\n<dt>author</dt><dd>" e($1) " &lt;" e($2) "&gt;</dd>\n<dt>date</dt><dd>" e($3) "</dd>"
 	  n = split($4, p, " "); for (i = 1; i <= n; i++) print "<dt>parent</dt><dd><a href=\"/" base "/commit/" p[i] "/\" class=sha>" substr(p[i], 1, 7) "</a></dd>"
@@ -676,7 +680,7 @@ commit() {
 refs() {
 	[ -z "$2" ] || nf
 	tab=$1
-	top "$1 @ $o/$r"
+	top "$1"
 	[ $1 = branches ] && k=heads || k=tags
 	g for-each-ref --sort=-creatordate --format='%(refname:lstrip=2)%09%(objectname:short)%09%(creatordate:short)%09%(contents:subject)' "refs/$k" | awk -F '\t' "$E"'
 	NR == 1 { print "<table class=log>" }
