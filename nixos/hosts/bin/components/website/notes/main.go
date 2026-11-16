@@ -58,7 +58,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.Serve(l, http.NewCrossOriginProtection().Handler(m)))
+	c := http.NewCrossOriginProtection()
+	for _, o := range strings.Fields(os.Getenv("NOTES_ORIGINS")) {
+		if err := c.AddTrustedOrigin(o); err != nil {
+			log.Fatal(err)
+		}
+	}
+	log.Fatal(http.Serve(l, c.Handler(m)))
 }
 
 func env(k, v string) string {

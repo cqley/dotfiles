@@ -1,0 +1,95 @@
+{{define "top"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{.Title}}</title>
+{{if .Abs}}<meta property="og:title" content="{{.F.Name}}">
+{{if eq .F.Kind "image"}}<meta property="og:image" content="{{.Abs}}">
+<meta name="twitter:card" content="summary_large_image">
+{{else if eq .F.Kind "video"}}<meta property="og:type" content="video.other">
+<meta property="og:video" content="{{.Abs}}">
+<meta property="og:video:type" content="{{.F.Type}}">
+{{end}}{{end}}<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/static/share.css">
+<script src="/assets/theme.js"></script>
+<script src="/static/share.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+<header id="header">{{if .Site}}<a href="/">files</a>{{else}}<a href="/">{{host}}</a>{{end}}</header>
+{{end}}
+
+{{define "end"}}</div>
+</body>
+</html>
+{{end}}
+
+{{define "home"}}{{template "top" .}}
+<form method="post" action="/upload" enctype="multipart/form-data" id="up">
+<div class="row">
+{{if not .Known}}<input type="password" name="key" placeholder="key" autocomplete="current-password" required>
+{{end}}<input type="url" name="url" placeholder="or a link">
+<button>fetch</button>
+</div>
+<div id="choices">
+<div class="checks">
+<label><input type="checkbox" name="random" checked> randomize filename</label>
+<label><input type="checkbox" name="lock"> require access password</label>
+<input type="password" name="password" placeholder="password" autocomplete="new-password">
+<label><input type="checkbox" name="own"> custom delete key</label>
+<input name="delete" placeholder="delete key" autocomplete="off">
+</div>
+<label class="exp">file expiry: <select name="expiry"><option value="0">never</option><option value="3600">1 hour</option><option value="86400">1 day</option><option value="604800">1 week</option><option value="2592000">1 month</option><option value="31536000">1 year</option></select></label>
+</div>
+<label class="drop">click, drop or paste<input type="file" name="file" multiple></label>
+</form>
+{{if .Known}}<form method="post" action="/forget" class="forget"><button>forget key</button></form>{{end}}
+<div id="done"></div>
+{{template "end"}}{{end}}
+
+{{define "done"}}{{template "top" .}}
+<div id="done">{{range .Done}}<div class="upload"><a href="{{.URL}}">{{.Name}}</a><span class="muted">delete key {{.DeleteKey}}</span></div>{{end}}</div>
+{{template "end"}}{{end}}
+
+{{define "locked"}}{{template "top" .}}
+<div id="info"><span>{{.F.Name}}</span><span class="links"><span>{{.F.Size}}</span></span></div>
+<form id="main" class="lock" method="post">
+<input type="password" name="password" placeholder="password" autocomplete="off" autofocus required>
+<button>unlock</button>
+{{if .Err}}<span class="err">{{.Err}}</span>{{end}}
+</form>
+{{template "end"}}{{end}}
+
+{{define "view"}}{{template "top" .}}
+<div id="info"><span>{{.F.Name}}</span><span class="links">{{if .F.Expires}}<span>file expires in {{.F.Expires}}</span>{{end}}<span>{{.F.Size}}</span><a href="/raw/{{.F.Name}}">raw</a><a href="/raw/{{.F.Name}}?download">get</a>{{if eq .F.Kind "md"}}<a href="{{if .Source}}?{{else}}?source{{end}}">{{if .Source}}rendered{{else}}source{{end}}</a>{{end}}</span></div>
+{{if .Hidden}}<p class="warn">hidden characters, shown marked{{if .HTML}} in the <a href="?source">source</a>{{end}}</p>
+{{end}}<div id="main" class="{{.F.Kind}}">
+{{if eq .F.Kind "image"}}<a href="/raw/{{.F.Name}}"><img class="media" src="/raw/{{.F.Name}}" alt="{{.F.Name}}"></a>
+{{else if eq .F.Kind "video"}}<video class="media" src="/raw/{{.F.Name}}" controls preload="metadata"></video>
+{{else if eq .F.Kind "audio"}}<audio class="media" src="/raw/{{.F.Name}}" controls preload="metadata"></audio>
+{{else if eq .F.Kind "pdf"}}<iframe class="media pdf" src="/raw/{{.F.Name}}" title="{{.F.Name}}"></iframe>
+{{else if .HTML}}<article class="prose">{{.HTML}}</article>
+{{else if .Lines}}<div class="blob"><pre class="ln">{{range .Lines}}<a id="l{{.}}" href="#l{{.}}">{{.}}</a>
+{{end}}</pre><pre>{{.Code}}</pre></div>
+{{else if .Entries}}<table class="files">{{range .Entries}}<tr><td>{{.Name}}</td><td class="d">{{.Size}}</td></tr>{{end}}</table>
+{{else if .Err}}<p class="muted">{{.Err}}</p>
+{{else}}<p class="get"><a href="/raw/{{.F.Name}}?download">download</a></p>
+{{end}}</div>
+<details class="gone"><summary>delete</summary>
+<form method="post" action="/d/{{.F.Name}}">
+<input type="password" name="key" placeholder="delete key" autocomplete="off" required>
+<button class="del" data-confirm="delete {{.F.Name}}?">delete</button>
+</form>
+</details>
+{{template "end"}}{{end}}
+
+{{define "list"}}{{template "top" .}}
+{{if .Files}}<table class="files">{{range .Files}}<tr>
+<td><a href="{{$.Site}}{{.Name}}">{{.Name}}</a>{{if .Locked}} <span class="muted">locked</span>{{end}}</td>
+<td class="d">{{.Size}}</td>
+<td class="d">{{.Kind}}</td>
+<td class="d">{{.Expires}}</td>
+<td class="d"><form method="post" action="/d/{{.Name}}"><button class="del" data-confirm="delete {{.Name}}?">delete</button></form></td>
+</tr>{{end}}</table>{{else}}<p class="muted">nothing yet</p>{{end}}
+{{template "end"}}{{end}}

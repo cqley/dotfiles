@@ -1,0 +1,486 @@
+.wrap {
+  max-width: 44rem;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+#header nav a {
+  color: var(--dim);
+  font-size: .95rem;
+  transition: color .15s;
+}
+
+#header nav a:hover {
+  color: var(--acc);
+}
+
+a {
+  transition: color .15s;
+}
+
+input,
+select,
+button {
+  font-size: .95rem;
+  min-height: 2.1rem;
+}
+
+input,
+select {
+  padding: 0 .6rem;
+}
+
+select {
+  padding-right: 1.9rem;
+}
+
+button {
+  padding: 0 .9rem;
+  color: var(--fg);
+  transition: border-color .15s, color .15s;
+}
+
+button:hover {
+  color: var(--acc);
+}
+
+form {
+  margin: 0;
+}
+
+#up {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+
+.drop {
+  order: -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 8.6rem;
+  padding: 1rem;
+  border: 1px dashed var(--line);
+  color: var(--dim);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .2s, color .2s;
+}
+
+.drop:hover,
+.drop:focus-within,
+.over .drop {
+  border-color: var(--acc);
+  color: var(--acc);
+}
+
+.drop input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+#choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: .5rem 1rem;
+  color: var(--dim);
+  font-size: .9rem;
+}
+
+.checks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .6rem;
+}
+
+.checks input:not([type=checkbox]) {
+  display: none;
+  width: 16rem;
+  max-width: 100%;
+  margin: -.2rem 0 0 1.45rem;
+}
+
+.checks label:has(:checked) + input {
+  display: block;
+}
+
+.exp {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.row input {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+#done {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  margin-top: 1.5rem;
+}
+
+.upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .3rem 1rem;
+  padding: .5rem .7rem;
+  border: 1px solid var(--line);
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+
+.upload button {
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  background: none;
+  color: var(--dim);
+  font-size: inherit;
+}
+
+.upload button:hover {
+  color: var(--acc);
+}
+
+.upload .muted {
+  margin-left: auto;
+}
+
+.err {
+  color: var(--err);
+}
+
+#info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .2rem 1rem;
+  padding: .3rem .4rem;
+  border: 1px solid var(--line);
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+
+.links > * + *::before {
+  content: "|";
+  margin: 0 .4rem;
+  color: var(--fg);
+}
+
+#main {
+  margin-top: 1rem;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+#main:has(> .blob) {
+  padding: 0;
+}
+
+#main > p {
+  margin: 0;
+}
+
+#main.lock {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+
+#main.lock input {
+  flex: 1 1 12rem;
+}
+
+.get {
+  margin: 0;
+  text-align: center;
+}
+
+.gone {
+  margin-top: 1rem;
+  font-size: .9rem;
+}
+
+.gone summary {
+  color: var(--dim);
+  cursor: pointer;
+  list-style: none;
+}
+
+.gone summary::-webkit-details-marker {
+  display: none;
+}
+
+.gone summary:hover {
+  color: var(--acc);
+}
+
+.gone form {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: .6rem;
+}
+
+.gone input {
+  flex: 1 1 12rem;
+}
+
+.del {
+  color: var(--fg);
+  font-size: .95rem;
+}
+
+button.del:hover {
+  color: var(--err);
+  border-color: var(--err);
+}
+
+.files form {
+  display: inline;
+}
+
+.files td {
+  overflow-wrap: anywhere;
+}
+
+.files td.d {
+  width: 1%;
+  padding: .6rem 0 .6rem 1.2rem;
+}
+
+.files .del {
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  background: none;
+  color: var(--dim);
+  font-size: .85em;
+}
+
+.media {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+video.media {
+  max-height: 70vh;
+}
+
+audio.media,
+.pdf {
+  width: 100%;
+}
+
+.pdf {
+  height: 75vh;
+  border: 0;
+}
+
+pre,
+code {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: .85rem;
+}
+
+pre {
+  margin: 0;
+  padding: .6rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  tab-size: 4;
+}
+
+.blob {
+  display: flex;
+  background: var(--code);
+}
+
+.blob pre {
+  flex: 1;
+  min-width: 0;
+}
+
+.blob .ln {
+  flex: none;
+  padding-right: .5rem;
+  border-right: 1px solid var(--line);
+  text-align: right;
+  user-select: none;
+  overflow: visible;
+}
+
+.ln a {
+  color: var(--dim);
+}
+
+.ln a:target {
+  color: var(--acc);
+}
+
+.prose {
+  overflow-wrap: break-word;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  font-weight: normal;
+  color: var(--fg);
+  margin: 1.2rem 0 .6rem;
+}
+
+.prose h1 {
+  font-size: 1.6rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: .3rem;
+}
+
+.prose h2 {
+  font-size: 1.3rem;
+}
+
+.prose h3 {
+  font-size: 1.1rem;
+  border: 0;
+}
+
+.prose a {
+  text-decoration: underline;
+  text-decoration-color: var(--acc);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4rem;
+}
+
+.prose .i1 {
+  margin-left: 1.4rem;
+}
+
+.prose .i2 {
+  margin-left: 2.8rem;
+}
+
+.prose .i3 {
+  margin-left: 4.2rem;
+}
+
+.prose li:has(> input) {
+  list-style: none;
+}
+
+.prose li > input {
+  margin: 0 .5rem 0 -1.4rem;
+}
+
+.prose code,
+.prose pre {
+  background: var(--code);
+}
+
+.prose code {
+  padding: .05rem .3rem;
+}
+
+.prose pre code {
+  padding: 0;
+}
+
+.prose blockquote {
+  margin: 0 0 1.2rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--line);
+  color: var(--dim);
+}
+
+.prose img {
+  max-width: 100%;
+}
+
+.prose td {
+  padding: .3rem .8rem .3rem 0;
+}
+
+::selection {
+  background: var(--acc);
+  color: var(--fg);
+}
+
+@media (max-width: 600px) {
+  .wrap {
+    margin: 2rem auto;
+  }
+}
+
+.forget {
+  margin-top: .8rem;
+  align-items: flex-end;
+}
+
+.forget button {
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  background: none;
+  color: var(--dim);
+  font-size: .9rem;
+}
+
+.forget button:hover {
+  color: var(--acc);
+}
+
+.warn {
+  margin: 1rem 0 0;
+  color: var(--err);
+  font-size: .9rem;
+}
+
+.warn a {
+  color: var(--err);
+  text-decoration: underline;
+}
+
+.hid {
+  color: var(--err);
+  background: color-mix(in srgb, var(--err) 15%, transparent);
+}

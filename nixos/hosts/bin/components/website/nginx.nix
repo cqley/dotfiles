@@ -26,7 +26,7 @@
       clientMaxBodySize = "10m";
       serverTokens = false;
 
-      virtualHosts = lib.genAttrs [ "dash" "immich" "silly" "notes" "blog" "filehost" "downloader" ] (_: {
+      virtualHosts = lib.genAttrs [ "dash" "immich" "silly" "notes" "blog" "share" "downloader" ] (_: {
         serverName = "10.0.0.1";
         serverAliases = [ "bin" ];
       }) // {

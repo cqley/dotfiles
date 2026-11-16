@@ -18,7 +18,10 @@ in
     wantedBy = [ "multi-user.target" ];
     requires = [ "notes.socket" ];
     after = [ "notes.socket" ];
-    environment.NOTES_DIR = "/var/lib/notes";
+    environment = {
+      NOTES_DIR = "/var/lib/notes";
+      NOTES_ORIGINS = "http://10.0.0.1:8091 http://bin:8091";
+    };
     serviceConfig = {
       ExecStart = "${notes}/bin/notes";
       DynamicUser = true;

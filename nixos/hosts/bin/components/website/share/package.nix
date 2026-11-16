@@ -1,13 +1,13 @@
 { stdenv, go }:
 
 stdenv.mkDerivation {
-  pname = "filehost";
+  pname = "share";
   version = "0.1.0";
   src = ./.;
   nativeBuildInputs = [ go ];
   buildPhase = ''
     export HOME=$TMPDIR GOCACHE=$TMPDIR/cache GOPATH=$TMPDIR/go GOTOOLCHAIN=local CGO_ENABLED=0
-    go build -o filehost main.go
+    go build -o share main.go
   '';
-  installPhase = "install -Dm755 filehost $out/bin/filehost";
+  installPhase = "install -Dm755 share $out/bin/share";
 }

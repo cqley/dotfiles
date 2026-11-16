@@ -14,7 +14,7 @@
     ./components/website/matrix.nix
     ./components/website/blog.nix
     ./components/website/music.nix
-    ./components/website/filehost.nix
+    ./components/website/share.nix
     ./components/website/notes.nix
     ./components/website/git.nix
     ../../modules/system/core.nix
