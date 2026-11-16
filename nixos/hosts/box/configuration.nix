@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ./components/wireguard.nix
     ../../modules/system/core.nix
+    ../../modules/system/names.nix
     ../../modules/system/editor.nix
     ../../modules/misc/public.nix
     ../../modules/misc/ariang.nix
