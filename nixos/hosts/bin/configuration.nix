@@ -68,11 +68,13 @@
 
   services.nscd.enable = false;
   services.journald.extraConfig = "SystemMaxUse=500M";
+  services.syncthing.guiAddress = "/home/cat/.config/syncthing/gui.sock";
   system.nssModules = lib.mkForce [];
 
   programs.nix-ld.enable = true;
 
   services.openssh = {
+    openFirewall = false;
     enable = true;
     settings = {
       PasswordAuthentication = false;

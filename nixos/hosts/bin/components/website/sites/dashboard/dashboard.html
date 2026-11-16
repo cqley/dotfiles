@@ -44,7 +44,19 @@ a.chip.bad:hover,a.chip.bad:focus-visible{color:var(--err);}
 .dash-wrap .chips{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));}
 .chip .name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .storage-row .path{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-@media (max-width:600px){.dash-wrap{margin:2rem auto;}.dash-wrap .chips{grid-template-columns:repeat(2,minmax(0,1fr));}.chip{min-width:0;}.stat .value{font-size:1.05em;}.storage-row{gap:.6rem;}.storage-row .path{display:none;}.storage-row .name{width:auto;flex:1;}.storage-row .bar{width:4.5rem;}.storage-row .size{width:4.8rem;}}
+.row{display:flex;align-items:center;gap:1rem;padding:.45rem 0;border-top:1px solid var(--line);font-size:.9em;}
+.row:first-child{border-top:none;}
+.row .dot{width:.6em;height:.6em;border-radius:50%;background:var(--dim);flex-shrink:0;}
+.row.ok .dot{background:var(--ok);}
+.row .t{width:7rem;flex-shrink:0;color:var(--dim);white-space:nowrap;}
+.row .k{width:2.5rem;flex-shrink:0;}
+.row .n{width:5rem;flex-shrink:0;}
+.row .w{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.row .d{color:var(--dim);flex-shrink:0;}
+.row.bad{color:var(--err);}
+.events summary{cursor:pointer;color:var(--dim);font-size:.9em;padding:.4rem 0;}
+.events summary:hover{color:var(--acc);}
+@media (max-width:600px){.row{gap:.6rem;}.row .t{width:6.2rem;}.row .ip{display:none;}.dash-wrap{margin:2rem auto;}.dash-wrap .chips{grid-template-columns:repeat(2,minmax(0,1fr));}.chip{min-width:0;}.stat .value{font-size:1.05em;}.storage-row{gap:.6rem;}.storage-row .path{display:none;}.storage-row .name{width:auto;flex:1;}.storage-row .bar{width:4.5rem;}.storage-row .size{width:4.8rem;}}
 </style>
 </head>
 <body>
@@ -58,6 +70,16 @@ a.chip.bad:hover,a.chip.bad:focus-visible{color:var(--err);}
   <div class="stat"><div class="label">load</div><div class="value" id="load">-</div></div>
   <div class="stat"><div class="label">mem</div><div class="value" id="mem">-</div><div class="bar"><i id="membar" style="width:0%"></i></div></div>
 </div>
+
+<h2>devices</h2>
+<div id="devices"></div>
+
+<h2>logins</h2>
+<div class="stats">
+  <div class="stat"><div class="label">failed today</div><div class="value" id="failed">-</div></div>
+  <div class="stat"><div class="label">banned now</div><div class="value" id="banned">-</div></div>
+</div>
+<details class="events"><summary id="count">last logins</summary><div id="logins"></div></details>
 
 <h2>services</h2>
 <div class="chips" id="services"></div>
@@ -102,6 +124,41 @@ const links={
   'immich-server':'http://10.0.0.1:2283/',
   mcpanel:'http://10.0.0.1:8090/'
 };
+
+function when(t){
+  const d=new Date(t*1000);
+  const hm=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  return d.toDateString()===new Date().toDateString()?hm:d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+hm;
+}
+
+function row(cls,cells){
+  const r=document.createElement('div');
+  r.className='row '+cls;
+  cells.forEach(([c,text])=>{
+    const s=document.createElement('span');
+    s.className=c;
+    s.textContent=text;
+    r.appendChild(s);
+  });
+  return r;
+}
+
+function renderLogins(l){
+  const dv=document.getElementById('devices');
+  dv.replaceChildren(...l.devices.map(x=>row(
+    x.seen && l.generated-x.seen<180?'ok':'',
+    [['dot',''],['n',x.name],['w',x.ip||''],['d',x.seen?ago(x.seen):'never']]
+  )));
+  document.getElementById('failed').textContent=l.failed.today+' from '+l.failed.ips+' ips';
+  document.getElementById('banned').textContent=l.banned;
+  const lg=document.getElementById('logins');
+  lg.replaceChildren(...l.events.map(x=>{
+    const bad=x.kind==='doas'&&x.what==='failed';
+    const what=x.kind==='ssh'?x.user+' from '+x.what:(bad?'wrong password':x.what);
+    return row(bad?'bad':'',[['t',when(x.t)],['k',x.kind],['w',what],['d ip',x.ip]]);
+  }));
+  document.getElementById('count').textContent='last '+l.events.length;
+}
 
 let lastStatus=null, lastStorage=null;
 let badServices=0, badDisks=0;
@@ -202,6 +259,10 @@ function tickFreshness(){
 }
 
 async function load(){
+  try{
+    renderLogins(await (await fetch('/data/logins.json',{cache:'no-store'})).json());
+  }catch(e){}
+
   try{
     const s=await (await fetch('/data/status.json',{cache:'no-store'})).json();
     renderStatus(s);

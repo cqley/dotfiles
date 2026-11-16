@@ -3,6 +3,7 @@
     "10.0.0.1" = [ "bin" ];
     "10.0.0.2" = [ "box" ];
     "10.0.0.3" = [ "bed" ];
+    "10.0.0.4" = [ "phone" ];
   };
 
   programs.ssh.knownHosts.bin = {

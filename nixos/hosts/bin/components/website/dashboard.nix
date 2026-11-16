@@ -10,13 +10,15 @@
 
   systemd.services.dashstatus = {
     script = builtins.readFile ./sites/dashboard/fast.sh;
-    path = [ pkgs.systemd pkgs.coreutils pkgs.gawk ];
+    path = [ pkgs.systemd pkgs.coreutils pkgs.gawk pkgs.jq pkgs.openssh pkgs.wireguard-tools pkgs.getent ];
     serviceConfig = {
       Type = "oneshot";
       User = "dash";
       Group = "dash";
       StateDirectory = "dash";
       StateDirectoryMode = "0755";
+      AmbientCapabilities = [ "CAP_NET_ADMIN" ];
+      CapabilityBoundingSet = [ "CAP_NET_ADMIN" ];
     };
   };
   systemd.timers.dashstatus = {

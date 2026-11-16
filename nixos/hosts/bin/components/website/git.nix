@@ -16,6 +16,7 @@ let
     PATH=${path}
     GITROOT=${root}
     GITHOST=${host}
+    GITSSH=bin
   '' ] (builtins.readFile ./git/${name}.sh));
 
   ssh = script "ssh";

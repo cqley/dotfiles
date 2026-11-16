@@ -1,6 +1,7 @@
 #!/bin/sh
 : "${GITROOT:=/var/lib/git}"
 : "${GITHOST:=git.1f2t.org}"
+: "${GITSSH:=bin}"
 export LC_ALL=C
 umask 027
 
@@ -49,10 +50,10 @@ create() {
 
 usage() {
 	cat <<eof
-git@$GITHOST
+git@$GITSSH
 
-  git clone git@$GITHOST:$user/<repo>
-  git push git@$GITHOST:<repo> main
+  git clone git@$GITSSH:$user/<repo>
+  git push git@$GITSSH:<repo> main
 
   ls                   your repos
   new <repo>           make an empty private repo
@@ -102,7 +103,7 @@ new)
 	mine "$@"
 	[ -d "$d" ] && die 'exists'
 	create
-	printf 'git@%s:%s/%s\n' "$GITHOST" "$o" "$r"
+	printf 'git@%s:%s/%s\n' "$GITSSH" "$o" "$r"
 	;;
 public)
 	mine "$@"

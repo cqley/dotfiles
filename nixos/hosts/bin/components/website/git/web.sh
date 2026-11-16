@@ -1,6 +1,7 @@
 #!/bin/sh
 : "${GITROOT:=/var/lib/git}"
 : "${GITHOST:=git.1f2t.org}"
+: "${GITSSH:=bin}"
 export LC_ALL=C HOME=/var/empty GIT_CONFIG_NOSYSTEM=1
 export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*'
 
@@ -418,7 +419,7 @@ summary() {
 	x=$(when "$d")
 	[ -n "$x" ] && printf '<dt>last change</dt><dd>%s</dd>\n' "$x"
 	printf '<dt>clone</dt><dd><code>git clone https://%s/%s/%s.git</code></dd>\n' "$GITHOST" "$o" "$r"
-	printf '<dt>ssh</dt><dd><code>git@%s:%s/%s</code></dd>\n' "$GITHOST" "$o" "$r"
+	printf '<dt>ssh</dt><dd><code>git@%s:%s/%s</code></dd>\n' "$GITSSH" "$o" "$r"
 	[ $full = 0 ] && printf '<dt>download</dt><dd><a href="/%s/%s/archive/%s.tar.gz">%s.tar.gz</a></dd>\n' "$o" "$r" "$(uh "$ref")" "$(h "$r-$(slug "$ref")")"
 	printf '</dl>\n'
 	[ $full = 0 ] || {
