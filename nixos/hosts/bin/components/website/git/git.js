@@ -24,6 +24,13 @@ document.addEventListener("click", function (ev) {
 addEventListener("hashchange", function () { mark() })
 mark(1)
 
+document.addEventListener("keydown", function (ev) {
+	var p = document.querySelector("[data-to]"), l = location.pathname
+	if (ev.key != "y" || ev.ctrlKey || ev.metaKey || ev.altKey || !p || ev.target.closest("input, textarea")) return
+	if (l.indexOf(p.dataset.from) != 0) return
+	history.replaceState(null, "", p.dataset.to + l.slice(p.dataset.from.length) + location.search + location.hash)
+})
+
 var find = document.getElementById("find")
 
 if (find) {

@@ -25,7 +25,7 @@ var embedded embed.FS
 
 var (
 	root   string
-	pages  = template.Must(template.New("").Funcs(template.FuncMap{"leaf": leaf, "path": escape}).ParseFS(embedded, "page.html"))
+	pages  = template.Must(template.New("").Funcs(template.FuncMap{"leaf": leaf, "path": escape, "at": at}).ParseFS(embedded, "page.html"))
 	token  = regexp.MustCompile("`([^`]+)`" + `|(!?)\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]*))?\]\]|(!?)\[([^\]]*)\]\(([^)\s]+)\)|\*\*(.+?)\*\*|\*([^*\s][^*]*)\*|(https?://[^\s<]+)`)
 	head   = regexp.MustCompile(`^(#{1,6})\s+(.*)$`)
 	item   = regexp.MustCompile(`^(\s*)([-*+]|\d+[.)])\s+(.*)$`)
@@ -100,8 +100,16 @@ func clean(name string) string {
 	return name
 }
 
+func bare(name string) string {
+	return strings.TrimSuffix(name, ".md")
+}
+
+func at(name string) string {
+	return "/n/" + escape(name) + ".md"
+}
+
 func named(w http.ResponseWriter, r *http.Request) string {
-	n := clean(r.PathValue("name"))
+	n := bare(clean(r.PathValue("name")))
 	if n == "" {
 		http.Error(w, "bad name", http.StatusBadRequest)
 	}
@@ -145,7 +153,7 @@ func esc(s string) string {
 }
 
 func ref(img bool, u, label string) string {
-	if scheme.MatchString(u) && !strings.HasPrefix(u, "http") && !strings.HasPrefix(u, "mailto:") {
+	if l := strings.ToLower(u); scheme.MatchString(u) && !strings.HasPrefix(l, "http:") && !strings.HasPrefix(l, "https:") && !strings.HasPrefix(l, "mailto:") {
 		u = "#"
 	}
 	if img {
@@ -170,14 +178,15 @@ func inline(s string) string {
 		case m[2] >= 0:
 			b.WriteString("<code>" + esc(g(1)) + "</code>")
 		case m[6] >= 0:
-			t, label, to := strings.TrimSpace(g(3)), g(4), "/n/"
+			t, label := strings.TrimSpace(g(3)), g(4)
 			if label == "" {
 				label = leaf(t)
 			}
+			to := at(bare(t))
 			if g(2) != "" {
-				to = "/f/"
+				to = "/f/" + escape(t)
 			}
-			b.WriteString(ref(g(2) != "", to+escape(t), label))
+			b.WriteString(ref(g(2) != "", to, label))
 		case m[14] >= 0:
 			b.WriteString(ref(g(5) != "", g(7), g(6)))
 		case m[16] >= 0:
@@ -243,8 +252,9 @@ func render(text string) string {
 					continue
 				}
 				b.WriteString("<tr>")
+				r = link.ReplaceAllStringFunc(r, func(s string) string { return strings.ReplaceAll(s, "|", "\x00") })
 				for _, c := range strings.Split(r, "|") {
-					b.WriteString("<td>" + inline(strings.TrimSpace(c)) + "</td>")
+					b.WriteString("<td>" + inline(strings.ReplaceAll(strings.TrimSpace(c), "\x00", "|")) + "</td>")
 				}
 				b.WriteString("</tr>")
 			}
@@ -276,7 +286,7 @@ func render(text string) string {
 
 func home(w http.ResponseWriter, r *http.Request) {
 	q := strings.TrimSpace(r.FormValue("q"))
-	p := page{Title: "notes", Q: q, New: clean(q)}
+	p := page{Title: "notes", Q: q, New: bare(clean(q))}
 	for n := range notes() {
 		if strings.Contains(strings.ToLower(n), strings.ToLower(q)) {
 			p.Notes = append(p.Notes, n)
@@ -290,7 +300,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func today(w http.ResponseWriter, r *http.Request) {
-	go303(w, r, "/n/"+time.Now().Format("2006-01-02"))
+	go303(w, r, at(time.Now().Format("2006-01-02")))
 }
 
 func view(w http.ResponseWriter, r *http.Request) {
@@ -298,14 +308,25 @@ func view(w http.ResponseWriter, r *http.Request) {
 	if n == "" {
 		return
 	}
+	if raw := clean(r.PathValue("name")); !strings.HasSuffix(raw, ".md") {
+		if s, err := os.Stat(filepath.Join(root, raw)); err == nil && s.Mode().IsRegular() {
+			go303(w, r, "/f/"+escape(raw))
+		} else {
+			http.Redirect(w, r, at(n), http.StatusMovedPermanently)
+		}
+		return
+	}
 	b, err := os.ReadFile(src(n))
-	if err != nil {
+	if os.IsNotExist(err) {
 		go303(w, r, "/e/"+escape(n))
+		return
+	}
+	if fail(w, err) {
 		return
 	}
 	p := page{Title: leaf(n), Name: n, HTML: template.HTML(render(string(b)))}
 	for o, text := range notes() {
-		if o != n && slices.ContainsFunc(link.FindAllStringSubmatch(text, -1), func(m []string) bool { return strings.TrimSpace(m[2]) == n }) {
+		if o != n && slices.ContainsFunc(link.FindAllStringSubmatch(text, -1), func(m []string) bool { return bare(strings.TrimSpace(m[2])) == n }) {
 			p.Back = append(p.Back, o)
 		}
 	}
@@ -315,8 +336,10 @@ func view(w http.ResponseWriter, r *http.Request) {
 
 func edit(w http.ResponseWriter, r *http.Request) {
 	if n := named(w, r); n != "" {
-		b, _ := os.ReadFile(src(n))
-		show(w, "edit", page{Title: leaf(n), Name: n, Text: string(b)})
+		b, err := os.ReadFile(src(n))
+		if os.IsNotExist(err) || !fail(w, err) {
+			show(w, "edit", page{Title: leaf(n), Name: n, Text: string(b)})
+		}
 	}
 }
 
@@ -325,7 +348,7 @@ func save(w http.ResponseWriter, r *http.Request) {
 	if n == "" {
 		return
 	}
-	to := clean(r.FormValue("name"))
+	to := bare(clean(r.FormValue("name")))
 	if to == "" {
 		to = n
 	}
@@ -339,10 +362,10 @@ func save(w http.ResponseWriter, r *http.Request) {
 		fail(w, os.Rename(src(to)+".tmp", src(to))) {
 		return
 	}
-	if to != n {
-		os.Remove(src(n))
+	if to != n && fail(w, os.Remove(src(n))) {
+		return
 	}
-	go303(w, r, "/n/"+escape(to))
+	go303(w, r, at(to))
 }
 
 func remove(w http.ResponseWriter, r *http.Request) {
@@ -352,7 +375,9 @@ func remove(w http.ResponseWriter, r *http.Request) {
 }
 
 func file(w http.ResponseWriter, r *http.Request) {
-	if n := named(w, r); n != "" {
+	if n := clean(r.PathValue("name")); n == "" {
+		http.Error(w, "bad name", http.StatusBadRequest)
+	} else {
 		w.Header().Set("Content-Security-Policy", "sandbox")
 		http.ServeFile(w, r, filepath.Join(root, n))
 	}

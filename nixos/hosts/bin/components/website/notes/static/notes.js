@@ -17,7 +17,7 @@ if (find) {
     let exact = false;
     for (const li of document.querySelectorAll(".list li:not(#new)")) {
       li.hidden = !li.textContent.toLowerCase().includes(lq);
-      exact ||= li.textContent === q;
+      exact ||= li.textContent === q.replace(/\.md$/, "");
     }
     make.hidden = !q || exact;
     make.firstChild.textContent = "new: " + q;

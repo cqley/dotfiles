@@ -3,7 +3,7 @@
 : "${GITHOST:=git.1f2t.org}"
 : "${GITSSH:=bin}"
 export LC_ALL=C HOME=/var/empty GIT_CONFIG_NOSYSTEM=1
-export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*'
+export GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*' GIT_CONFIG_KEY_1=core.quotePath GIT_CONFIG_VALUE_1=false
 
 E='
 BEGIN { for (i = 1; i < 256; i++) ord[sprintf("%c", i)] = i }
@@ -371,7 +371,7 @@ listing() {
 	{
 		g ls-tree -z "$sha:$path" | tr '\n\0' '?\n'
 		printf '\001\n'
-		git --literal-pathspecs -C "$d" log --format='%x01%H%x09%as%x09%s' --name-only "$sha" -- ${path:+"$path"}
+		git --literal-pathspecs -C "$d" log -z --format='%x01%H%x09%as%x09%s' --name-only "$sha" -- ${path:+"$path"} | tr '\n\0' '?\n'
 	} | awk "$E"'
 	!sep && $0 == "\001" { sep = 1; if (!n) exit; next }
 	!sep {
@@ -379,10 +379,11 @@ listing() {
 		if (m[2] == "tree") d[++nd] = name; else if (m[2] == "commit") c[++nc] = name; else { f[++nf] = name; x[nf] = m[1] }
 		next
 	}
-	/^\001/ { t = index($0, "\t"); cs = substr($0, 2, t - 2); cd = substr($0, t + 1, 10); cm = substr($0, t + 12); next }
+	/^\001/ { t = index($0, "\t"); cs = substr($0, 2, t - 2); cd = substr($0, t + 1, 10); cm = substr($0, t + 12); first = 1; next }
 	$0 == "" { next }
 	{
 		k = $0
+		if (first) { sub(/^\?/, "", k); first = 0 }
 		if (pre != "") { if (index(k, pre) != 1) next; k = substr(k, length(pre) + 1) }
 		if (t = index(k, "/")) k = substr(k, 1, t - 1)
 		if ((k in want) && !(k in at)) { at[k] = cs; day[k] = cd; msg[k] = cm; if (++got == n) exit }
@@ -400,8 +401,16 @@ listing() {
 	}' base="/$o/$r/tree/$ref/${path:+$path/}" pre="${path:+$path/}" repo="$o/$r"
 }
 
+pin() { printf ' data-from="/%s/%s/%s/%s/" data-to="/%s/%s/%s/%s/"' "$o" "$r" "$1" "$(uh "$ref")" "$o" "$r" "$1" "$sha"; }
+
+count() {
+	n=$(g rev-list --count "$sha" -- ${path:+"$path"})
+	[ "$n" = 1 ] && echo '1 commit' || echo "$n commits"
+}
+
 crumbs() {
-	printf '<p class=path><a href="/%s/%s/tree/%s/">%s</a>' "$o" "$r" "$(uh "$ref")" "$(h "$ref")"
+	[ "$tab" = commits ] && k=commits || k=tree
+	printf '<p class=path%s><a href="/%s/%s/tree/%s/">%s</a>' "$(pin $k)" "$o" "$r" "$(uh "$ref")" "$(h "$ref")"
 	[ -n "$path" ] && printf '%s\n' "$path" | awk "$E"'
 	{ n = split($0, p, "/"); a = base
 	  for (i = 1; i <= n; i++) { a = a p[i]; printf " / "; if (i < n) { a = a "/"; printf "<a href=\"%s\">%s</a>", e(u(a)), e(p[i]) } else printf "%s", e(p[i]) } }' base="/$o/$r/tree/$ref/"
@@ -484,6 +493,7 @@ mime() {
 	*.[gG][iI][fF]) echo image/gif ;;
 	*.[wW][eE][bB][pP]) echo image/webp ;;
 	*.[aA][vV][iI][fF]) echo image/avif ;;
+	*.[sS][vV][gG]) echo image/svg+xml ;;
 	esac
 }
 
@@ -563,10 +573,10 @@ log() {
 	fresh "$sha"
 	if [ -n "$path" ]; then
 		top "history of ${path##*/}"
-		crumbs ' <span class=dim>· history</span>'
+		crumbs " <span class=dim>· history · $(count)</span>"
 	else
 		top "commits @ $ref"
-		printf '<p class=path>%s</p>\n' "$(h "$ref")"
+		printf '<p class=path%s>%s <span class=dim>· %s</span></p>\n' "$(pin commits)" "$(h "$ref")" "$(count)"
 	fi
 	commits 51 "$sha" 50 "$path"
 }
