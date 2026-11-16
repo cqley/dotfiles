@@ -95,7 +95,7 @@ let
   server = {
     requires = [ "minecraft@%i.socket" ];
     after = [ "network.target" "minecraft@%i.socket" ];
-    path = [ pkgs.gnused pkgs.jq ];
+    path = [ pkgs.gnused pkgs.jq pkgs.yq-go ];
     environment.NAME = "%i";
     preStart = ''
       port=$(jq -r .port server.json)
@@ -120,7 +120,8 @@ let
       if compgen -G "mods/squaremap*.jar" > /dev/null; then
         mkdir -p squaremap
         if [ -e squaremap/config.yml ]; then
-          sed -i -e "/internal-webserver:/,/port:/ s/enabled: true/enabled: false/" -e "s/flush-json-immediately: false/flush-json-immediately: true/" squaremap/config.yml
+          yq -i '.settings."internal-webserver".enabled = false | .settings."internal-webserver".bind = "127.0.0.1"' squaremap/config.yml
+          sed -i "s/flush-json-immediately: false/flush-json-immediately: true/" squaremap/config.yml
         else
           printf "settings:\n  internal-webserver:\n    enabled: false\n    flush-json-immediately: true\n" > squaremap/config.yml
         fi
@@ -144,6 +145,7 @@ let
       StandardError = "journal";
       Restart = "on-failure";
       TimeoutStopSec = 90;
+      IPAddressDeny = [ "localhost" "10.0.0.0/24" ];
     };
   };
 
@@ -209,8 +211,31 @@ let
     serviceConfig.Type = "oneshot";
   };
 
+  control = name: body: pkgs.writeShellScript name (''
+    set -eu
+    PATH=${lib.makeBinPath [ pkgs.coreutils pkgs.systemd ]}
+  '' + valid + ''
+    name=''${1%%:*}
+    valid "$name"
+    unit=minecraft@$name.service
+    mark=/run/mcrestore/$name
+  '' + body);
+
+  pause = control "minecraftpause" ''
+    rm -f "$mark"
+    if systemctl is-active --quiet "$unit"; then : > "$mark"; fi
+    systemctl stop "$unit"
+  '';
+
+  resume = control "minecraftresume" ''
+    if [ -e "$mark" ]; then
+      rm -f "$mark"
+      systemctl start --no-block "$unit"
+    fi
+  '';
+
   restore = {
-    path = [ pkgs.coreutils pkgs.gnutar pkgs.gzip pkgs.gnused pkgs.systemd ];
+    path = [ pkgs.coreutils pkgs.gnutar pkgs.gzip pkgs.gnused ];
     scriptArgs = "%i";
     script = valid + ''
       set -eu
@@ -220,30 +245,36 @@ let
       [[ "$file" =~ ^[0-9]+\.tar\.gz$ ]]
       src=${root}/backups/$name/$file
       [ -f "$src" ]
-      unit=minecraft@$name.service
-      was=0
-      if systemctl is-active --quiet "$unit"; then was=1; fi
-      systemctl stop "$unit"
       cd ${root}/$name
       level=$(sed -n 's/^level-name=//p' server.properties 2>/dev/null || true)
       level=''${level:-world}
-      tmp=$(mktemp -d ${root}/$name/.restoreXXXXXX)
+      ok='^[A-Za-z0-9_ .-]+$'
+      if ! [[ "$level" =~ $ok ]] || [[ "$level" == *..* ]] || [[ "$level" == -* ]]; then
+        echo "bad level-name: $level"
+        exit 1
+      fi
+      tmp=$(mktemp -d .restoreXXXXXX)
+      trap 'rm -rf "$tmp"' EXIT
       tar -xzf "$src" -C "$tmp" --no-same-owner
       if [ ! -d "$tmp/$level" ]; then
-        rm -rf "$tmp"
         echo "backup has no $level folder"
         exit 1
       fi
       rm -rf "''${level}previous"
       if [ -d "$level" ]; then mv "$level" "''${level}previous"; fi
       mv "$tmp/$level" "$level"
-      rm -rf "$tmp"
-      chown -R minecraft:minecraft "$level"
       chmod -R g+rwX "$level"
       echo "restored $file"
-      if [ "$was" = 1 ]; then systemctl start "$unit"; fi
     '';
-    serviceConfig.Type = "oneshot";
+    serviceConfig = sandbox // {
+      Type = "oneshot";
+      User = "minecraft";
+      Group = "minecraft";
+      UMask = "0007";
+      ReadWritePaths = [ root ];
+      ExecStartPre = "+${pause} %i";
+      ExecStopPost = "+${resume} %i";
+    };
   };
 
   world = {
@@ -353,6 +384,7 @@ in
   systemd.tmpfiles.rules = [
     "d ${root} 2770 minecraft minecraft -"
     "d /run/minecraft 0750 minecraft minecraft -"
+    "d /run/mcrestore 0700 root root -"
   ];
 
   systemd.sockets."minecraft@" = {
@@ -413,7 +445,7 @@ in
       path = [ pkgs.systemd ];
       environment.DENO_DIR = "/var/lib/mcpanel/.deno";
       script = ''
-        exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1,api.modrinth.com,cdn.modrinth.com,piston-meta.mojang.com,piston-data.mojang.com,meta.fabricmc.net,sessionserver.mojang.com --allow-read=${root},/var/lib/mcpanel,/run/minecraft,${page},${site},${advancements} --allow-write=${root},/var/lib/mcpanel,/run/minecraft --allow-run=systemctl,journalctl ${./minecraft/panel.js} ${page} ${site} ${advancements}
+        exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1,5.231.118.153,api.modrinth.com,cdn.modrinth.com,piston-meta.mojang.com,piston-data.mojang.com,meta.fabricmc.net,sessionserver.mojang.com --allow-read=${root},/var/lib/mcpanel,/run/minecraft,${page},${site},${advancements} --allow-write=${root},/var/lib/mcpanel,/run/minecraft --allow-run=systemctl,journalctl ${./minecraft/panel.js} ${page} ${site} ${advancements}
       '';
       serviceConfig = {
         User = "mcpanel";

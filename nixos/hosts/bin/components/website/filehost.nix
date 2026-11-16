@@ -3,6 +3,17 @@
 let
   keys = "/var/lib/linxkey";
   filehost = pkgs.callPackage ./filehost/package.nix { };
+  sandbox = {
+    User = "linx";
+    Group = "linx";
+    ProtectSystem = "strict";
+    ReadWritePaths = [ "/var/lib/linx" ];
+    ProtectHome = true;
+    PrivateTmp = true;
+    PrivateDevices = true;
+    NoNewPrivileges = true;
+    CapabilityBoundingSet = "";
+  };
 in
 {
   systemd.services.linxkey = {
@@ -20,16 +31,21 @@ in
     };
   };
 
+  users.users.linx = {
+    isSystemUser = true;
+    group = "linx";
+  };
+  users.groups.linx = { };
+
   systemd.services.linx = {
     wantedBy = [ "multi-user.target" ];
     after = [ "network.target" "linxkey.service" ];
     requires = [ "linxkey.service" ];
-    serviceConfig = {
+    serviceConfig = sandbox // {
       ExecStart = "${pkgs.linx-server}/bin/linx-server -bind 127.0.0.1:47291 -siteurl https://share.1f2t.org/ -filespath /var/lib/linx/files -metapath /var/lib/linx/meta -maxsize 262144000 -authfile %d/authfile -basicauth";
       LoadCredential = [ "authfile:${keys}/authfile" ];
       WorkingDirectory = "/var/lib/linx";
       StateDirectory = "linx";
-      DynamicUser = true;
       Restart = "on-failure";
     };
   };
@@ -41,13 +57,9 @@ in
       LINX_DIR = "/var/lib/linx";
       FILEHOST_ADDR = "127.0.0.1:4601";
     };
-    serviceConfig = {
+    serviceConfig = sandbox // {
       ExecStart = "${filehost}/bin/filehost";
-      DynamicUser = true;
       Restart = "on-failure";
-      BindPaths = [ "/var/lib/linx" ];
-      AmbientCapabilities = [ "CAP_DAC_READ_SEARCH" "CAP_DAC_OVERRIDE" ];
-      CapabilityBoundingSet = [ "CAP_DAC_READ_SEARCH" "CAP_DAC_OVERRIDE" ];
     };
   };
 

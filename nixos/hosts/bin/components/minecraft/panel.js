@@ -60,7 +60,7 @@ function packet(id, body) {
 }
 
 async function ping(port) {
-  const conn = await Deno.connect({ hostname: "127.0.0.1", port });
+  const conn = await Deno.connect({ hostname: "5.231.118.153", port });
   const timer = setTimeout(() => { try { conn.close(); } catch {} }, 2000);
   try {
     const host = enc.encode("127.0.0.1");
@@ -1138,6 +1138,7 @@ const dashboardPage = (await Deno.readTextFile(`${pageDir}/dashboard.html`)).rep
 const html = (body) => new Response(body, { headers: { "content-type": "text/html; charset=utf-8" } });
 
 async function route(req) {
+  if (req.method !== "GET" && req.headers.get("sec-fetch-site") === "cross-site") return text("forbidden", 403);
   const url = new URL(req.url);
   const parts = url.pathname.split("/").filter(Boolean).map(decodeURIComponent);
   if (url.pathname === "/") return new Response(null, { status: 302, headers: { location: "/dashboard" } });
@@ -1397,7 +1398,7 @@ async function skinOf(name, player) {
 const mapTypes = { html: "text/html; charset=utf-8", js: "text/javascript", css: "text/css", json: "application/json", png: "image/png", ico: "image/x-icon", svg: "image/svg+xml", webp: "image/webp", map: "application/json" };
 
 async function mapFile(name, rest) {
-  if (rest.some((x) => x === ".." || x.includes("\0") || x.startsWith("."))) return text("not found", 404);
+  if (rest.some((x) => x.includes("/") || x.includes("\0") || x.startsWith("."))) return text("not found", 404);
   const path = `${root}/${name}/squaremap/web/${rest.join("/") || "index.html"}`;
   const type = mapTypes[path.split(".").pop()];
   if (!type) return text("not found", 404);

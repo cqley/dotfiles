@@ -9,6 +9,7 @@ in
     keyFile = livekitKeyFile;
     settings = {
       port = 7880;
+      bind_addresses = [ "127.0.0.1" ];
       rtc = {
         tcp_port = 7881;
         port_range_start = 50000;

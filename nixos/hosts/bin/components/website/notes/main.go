@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -53,7 +54,11 @@ func main() {
 	m.HandleFunc("POST /e/{name...}", save)
 	m.HandleFunc("POST /d/{name...}", remove)
 	m.HandleFunc("GET /f/{name...}", file)
-	log.Fatal(http.ListenAndServe(env("NOTES_ADDR", "127.0.0.1:4605"), m))
+	l, err := net.FileListener(os.NewFile(3, "notes.sock"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.Serve(l, http.NewCrossOriginProtection().Handler(m)))
 }
 
 func env(k, v string) string {

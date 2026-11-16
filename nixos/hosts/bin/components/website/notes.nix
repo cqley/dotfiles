@@ -4,26 +4,39 @@ let
   notes = pkgs.callPackage ./notes/package.nix { };
 in
 {
+  systemd.sockets.notes = {
+    wantedBy = [ "sockets.target" ];
+    listenStreams = [ "/run/notes.sock" ];
+    socketConfig = {
+      SocketUser = "nginx";
+      SocketGroup = "nginx";
+      SocketMode = "0600";
+    };
+  };
+
   systemd.services.notes = {
     wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    environment = {
-      NOTES_DIR = "/var/lib/notes";
-      NOTES_ADDR = "127.0.0.1:4605";
-    };
+    requires = [ "notes.socket" ];
+    after = [ "notes.socket" ];
+    environment.NOTES_DIR = "/var/lib/notes";
     serviceConfig = {
       ExecStart = "${notes}/bin/notes";
       DynamicUser = true;
       StateDirectory = "notes";
       WorkingDirectory = "/var/lib/notes";
       Restart = "on-failure";
+      PrivateNetwork = true;
+      IPAddressDeny = "any";
+      RestrictAddressFamilies = [ "AF_UNIX" ];
       NoNewPrivileges = true;
       PrivateDevices = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
       ProtectKernelTunables = true;
       ProtectKernelModules = true;
       ProtectControlGroups = true;
-      ProtectHome = true;
-      RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
+      CapabilityBoundingSet = "";
       LockPersonality = true;
       MemoryDenyWriteExecute = true;
       SystemCallArchitectures = "native";
@@ -34,6 +47,6 @@ in
     listen = [{ addr = "10.0.0.1"; port = 8091; }];
     extraConfig = "client_max_body_size 10m;";
     locations."/assets/".alias = "/etc/assets/";
-    locations."/".proxyPass = "http://127.0.0.1:4605";
+    locations."/".proxyPass = "http://unix:/run/notes.sock";
   };
 }

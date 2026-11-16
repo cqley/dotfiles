@@ -20,6 +20,8 @@
       denied-peer-ip=192.0.0.0-192.0.0.255
       denied-peer-ip=192.168.0.0-192.168.255.255
       denied-peer-ip=198.18.0.0-198.19.255.255
+      denied-peer-ip=5.231.118.153
+      denied-peer-ip=2a14:7c0:1002:1307::-2a14:7c0:1002:1307:ffff:ffff:ffff:ffff
       denied-peer-ip=::1
       denied-peer-ip=fc00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
       denied-peer-ip=fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff

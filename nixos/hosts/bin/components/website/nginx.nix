@@ -26,6 +26,17 @@
       clientMaxBodySize = "10m";
       serverTokens = false;
 
+      virtualHosts = lib.genAttrs [ "dash" "immich" "silly" "notes" "blog" "filehost" "downloader" ] (_: {
+        serverName = "10.0.0.1";
+        serverAliases = [ "bin" ];
+      }) // {
+        private = {
+          default = true;
+          listen = map (port: { addr = "10.0.0.1"; inherit port; }) [ 2283 8081 8090 8091 8092 8093 8094 ];
+          locations."/".return = "444";
+        };
+      };
+
       appendHttpConfig = ''
         add_header Strict-Transport-Security "max-age=31536000" always;
         add_header X-Content-Type-Options "nosniff" always;
