@@ -136,6 +136,7 @@ bind(mod .. " + I", exec("quickshell ipc call battery toggle"))
 bind(mod .. " + G", exec("quickshell ipc call mixer toggle"))
 bind(mod .. " + K", exec("quickshell ipc call island media"))
 bind(mod .. " + J", exec("quickshell ipc call dashboard toggle"))
+bind(mod .. " + F11", exec("quickshell ipc call notch toggle"))
 
 bind(mod .. " + HOME", exec("quickshell ipc call screenshot toggle"))
 bind("ALT + S", exec("quickshell ipc call screenshot region"))
