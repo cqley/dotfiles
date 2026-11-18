@@ -36,6 +36,8 @@
     interactiveShellInit = ''
       if status is-interactive
           cat ~/.colors/sequences
+          set -g fish_color_param normal
+          set -g fish_color_command normal
       end
     '';
     loginShellInit = ''
