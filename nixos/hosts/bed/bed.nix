@@ -93,7 +93,7 @@
 
   gtk = {
     enable = true;
-    theme = { name = "Adwaita-dark"; package = pkgs.gnome-themes-extra; };
+    theme = { name = "adw-gtk3-dark"; package = pkgs.adw-gtk3; };
     font = { name = "Libertinus Serif"; size = 11; };
   };
 
