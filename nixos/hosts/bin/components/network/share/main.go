@@ -55,6 +55,7 @@ var (
 	pages   = template.Must(template.New("").Funcs(template.FuncMap{"host": func() string { u, _ := url.Parse(site); return u.Host }}).ParseFS(embedded, "page.html"))
 	upKey   [32]byte
 	mu      sync.Mutex
+	km      sync.Mutex
 	slow    sync.Mutex
 	token   = regexp.MustCompile("`([^`]+)`" + `|(!?)\[([^\]]*)\]\(([^)\s]+)\)|\*\*(.+?)\*\*|\*([^*\s][^*]*)\*|(https?://[^\s<]+)`)
 	head    = regexp.MustCompile(`^(#{1,6})\s+(.*)$`)
@@ -116,13 +117,31 @@ type meta struct {
 	Delete string `json:"delete,omitempty"`
 	Access string `json:"access,omitempty"`
 	Sha256 string `json:"sha256,omitempty"`
+	By     string `json:"by,omitempty"`
+}
+
+type key struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Hash    string `json:"hash"`
+	Created int64  `json:"created"`
+	Expires int64  `json:"expires,omitempty"`
+	Once    bool   `json:"once,omitempty"`
+	Uses    int    `json:"uses,omitempty"`
+	State   string `json:"-"`
+}
+
+type grant struct {
+	ok           bool
+	by, id, tick string
+	once         bool
 }
 
 type file struct {
-	Name, Kind, Type, Size, Date, Expires string
-	Locked                                bool
-	mod                                   time.Time
-	size                                  int64
+	Name, Kind, Type, Size, Date, Expires, By string
+	Locked                                    bool
+	mod                                       time.Time
+	size                                      int64
 }
 
 type entry struct{ Name, Size string }
@@ -138,23 +157,25 @@ type result struct {
 }
 
 type opts struct {
-	name, del, access string
-	random            bool
-	expiry            int64
+	name, del, access, by string
+	random                bool
+	expiry                int64
 }
 
 type page struct {
-	Title, Text, Err, Abs, Site string
-	Code                        template.HTML
-	Hidden                      bool
-	F                           file
-	HTML                        template.HTML
-	Lines                       []int
-	Source                      bool
-	Known                       bool
-	Entries                     []entry
-	Files                       []file
-	Done                        []result
+	Text, Err, Abs, Site string
+	Code                 template.HTML
+	Hidden               bool
+	F                    file
+	HTML                 template.HTML
+	Lines                []int
+	Source               bool
+	Known                bool
+	Entries              []entry
+	Files                []file
+	Done                 []result
+	Keys                 []key
+	NewKey               string
 }
 
 type oops struct {
@@ -180,7 +201,7 @@ func main() {
 	pub := http.NewServeMux()
 	pub.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
 	pub.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		show(w, 200, "home", page{Title: "分", Known: known(r)})
+		show(w, 200, "home", page{Known: known(r).ok})
 	})
 	pub.HandleFunc("POST /forget", func(w http.ResponseWriter, r *http.Request) {
 		remember(w, "", -1)
@@ -199,8 +220,10 @@ func main() {
 	})
 	dash := http.NewServeMux()
 	dash.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
-	dash.HandleFunc("GET /{$}", list)
+	dash.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) { list(w, r, "") })
 	dash.HandleFunc("POST /d/{name}", purge)
+	dash.HandleFunc("POST /keys", mint)
+	dash.HandleFunc("POST /k/{id}", revoke)
 	go serve(4, dash, strings.Fields(os.Getenv("SHARE_DASH_ORIGINS")))
 	serve(3, pub, nil)
 }
@@ -386,19 +409,121 @@ func check(stored, k string) bool {
 	return subtle.ConstantTimeCompare(derive(k, salt), want) == 1
 }
 
-func authed(k string) bool {
-	h := sha256.Sum256([]byte(strings.TrimSpace(k)))
-	return k != "" && subtle.ConstantTimeCompare(h[:], upKey[:]) == 1
+func ticket(h []byte) string {
+	t := sha256.Sum256(append(h, "upload"...))
+	return hex.EncodeToString(t[:])
 }
 
-func ticket() string {
-	h := sha256.Sum256(append(upKey[:], "upload"...))
-	return hex.EncodeToString(h[:])
+func keys() ([]key, error) {
+	var ks []key
+	b, err := os.ReadFile(filepath.Join(root, "keys.json"))
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err == nil {
+		err = json.Unmarshal(b, &ks)
+	}
+	return ks, err
 }
 
-func known(r *http.Request) bool {
+func save(ks []key) error {
+	b, err := json.Marshal(ks)
+	if err != nil {
+		return err
+	}
+	p := filepath.Join(root, "keys.json")
+	if err := os.WriteFile(p+".tmp", b, 0o600); err != nil {
+		return err
+	}
+	return os.Rename(p+".tmp", p)
+}
+
+func live(k key) bool {
+	return (k.Expires == 0 || time.Now().Unix() < k.Expires) && !(k.Once && k.Uses > 0)
+}
+
+func find(match func(key) bool, claim bool) grant {
+	km.Lock()
+	defer km.Unlock()
+	ks, err := keys()
+	if err != nil {
+		log.Print(err)
+		return grant{}
+	}
+	for i, k := range ks {
+		if !live(k) || !match(k) {
+			continue
+		}
+		g := grant{ok: true, by: k.Name, id: k.ID, once: k.Once}
+		h, _ := hex.DecodeString(k.Hash)
+		if !k.Once {
+			g.tick = ticket(h)
+		}
+		if claim && k.Once {
+			ks[i].Uses++
+			if err := save(ks); err != nil {
+				log.Print(err)
+				return grant{}
+			}
+		}
+		return g
+	}
+	return grant{}
+}
+
+func used(g grant, ok bool) {
+	if g.id == "" || (g.once && ok) {
+		return
+	}
+	km.Lock()
+	defer km.Unlock()
+	ks, err := keys()
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	for i := range ks {
+		if ks[i].ID != g.id {
+			continue
+		}
+		if ok {
+			ks[i].Uses++
+		} else if g.once {
+			ks[i].Uses--
+		} else {
+			return
+		}
+		if err := save(ks); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func authed(k string) grant {
+	k = strings.TrimSpace(k)
+	if k == "" {
+		return grant{}
+	}
+	h := sha256.Sum256([]byte(k))
+	if subtle.ConstantTimeCompare(h[:], upKey[:]) == 1 {
+		return grant{ok: true, tick: ticket(upKey[:])}
+	}
+	x := hex.EncodeToString(h[:])
+	return find(func(k key) bool { return subtle.ConstantTimeCompare([]byte(k.Hash), []byte(x)) == 1 }, true)
+}
+
+func known(r *http.Request) grant {
 	c, err := r.Cookie("up")
-	return err == nil && subtle.ConstantTimeCompare([]byte(c.Value), []byte(ticket())) == 1
+	if err != nil || c.Value == "" {
+		return grant{}
+	}
+	if subtle.ConstantTimeCompare([]byte(c.Value), []byte(ticket(upKey[:]))) == 1 {
+		return grant{ok: true, tick: c.Value}
+	}
+	return find(func(k key) bool {
+		h, _ := hex.DecodeString(k.Hash)
+		return !k.Once && subtle.ConstantTimeCompare([]byte(c.Value), []byte(ticket(h))) == 1
+	}, false)
 }
 
 func remember(w http.ResponseWriter, v string, age int) {
@@ -461,7 +586,7 @@ func load(name string) (file, meta, error) {
 		}
 		return file{}, m, fs.ErrNotExist
 	}
-	f := file{Name: name, Size: size(fi.Size()), Date: fi.ModTime().Format("2006-01-02 15:04"), Locked: m.Access != "", mod: fi.ModTime(), size: fi.Size()}
+	f := file{Name: name, Size: size(fi.Size()), Date: fi.ModTime().Format("2006-01-02 15:04"), Locked: m.Access != "", By: m.By, mod: fi.ModTime(), size: fi.Size()}
 	f.Kind, f.Type = kind(name, peek(at("files", name), 8192))
 	if m.Expiry > 0 {
 		f.Expires = until(m.Expiry)
@@ -556,7 +681,7 @@ func store(body io.Reader, o opts) (result, error) {
 	if o.del == "" {
 		o.del = random(24)
 	}
-	m := meta{Delete: hash(o.del), Sha256: hex.EncodeToString(h.Sum(nil))}
+	m := meta{Delete: hash(o.del), Sha256: hex.EncodeToString(h.Sum(nil)), By: o.by}
 	if o.expiry > 0 {
 		m.Expiry = time.Now().Unix() + o.expiry
 	}
@@ -637,8 +762,15 @@ func pick(o opts, lock, own bool, pw, dk string) opts {
 
 func upload(w http.ResponseWriter, r *http.Request) {
 	_, p, _ := r.BasicAuth()
-	ok := authed(r.Header.Get("Linx-Api-Key")) || authed(p) || known(r)
-	came := false
+	g := authed(r.Header.Get("Linx-Api-Key"))
+	if !g.ok {
+		g = authed(p)
+	}
+	if !g.ok {
+		g = known(r)
+	}
+	ok, came, kept := g.ok, false, false
+	defer func() { used(g, kept) }()
 	if r.Method == http.MethodPut {
 		if !ok {
 			http.Error(w, "wrong key", http.StatusUnauthorized)
@@ -651,10 +783,12 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			expiry: max(exp, 0),
 			del:    r.Header.Get("Linx-Delete-Key"),
 			access: r.Header.Get("Linx-Access-Key"),
+			by:     g.by,
 		})
 		if fail(w, err) {
 			return
 		}
+		kept = true
 		if wantsJSON(r) {
 			reply(w, res)
 		} else {
@@ -684,7 +818,10 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		}
 		switch part.FormName() {
 		case "key":
-			if authed(v()) {
+			if ok {
+				continue
+			}
+			if g = authed(v()); g.ok {
 				ok, came = true, true
 			}
 		case "random":
@@ -710,7 +847,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "wrong key", http.StatusUnauthorized)
 				return
 			}
-			o.name = part.FileName()
+			o.name, o.by = part.FileName(), g.by
 			res, err := store(part, pick(o, lock, own, pw, dk))
 			if fail(w, err) {
 				return
@@ -723,6 +860,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "wrong key", http.StatusUnauthorized)
 			return
 		}
+		o.by = g.by
 		res, err := fetch(link, pick(o, lock, own, pw, dk))
 		if fail(w, err) {
 			return
@@ -733,13 +871,14 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "nothing to upload", http.StatusBadRequest)
 		return
 	}
-	if came {
-		remember(w, ticket(), 365*86400)
+	kept = true
+	if came && g.tick != "" {
+		remember(w, g.tick, 365*86400)
 	}
 	if wantsJSON(r) {
 		reply(w, done)
 	} else {
-		show(w, 200, "done", page{Title: "分", Done: done})
+		show(w, 200, "done", page{Done: done})
 	}
 }
 
@@ -748,7 +887,7 @@ func view(w http.ResponseWriter, r *http.Request) {
 	if fail(w, err) {
 		return
 	}
-	p := page{Title: f.Name, F: f}
+	p := page{F: f}
 	if !opened(r, f.Name, m) {
 		show(w, 200, "locked", p)
 		return
@@ -836,7 +975,7 @@ func unlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if m.Access == "" || !check(m.Access, r.FormValue("password")) {
-		show(w, http.StatusForbidden, "locked", page{Title: f.Name, F: f, Err: "wrong password"})
+		show(w, http.StatusForbidden, "locked", page{F: f, Err: "wrong password"})
 		return
 	}
 	http.SetCookie(w, &http.Cookie{Name: cookie(f.Name), Value: pass(m), Path: "/", MaxAge: 7 * 86400, Secure: true, HttpOnly: true, SameSite: http.SameSiteLaxMode})
@@ -904,12 +1043,12 @@ func remove(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "deleted")
 }
 
-func list(w http.ResponseWriter, r *http.Request) {
+func list(w http.ResponseWriter, r *http.Request, fresh string) {
 	es, err := os.ReadDir(filepath.Join(root, "files"))
 	if fail(w, err) {
 		return
 	}
-	p := page{Title: "files", Site: site}
+	p := page{Site: site}
 	for _, e := range es {
 		if strings.HasPrefix(e.Name(), ".") {
 			continue
@@ -924,7 +1063,75 @@ func list(w http.ResponseWriter, r *http.Request) {
 		p.Files = append(p.Files, f)
 	}
 	sort.Slice(p.Files, func(a, b int) bool { return p.Files[a].mod.After(p.Files[b].mod) })
+	p.NewKey = fresh
+	km.Lock()
+	ks, err := keys()
+	km.Unlock()
+	if fail(w, err) {
+		return
+	}
+	for i := len(ks) - 1; i >= 0; i-- {
+		k := ks[i]
+		switch {
+		case k.Once && k.Uses > 0:
+			k.State = "used"
+		case k.Expires > 0 && time.Now().Unix() >= k.Expires:
+			k.State = "expired"
+		case k.Expires > 0:
+			k.State = "ends in " + until(k.Expires)
+		default:
+			k.State = "no end"
+		}
+		if k.Once && k.State != "used" {
+			k.State = "one time, " + k.State
+		}
+		p.Keys = append(p.Keys, k)
+	}
 	show(w, 200, "list", p)
+}
+
+func mint(w http.ResponseWriter, r *http.Request) {
+	name := strings.TrimSpace(r.FormValue("name"))
+	if name == "" || utf8.RuneCountInString(name) > 40 {
+		http.Error(w, "name needed, max 40 characters", http.StatusBadRequest)
+		return
+	}
+	valid, _ := strconv.ParseInt(r.FormValue("valid"), 10, 64)
+	raw := random(24)
+	h := sha256.Sum256([]byte(raw))
+	k := key{ID: random(12), Name: name, Hash: hex.EncodeToString(h[:]), Created: time.Now().Unix(), Once: r.FormValue("once") != ""}
+	if valid > 0 {
+		k.Expires = k.Created + valid
+	}
+	km.Lock()
+	ks, err := keys()
+	if err == nil {
+		err = save(append(ks, k))
+	}
+	km.Unlock()
+	if fail(w, err) {
+		return
+	}
+	list(w, r, raw)
+}
+
+func revoke(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	km.Lock()
+	ks, err := keys()
+	if err == nil {
+		out := ks[:0]
+		for _, k := range ks {
+			if k.ID != id {
+				out = append(out, k)
+			}
+		}
+		err = save(out)
+	}
+	km.Unlock()
+	if !fail(w, err) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
 
 func purge(w http.ResponseWriter, r *http.Request) {

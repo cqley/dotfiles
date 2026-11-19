@@ -1,7 +1,8 @@
 const $=(id)=>document.getElementById(id);
 function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
 function img(src,c){const i=el("img",c);i.alt="";i.loading="lazy";if(src)i.src=src;return i;}
-const head=(n)=>img("https://mc-heads.net/avatar/"+encodeURIComponent(n)+"/20","head");
+const skins={};
+function head(n,px=20){const e=el("span","head");e.style.fontSize=px/8+"px";(skins[n]??=fetch("/api/"+encodeURIComponent(sel)+"/skin/"+encodeURIComponent(n)).then((r)=>r.ok?r.json():null).catch(()=>null)).then((s)=>{if(s)e.style.backgroundImage="url("+s.url+"),url("+s.url+")";});return e;}
 const gb=(b)=>(b/1073741824).toFixed(1)+" GB";
 const mbs=(b)=>b>1073741824?gb(b):b>1048576?(b/1048576).toFixed(1)+" MB":Math.ceil(b/1024)+" KB";
 const num=(n)=>n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(1)+"k":String(n);

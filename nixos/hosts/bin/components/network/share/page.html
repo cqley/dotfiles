@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{{.Title}}</title>
+<title>{{with .F.Name}}{{.}}{{else}}kiwi{{end}}</title>
+<link rel="icon" href="/favicon.svg">
 {{if .Abs}}<meta property="og:title" content="{{.F.Name}}">
 {{if eq .F.Kind "image"}}<meta property="og:image" content="{{.Abs}}">
 <meta name="twitter:card" content="summary_large_image">
@@ -86,10 +87,24 @@
 
 {{define "list"}}{{template "top" .}}
 {{if .Files}}<table class="files">{{range .Files}}<tr>
-<td><a href="{{$.Site}}{{.Name}}">{{.Name}}</a>{{if .Locked}} <span class="muted">locked</span>{{end}}</td>
+<td><a href="{{$.Site}}{{.Name}}">{{.Name}}</a>{{if .Locked}} <span class="muted">locked</span>{{end}}{{with .By}} <span class="muted">by {{.}}</span>{{end}}</td>
 <td class="d">{{.Size}}</td>
 <td class="d">{{.Kind}}</td>
 <td class="d">{{.Expires}}</td>
 <td class="d"><form method="post" action="/d/{{.Name}}"><button class="del" data-confirm="delete {{.Name}}?">delete</button></form></td>
 </tr>{{end}}</table>{{else}}<p class="muted">nothing yet</p>{{end}}
+<h2 class="keys">keys</h2>
+{{with .NewKey}}<p class="newkey">new key, shown once: <code>{{.}}</code></p>
+{{end}}<form method="post" action="/keys" class="mint">
+<input name="name" placeholder="name" maxlength="40" autocomplete="off" required>
+<select name="valid"><option value="3600">1 hour</option><option value="86400">1 day</option><option value="604800" selected>1 week</option><option value="2592000">1 month</option><option value="31536000">1 year</option><option value="0">no end</option></select>
+<label><input type="checkbox" name="once"> one time</label>
+<button>create</button>
+</form>
+{{if .Keys}}<table class="files">{{range .Keys}}<tr>
+<td>{{.Name}}</td>
+<td class="d">{{.State}}</td>
+<td class="d">{{.Uses}} upload{{if ne .Uses 1}}s{{end}}</td>
+<td class="d"><form method="post" action="/k/{{.ID}}"><button class="del" data-confirm="delete key {{.Name}}?">delete</button></form></td>
+</tr>{{end}}</table>{{end}}
 {{template "end"}}{{end}}

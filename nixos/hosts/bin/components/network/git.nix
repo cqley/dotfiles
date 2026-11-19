@@ -118,6 +118,10 @@ in
     locations."= /git.css".alias = "${./git/git.css}";
     locations."= /git.js".alias = "${./git/git.js}";
     locations."/assets/".alias = "/etc/assets/";
+    locations."= /robots.txt".extraConfig = ''
+      default_type text/plain;
+      return 200 "User-agent: *\nDisallow: /*/*/archive/\nDisallow: /*/*/commit/\nDisallow: /*/*/commits/\nDisallow: /*/*/files/\nDisallow: /*/*/raw/\n";
+    '';
 
     locations."/".extraConfig = fcgi;
     locations."~ ^/[^/]+/[^/]+/(archive/|info/refs$|git-upload-pack$)".extraConfig = ''

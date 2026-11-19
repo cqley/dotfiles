@@ -47,7 +47,9 @@ nav a:hover { color: var(--acc); }
 .rows li { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem 1rem; padding: .2rem 0; }
 .rows .n { flex: 1; min-width: 10rem; }
 .rows .n small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rows img { align-self: center; }
+.rows img, .rows .head { align-self: center; }
+.head { display: inline-block; width: 8em; height: 8em; background: var(--line) no-repeat; background-size: 64em auto; background-position: -40em -8em, -8em -8em; image-rendering: pixelated; vertical-align: -3px; flex-shrink: 0; }
+h1 .head { vertical-align: -4px; }
 .rows details { flex: 1; min-width: 0; }
 #wrules { columns: 2; column-gap: 3rem; }
 #wrules li { break-inside: avoid; }

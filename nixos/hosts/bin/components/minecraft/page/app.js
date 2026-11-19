@@ -4,7 +4,6 @@ const base="/"+encodeURIComponent(sel);
 const A=(p)=>encodeURIComponent(sel)+"/"+p;
 const pane=tab==="players"&&sub?"profile":tab;
 let cur=null,known=[],hook=null,dirty=false;
-document.title=tab==="console"?sel:sel+" "+tab;
 $("name").textContent=sel;
 for(const a of $("tabs").children){a.href=base+(a.dataset.t==="console"?"":"/"+a.dataset.t);if(a.dataset.t===tab)a.className="on";}
 document.querySelector("[data-pane='"+pane+"']").hidden=false;
@@ -185,9 +184,8 @@ function playersPane(){
 
 async function profilePane(){
   const n=sub,box=$("profile");
-  document.title=sel+" "+n;
   const t=el("p","dim","loading…");
-  const h=el("h1");h.append(img("https://mc-heads.net/avatar/"+encodeURIComponent(n)+"/32","head")," "+n);
+  const h=el("h1");h.append(head(n,32)," "+n);
   box.append(h,t);
   let p;
   try{p=await json(A("profile/"+encodeURIComponent(n)));}catch(e){t.textContent=e.message;return;}

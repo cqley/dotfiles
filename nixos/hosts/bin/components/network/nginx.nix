@@ -3,9 +3,17 @@
 {
   options.services.nginx.virtualHosts = lib.mkOption {
     type = lib.types.attrsOf (lib.types.submodule {
-      locations."~* /(favicon|android-chrome|safari-pinned-tab)[^/]*\\.(ico|png|gif|jpe?g|webp|svg)$" = {
+      locations."~* /(favicon|android-chrome|safari-pinned-tab)[^/]*\\.(ico|png|gif|jpe?g|webp)$" = {
         priority = 100;
-        return = "404";
+        alias = "/etc/assets/icon.png";
+      };
+      locations."~* /(favicon|safari-pinned-tab)[^/]*\\.svg$" = {
+        priority = 100;
+        alias = "/etc/assets/icon.svg";
+      };
+      locations."~* /apple-touch-icon[^/]*\\.png$" = {
+        priority = 100;
+        alias = "/etc/assets/touch.png";
       };
     });
   };

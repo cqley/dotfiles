@@ -12,35 +12,6 @@ let
     "25" = pkgs.jdk25_headless;
   };
 
-  vanilla = pkgs.fetchurl {
-    url = "https://piston-data.mojang.com/v1/objects/33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c/server.jar";
-    name = "minecraft-server-26.3.jar";
-    sha1 = "33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c";
-  };
-
-  advancements = pkgs.runCommand "advancements.json" { nativeBuildInputs = [ pkgs.unzip pkgs.jq ]; } ''
-    unzip -q ${vanilla} 'META-INF/versions/*'
-    unzip -q META-INF/versions/*/*.jar 'data/minecraft/advancement/*' assets/minecraft/lang/en_us.json
-    cd data/minecraft/advancement
-    find story nether end adventure husbandry -name '*.json' | sort | xargs jq -n --slurpfile lang ../../../assets/minecraft/lang/en_us.json '
-      ["story", "nether", "end", "adventure", "husbandry"] as $cats
-      | [inputs | select(.display) | { id: ("minecraft:" + (input_filename | rtrimstr(".json"))), parent, d: .display }]
-      | (map({ key: .id, value: .parent }) | from_entries) as $up
-      | def depth(i): if $up[i] then 1 + depth($up[i]) else 0 end;
-      map({
-        id,
-        cat: (.id | ltrimstr("minecraft:") | split("/")[0]),
-        title: ($lang[0][.d.title.translate] // .id),
-        desc: ($lang[0][.d.description.translate] // ""),
-        frame: (.d.frame // "task"),
-        hidden: (.d.hidden // false),
-        depth: depth(.id)
-      })
-      | sort_by([(.cat as $c | $cats | index($c)), .depth, .title])
-      | map(del(.depth))
-    ' > $out
-  '';
-
   manifest = pkgs.writeText "manifest.json" (builtins.toJSON {
     name = "silly";
     short_name = "silly";
@@ -49,15 +20,8 @@ let
     display = "standalone";
     background_color = "#161616";
     theme_color = "#161616";
-    icons = map (n: { src = "/app/icon${toString n}.png"; sizes = "${toString n}x${toString n}"; type = "image/png"; }) [ 192 512 ];
+    icons = [{ src = "/apple-touch-icon.png"; sizes = "512x512"; type = "image/png"; }];
   });
-
-  app = pkgs.runCommand "silly" { nativeBuildInputs = [ pkgs.librsvg pkgs.gnused ]; } ''
-    mkdir $out
-    sed -e 's/#000000/#f2b8e2/' -e 's/stroke-opacity="0.9"//' -e 's/width="800px" height="800px" viewBox="0 0 400 400"/viewBox="-60 -60 520 520"/' ${./network/assets/cat.svg} > cat.svg
-    for n in 180 192 512; do rsvg-convert -b '#161616' -w $n -h $n cat.svg -o $out/icon$n.png; done
-    cp ${manifest} $out/manifest.json
-  '';
 
   valid = ''
     valid() { [[ "$1" =~ ^[a-z0-9]{1,16}$ ]] && case "$1" in backups|dashboard|api|static|assets|app) false ;; esac; }
@@ -348,17 +312,6 @@ let
   };
 
   page = ./minecraft/page;
-  site = ./minecraft/public;
-
-  font = pkgs.runCommand "mcfont" { nativeBuildInputs = [ (pkgs.python3.withPackages (p: [ p.fonttools p.brotli ])) ]; } ''
-    mkdir $out
-    for f in 0:regular 4:bold; do
-      pyftsubset ${pkgs.monocraft}/share/fonts/truetype/*Monocraft-no-ligatures.ttc --font-number=''${f%%:*} \
-        --unicodes="U+0020-007E,U+00A0-00FF,U+2013-2014,U+2018-201D,U+2022,U+2026,U+2190-2193,U+2665,U+2605,U+2715,U+25B2,U+25BC" \
-        --layout-features="" --flavor=woff2 --output-file=$out/''${f##*:}.woff2
-    done
-  '';
-
   each = ''
     for cfg in ${root}/*/server.json; do
       [ -f "$cfg" ] || continue
@@ -446,7 +399,7 @@ in
       path = [ pkgs.systemd ];
       environment.DENO_DIR = "/var/lib/mcpanel/.deno";
       script = ''
-        exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1,5.231.118.153,api.modrinth.com,cdn.modrinth.com,piston-meta.mojang.com,piston-data.mojang.com,meta.fabricmc.net,sessionserver.mojang.com --allow-read=${root},/var/lib/mcpanel,/run/minecraft,${page},${site},${advancements} --allow-write=${root},/var/lib/mcpanel,/run/minecraft --allow-run=systemctl,journalctl ${./minecraft/panel.js} ${page} ${site} ${advancements}
+        exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1,5.231.118.153,api.modrinth.com,cdn.modrinth.com,piston-meta.mojang.com,piston-data.mojang.com,meta.fabricmc.net,sessionserver.mojang.com --allow-read=${root},/var/lib/mcpanel,/run/minecraft,${page} --allow-write=${root},/var/lib/mcpanel,/run/minecraft --allow-run=systemctl,journalctl ${./minecraft/panel.js} ${page}
       '';
       serviceConfig = {
         User = "mcpanel";
@@ -493,7 +446,7 @@ in
     listen = [{ addr = "10.0.0.1"; port = 8090; }];
     extraConfig = "client_max_body_size 4g;";
     locations."/assets/".alias = "/etc/assets/";
-    locations."/app/".alias = "${app}/";
+    locations."= /app/manifest.json".alias = "${manifest}";
     locations."/static/".alias = "${page}/";
     locations."/" = {
       proxyPass = "http://127.0.0.1:4603";
@@ -503,14 +456,5 @@ in
         proxy_read_timeout 1d;
       '';
     };
-  };
-
-  services.nginx.virtualHosts."mc.1f2t.org" = {
-    forceSSL = true;
-    enableACME = true;
-    locations."/assets/".alias = "/etc/assets/";
-    locations."/static/".alias = "${site}/";
-    locations."/fonts/".alias = "${font}/";
-    locations."/".proxyPass = "http://127.0.0.1:4604";
   };
 }

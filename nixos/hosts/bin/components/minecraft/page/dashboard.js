@@ -48,10 +48,10 @@ function edit(r){
   if(up)ver.disabled=true;else fillVersions(ver,s.type,s.version);
   const port=el("input");port.value=String(s.port);port.inputMode="numeric";
   const backup=time(s.backup),restart=time(s.restart);
-  const auto=check("start on boot",s.autostart),pub=check("public stats",s.public);
+  const auto=check("start on boot",s.autostart);
   const bar=el("p","tools wide");
   bar.append(btn("save",async()=>{
-    const body={memory:mem.value,port:Number(port.value),backup:backup.value||null,restart:restart.value||null,autostart:auto.input.checked,public:pub.input.checked};
+    const body={memory:mem.value,port:Number(port.value),backup:backup.value||null,restart:restart.value||null,autostart:auto.input.checked};
     if(!up&&ver.value!==s.version){if(!confirm("switch to "+ver.value+"? worlds can't go back"))return;body.version=ver.value;msg("downloading "+ver.value);}
     await api(s.name+"/config",{method:"PUT",body:JSON.stringify(body)});
     msg(s.name+" saved"+(up&&(body.memory!==s.memory||body.port!==s.port)?", restart to apply":""));
@@ -61,7 +61,7 @@ function edit(r){
     await api(s.name,{method:"DELETE"});
     msg("deleting "+s.name);edit(r);setTimeout(load,4000);
   },"del"),el("span","dim",s.type+" "+s.version+(s.loader?" · loader "+s.loader:"")));
-  f.append(field("memory",mem),field(up?"version (stop first)":"version",ver),field("port",port),field("backup",backup),field("restart",restart),auto,pub,bar);
+  f.append(field("memory",mem),field(up?"version (stop first)":"version",ver),field("port",port),field("backup",backup),field("restart",restart),auto,bar);
   f.onsubmit=(e)=>e.preventDefault();
   r.form=f;r.append(f);draw(r,s);
 }
@@ -73,7 +73,7 @@ nf.onsubmit=async(e)=>{
   e.preventDefault();
   const b=nf.querySelector("button");b.disabled=true;$("nstate").textContent="downloading…";
   try{
-    const body={name:nf.name.value.trim(),type:nf.type.value,version:nf.version.value,memory:nf.memory.value,port:nf.port.value.trim()?Number(nf.port.value):null,backup:nf.backup.value||null,restart:nf.restart.value||null,autostart:nf.autostart.checked,public:nf.public.checked,start:nf.start.checked};
+    const body={name:nf.name.value.trim(),type:nf.type.value,version:nf.version.value,memory:nf.memory.value,port:nf.port.value.trim()?Number(nf.port.value):null,backup:nf.backup.value||null,restart:nf.restart.value||null,autostart:nf.autostart.checked,start:nf.start.checked};
     const r=await (await api("servers",{method:"POST",body:JSON.stringify(body)})).json();
     msg(r.name+" created on port "+r.port);
     nf.name.value="";nf.port.value="";$("new").open=false;load();

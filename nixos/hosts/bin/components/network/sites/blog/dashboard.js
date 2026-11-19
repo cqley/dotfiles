@@ -118,16 +118,16 @@ if (md) {
   });
 
   const upload = async (files) => {
-    const images = [...files].filter((f) => /^image\/(png|jpeg|gif|webp)$/.test(f.type));
-    if (!images.length) return say("only png, jpg, gif and webp pictures", "err");
+    const images = [...files].filter((f) => /^(image\/(png|jpeg|gif|webp)|video\/(mp4|webm))$/.test(f.type));
+    if (!images.length) return say("only png, jpg, gif, webp, mp4 and webm", "err");
     for (const [i, f] of images.entries()) {
-      say(`uploading picture ${i + 1}/${images.length}...`);
+      say(`uploading ${i + 1}/${images.length}...`);
       const res = await fetch("/images", { method: "POST", headers: { "content-type": f.type }, body: f }).catch((e) => e);
       if (!res.ok) return say(String(res.ok === undefined ? res.message : await res.text()).slice(0, 120), "err");
-      const alt = f.name.replace(/\.[^.]+$/, "").replace(/[\[\]]/g, "") || "picture";
+      const alt = f.name.replace(/\.[^.]+$/, "").replace(/[\[\]]/g, "") || "media";
       block(`![${alt}](${(await res.json()).url})`);
     }
-    say(images.length === 1 ? "picture attached" : `${images.length} pictures attached`, "ok");
+    say(images.length === 1 ? "attached" : `${images.length} attached`, "ok");
   };
 
   $("#file").addEventListener("change", (e) => {

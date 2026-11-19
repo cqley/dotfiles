@@ -484,3 +484,31 @@ pre {
   color: var(--err);
   background: color-mix(in srgb, var(--err) 15%, transparent);
 }
+
+h2.keys {
+  margin-top: 2.5rem;
+}
+
+.mint {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+  margin: .8rem 0 1.2rem;
+}
+
+.mint input[name=name] {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.mint label {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.newkey code {
+  user-select: all;
+}

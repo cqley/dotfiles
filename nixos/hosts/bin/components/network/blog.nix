@@ -3,8 +3,9 @@
   systemd.services.blog = {
     wantedBy = [ "multi-user.target" ];
     environment.DENO_DIR = "/var/lib/blog/.deno";
+    environment.CWEBP = "${pkgs.libwebp}/bin/cwebp";
     script = ''
-      exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1:4600,127.0.0.1:4606 --allow-read=/var/lib/blog,${./sites/blog} --allow-write=/var/lib/blog --allow-env=STATE_DIRECTORY,PORT,ADMIN_PORT ${./sites/blog}/server.js
+      exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1:4600,127.0.0.1:4606 --allow-read=/var/lib/blog,${./sites/blog} --allow-write=/var/lib/blog --allow-run=${pkgs.libwebp}/bin/cwebp --allow-env=STATE_DIRECTORY,PORT,ADMIN_PORT,CWEBP ${./sites/blog}/server.js
     '';
     serviceConfig = {
       DynamicUser = true;
@@ -23,7 +24,7 @@
 
   services.nginx.virtualHosts."blog" = {
     listen = [{ addr = "10.0.0.1"; port = 8092; }];
-    extraConfig = "client_max_body_size 20m;";
+    extraConfig = "client_max_body_size 210m;";
     locations."/assets/".alias = "/etc/assets/";
     locations."/".proxyPass = "http://127.0.0.1:4606";
   };

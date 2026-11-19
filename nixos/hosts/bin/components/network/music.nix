@@ -2,10 +2,10 @@
 
 let
   podcasts = {
-    edeltalk = { list = "PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss"; newest = "1"; };
-    unfassbar = { list = "PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp"; newest = "1"; };
-    henkescorner = { list = "PLnEam709xEo1DuqpEFBR43gEYBFfQyM7D"; newest = "-1"; };
-    wanshow = { list = "PLBKxjEPgnXa0"; newest = "1"; };
+    edeltalk = { list = "PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss"; newest = "1:3"; };
+    unfassbar = { list = "PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp"; newest = "1:3"; };
+    henkescorner = { list = "PLnEam709xEo1DuqpEFBR43gEYBFfQyM7D"; newest = "-3:"; };
+    wanshow = { list = "PLBKxjEPgnXa0"; newest = "1:3"; };
   };
   sandbox = {
     NoNewPrivileges = true;
@@ -57,12 +57,17 @@ in
   systemd.services = lib.mapAttrs (name: podcast: {
     script = ''
       mkdir -p /var/lib/navidrome/.podcasts
-      ${pkgs.yt-dlp}/bin/yt-dlp -x --audio-format mp3 --embed-metadata --embed-thumbnail \
+      if ! out=$(${pkgs.yt-dlp}/bin/yt-dlp -i -x --audio-format mp3 --embed-metadata --embed-thumbnail \
         --playlist-items ${podcast.newest} \
         --download-archive /var/lib/navidrome/.podcasts/${name} \
         -o "%(title)s.%(ext)s" \
         -P /var/lib/navidrome/music \
-        "https://www.youtube.com/playlist?list=${podcast.list}"
+        "https://www.youtube.com/playlist?list=${podcast.list}" 2>&1); then
+        printf '%s\n' "$out"
+        if printf '%s\n' "$out" | grep '^ERROR' | grep -qv 'Private video'; then exit 1; fi
+        exit 0
+      fi
+      printf '%s\n' "$out"
     '';
     path = [ pkgs.ffmpeg pkgs.deno ];
     serviceConfig = sandbox // {

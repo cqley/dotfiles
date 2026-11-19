@@ -34,7 +34,7 @@ var (
 )
 
 type page struct {
-	Title, Q, New, Name, Text string
+	Q, New, Name, Text string
 	HTML                      template.HTML
 	Notes, Back               []string
 }
@@ -292,7 +292,7 @@ func render(text string) string {
 
 func home(w http.ResponseWriter, r *http.Request) {
 	q := strings.TrimSpace(r.FormValue("q"))
-	p := page{Title: "notes", Q: q, New: bare(clean(q))}
+	p := page{Q: q, New: bare(clean(q))}
 	for n := range notes() {
 		if strings.Contains(strings.ToLower(n), strings.ToLower(q)) {
 			p.Notes = append(p.Notes, n)
@@ -330,7 +330,7 @@ func view(w http.ResponseWriter, r *http.Request) {
 	if fail(w, err) {
 		return
 	}
-	p := page{Title: leaf(n), Name: n, HTML: template.HTML(render(string(b)))}
+	p := page{Name: n, HTML: template.HTML(render(string(b)))}
 	for o, text := range notes() {
 		if o != n && slices.ContainsFunc(link.FindAllStringSubmatch(text, -1), func(m []string) bool { return bare(strings.TrimSpace(m[2])) == n }) {
 			p.Back = append(p.Back, o)
@@ -344,7 +344,7 @@ func edit(w http.ResponseWriter, r *http.Request) {
 	if n := named(w, r); n != "" {
 		b, err := os.ReadFile(src(n))
 		if os.IsNotExist(err) || !fail(w, err) {
-			show(w, "edit", page{Title: leaf(n), Name: n, Text: string(b)})
+			show(w, "edit", page{Name: n, Text: string(b)})
 		}
 	}
 }

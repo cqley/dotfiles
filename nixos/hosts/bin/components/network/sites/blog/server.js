@@ -11,10 +11,22 @@ const dashboardJs = await Deno.readTextFile(new URL("dashboard.js", here));
 const blogCss = await Deno.readTextFile(new URL("blog.css", here));
 
 const maxImage = 15 * 1024 * 1024;
+const maxVideo = 200 * 1024 * 1024;
+const cwebp = Deno.env.get("CWEBP");
 const maxPost = 20000;
 const slugPattern = /^[a-z0-9-]+$/;
-const imagePattern = /^[a-f0-9]{32}\.(png|jpg|gif|webp)$/;
-const imageTypes = { png: "image/png", jpg: "image/jpeg", gif: "image/gif", webp: "image/webp" };
+const imagePattern = /^[a-f0-9]{32}\.(png|jpg|gif|webp|mp4|webm)$/;
+const imageTypes = { png: "image/png", jpg: "image/jpeg", gif: "image/gif", webp: "image/webp", mp4: "video/mp4", webm: "video/webm" };
+const videoPattern = /^\/images\/[a-f0-9]{32}\.(mp4|webm)$/;
+
+marked.use({
+  renderer: {
+    image(href, title, text) {
+      if (!videoPattern.test(href ?? "")) return false;
+      return `<video src="${esc(href)}" controls preload="metadata" playsinline${text ? ` aria-label="${esc(text)}"` : ""}></video>`;
+    },
+  },
+});
 
 await Deno.mkdir(postsDir, { recursive: true });
 await Deno.mkdir(imagesDir, { recursive: true });
@@ -85,13 +97,14 @@ function html(body, status = 200) {
   return new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8" } });
 }
 
-function layout(body, extra = "", title = "本") {
+function layout(body, extra = "", title = "banana") {
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(title)}</title>
+<link rel="icon" href="/favicon.svg">
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/theme.js"></script>
 <link rel="stylesheet" href="/blog.css">
@@ -151,7 +164,7 @@ function dashPage(posts, msg = "") {
 
 const tools = [
   ["bold", "<b>b</b>"], ["italic", "<i>i</i>"], ["strike", "<s>s</s>"], ["h2", "h2"], ["h3", "h3"], ["quote", "&gt;"],
-  ["ul", "&bull; list"], ["ol", "1. list"], ["code", "&lt;/&gt;"], ["rule", "&mdash;"], ["link", "link"], ["image", "picture"],
+  ["ul", "&bull; list"], ["ol", "1. list"], ["code", "&lt;/&gt;"], ["rule", "&mdash;"], ["link", "link"], ["image", "media"],
 ].map(([c, l]) => `<button type="button" data-cmd="${c}">${l}</button>`).join("");
 
 function editPage(slug, title, md, msg = "", err = false) {
@@ -159,7 +172,7 @@ function editPage(slug, title, md, msg = "", err = false) {
     <form method="post" id="editor"${slug ? "" : " data-new"}>
       <p class="bar"><a href="/">../</a>${status(msg)}</p>
       <input name="title" class="title" value="${esc(title)}" placeholder="title" maxlength="200" required autocomplete="off">
-      <div class="toolbar">${tools}<input type="file" id="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden></div>
+      <div class="toolbar">${tools}<input type="file" id="file" accept="image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm" multiple hidden></div>
       <div class="panes">
         <textarea name="md" id="md" placeholder="start writing..." required data-max="${maxPost}">${esc(md)}</textarea>
         <div class="markdown-body" id="preview">${md.trim() ? marked.parse(md) : `<p class="muted">nothing yet</p>`}</div>
@@ -174,7 +187,54 @@ function sniffImage(b) {
   if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "jpg";
   if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38) return "gif";
   if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return "webp";
+  if (b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70 && String.fromCharCode(...b.slice(8, 12)) !== "qt  ") return "mp4";
+  if (b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3) return "webm";
   return null;
+}
+
+async function toWebp(bytes, id) {
+  const src = `${imagesDir}/.${id}.png`, out = `${imagesDir}/.${id}.webp`;
+  await Deno.writeFile(src, bytes);
+  try {
+    const r = await new Deno.Command(cwebp, { args: ["-quiet", "-lossless", "-exact", "-z", "6", "-metadata", "icc", src, "-o", out], stdout: "null", stderr: "piped" }).output();
+    if (!r.success) throw new Error("webp: " + new TextDecoder().decode(r.stderr).trim().slice(0, 200));
+    await Deno.rename(out, `${imagesDir}/${id}.webp`);
+  } finally {
+    await Deno.remove(src).catch(() => {});
+    await Deno.remove(out).catch(() => {});
+  }
+}
+
+const chunk = 4 * 1024 * 1024;
+
+async function media(req, name) {
+  const type = imageTypes[name.split(".").pop()];
+  const headers = { "content-type": type, "cache-control": "public, max-age=31536000, immutable", "x-content-type-options": "nosniff", "accept-ranges": "bytes" };
+  let file, size;
+  try {
+    size = (await Deno.stat(`${imagesDir}/${name}`)).size;
+    file = await Deno.open(`${imagesDir}/${name}`);
+  } catch {
+    return new Response("not found", { status: 404 });
+  }
+  const m = (req.headers.get("range") ?? "").match(/^bytes=(\d*)-(\d*)$/);
+  if (!m || (!m[1] && !m[2])) return new Response(file.readable, { headers: { ...headers, "content-length": String(size) } });
+  const start = m[1] ? Number(m[1]) : Math.max(0, size - Number(m[2]));
+  const end = Math.min(m[1] && m[2] ? Number(m[2]) : size - 1, size - 1, start + chunk - 1);
+  if (start >= size || start > end) {
+    file.close();
+    return new Response(null, { status: 416, headers: { ...headers, "content-range": `bytes */${size}` } });
+  }
+  const buf = new Uint8Array(end - start + 1);
+  await file.seek(start, Deno.SeekMode.Start);
+  let got = 0;
+  while (got < buf.length) {
+    const n = await file.read(buf.subarray(got));
+    if (n === null) break;
+    got += n;
+  }
+  file.close();
+  return new Response(buf.subarray(0, got), { status: 206, headers: { ...headers, "content-range": `bytes ${start}-${start + got - 1}/${size}`, "content-length": String(got) } });
 }
 
 async function readLimited(req, limit) {
@@ -209,18 +269,11 @@ async function site(req) {
   if (path.startsWith("/images/")) {
     const name = path.slice("/images/".length);
     if (!imagePattern.test(name)) return new Response("not found", { status: 404 });
-    try {
-      const data = await Deno.readFile(`${imagesDir}/${name}`);
-      return new Response(data, {
-        headers: {
-          "content-type": imageTypes[name.split(".").pop()],
-          "cache-control": "public, max-age=31536000, immutable",
-          "x-content-type-options": "nosniff",
-        },
-      });
-    } catch {
-      return new Response("not found", { status: 404 });
+    const webp = name.replace(/\.png$/, ".webp");
+    if (webp !== name && await Deno.stat(`${imagesDir}/${webp}`).then(() => true, () => false)) {
+      return new Response(null, { status: 301, headers: { location: `/images/${webp}` } });
     }
+    return media(req, name);
   }
 
   if (path.startsWith("/api/")) return new Response("not found", { status: 404 });
@@ -269,11 +322,16 @@ async function admin(req) {
   if (path === "/preview" && !get) return html(marked.parse(await req.text()));
 
   if (path === "/images" && !get) {
-    const bytes = await readLimited(req, maxImage);
-    if (!bytes) return new Response("picture is too big (max 15 MB)", { status: 413 });
+    const video = /^video\//.test(req.headers.get("content-type") ?? "");
+    const bytes = await readLimited(req, video ? maxVideo : maxImage);
+    if (!bytes) return new Response(video ? "video is too big (max 200 MB)" : "picture is too big (max 15 MB)", { status: 413 });
     const ext = sniffImage(bytes);
-    if (!ext) return new Response("only png, jpg, gif and webp pictures are allowed", { status: 400 });
+    if (!ext) return new Response("only png, jpg, gif, webp, mp4 and webm", { status: 400 });
     const id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+    if (ext === "png") {
+      await toWebp(bytes, id);
+      return Response.json({ url: `/images/${id}.webp` });
+    }
     await Deno.writeFile(`${imagesDir}/${id}.${ext}`, bytes);
     return Response.json({ url: `/images/${id}.${ext}` });
   }

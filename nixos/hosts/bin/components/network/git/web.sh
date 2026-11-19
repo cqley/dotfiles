@@ -245,7 +245,7 @@ top() {
 	printf 'Content-Type: text/html; charset=utf-8\n%s\n' "$csp"
 	[ -n "$cache" ] && printf '%s\n' "$cache"
 	printf '\n'
-	printf '<!doctype html>\n<html lang=en>\n<meta charset=utf-8>\n<meta name=viewport content="width=device-width,initial-scale=1">\n<title>%s</title>\n<link rel=stylesheet href=/git.css>\n<script src=/assets/theme.js></script>\n<script src=/git.js defer></script>\n<header><a href=/ class=site>git</a>' "$(h "$title")"
+	printf '<!doctype html>\n<html lang=en>\n<meta charset=utf-8>\n<meta name=viewport content="width=device-width,initial-scale=1">\n<title>%s</title>\n<link rel=icon href=/favicon.svg>\n<link rel=stylesheet href=/git.css>\n<script src=/assets/theme.js></script>\n<script src=/git.js defer></script>\n<header><a href=/ class=site>git</a>' "$(h "$title")"
 	[ -n "$o" ] && printf ' / <a href="/%s/">%s</a>' "$o" "$o"
 	[ -n "$r" ] && printf ' / <a href="/%s/%s/">%s</a>' "$o" "$r" "$r"
 	printf '</header>\n'
@@ -627,9 +627,9 @@ commit() {
 	p=$(g rev-parse -q --verify "$sha^1") || p=$(g hash-object -t tree /dev/null)
 	g diff --no-color --numstat -z "$p" "$sha" | tr '\n\0' '?\n' | awk -F '\t' "$E"'
 	{ if ($3 == "") { getline x; getline y; $3 = x " → " y }
-	  if (!n++) print "<table class=stat>"
-	  print "<tr><td class=r>" ($1 == "-" ? "<span class=dim>bin</span>" : $1 == "0" ? "" : "<span class=add>+" $1 "</span>") "</td><td class=r>" ($2 == "-" || $2 == "0" ? "" : "<span class=del>-" $2 "</span>") "</td><td><a href=\"#f" n "\">" e($3) "</a></td></tr>" }
-	END { if (n) print "</table>" }'
+	  n++; ta += $1; td += $2
+	  rows = rows "<tr><td class=r>" ($1 == "-" ? "<span class=dim>bin</span>" : $1 == "0" ? "" : "<span class=add>+" $1 "</span>") "</td><td class=r>" ($2 == "-" || $2 == "0" ? "" : "<span class=del>-" $2 "</span>") "</td><td><a href=\"#f" n "\">" e($3) "</a></td></tr>\n" }
+	END { if (n) printf "<p class=dim>%s · <span class=add>+%d</span> <span class=del>-%d</span></p>\n<table class=stat>\n%s</table>\n", (n == 1 ? "1 file" : n " files"), ta, td, rows }'
 	g diff --no-color "$p" "$sha" | head -n 5000 | awk "$E"'
 	function show() {
 		if (shown) return
@@ -732,6 +732,7 @@ tree) tree "$arg" ;;
 raw) raw "$arg" ;;
 commits) log "${arg%/}" ;;
 log) go "/$o/$r/commits/$(uh "$arg" | sed 1q)" ;;
+blob) go "/$o/$r/tree/$(uh "$arg" | sed 1q)" ;;
 commit) commit "${arg%/}" ;;
 branches | tags) refs "$act" "${arg%/}" ;;
 refs) go "/$o/$r/branches/" ;;
