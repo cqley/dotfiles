@@ -19,7 +19,7 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("awww-daemon")
     hl.exec_cmd("wl-paste --type text --watch cliphist store")
     hl.exec_cmd("wl-paste --type image --watch cliphist store")
-    hl.exec_cmd("env QSG_RENDER_LOOP=threaded quickshell -p ~/.config/quickshell/shell.qml")
+    hl.exec_cmd("env QSG_RENDER_LOOP=threaded __EGL_VENDOR_LIBRARY_FILENAMES=/run/opengl-driver/share/glvnd/egl_vendor.d/10_nvidia.json quickshell -p ~/.config/quickshell/shell.qml")
 end)
 
 local border_color = "rgba(ffffffff)"
@@ -149,7 +149,7 @@ bind(mod .. " + HOME", exec("quickshell ipc call screenshot toggle"))
 bind("ALT + S", exec("quickshell ipc call screenshot region"))
 bind(mod .. " + O", exec("quickshell ipc call record toggle"))
 
-bind(mod .. " + F12", exec("pkill quickshell; env QSG_RENDER_LOOP=threaded quickshell -p ~/.config/quickshell/shell.qml & disown"))
+bind(mod .. " + F12",exec("pkill quickshell; env QSG_RENDER_LOOP=threaded __EGL_VENDOR_LIBRARY_FILENAMES=/run/opengl-driver/share/glvnd/egl_vendor.d/10_nvidia.json quickshell -p ~/.config/quickshell/shell.qml & disown"))
 
 bind(mod .. " + left",  focus({ direction = "left" }))
 bind(mod .. " + right", focus({ direction = "right" }))
