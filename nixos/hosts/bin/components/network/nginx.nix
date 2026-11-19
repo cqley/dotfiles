@@ -26,13 +26,13 @@
       clientMaxBodySize = "10m";
       serverTokens = false;
 
-      virtualHosts = lib.genAttrs [ "dash" "immich" "silly" "notes" "blog" "share" "downloader" ] (_: {
+      virtualHosts = lib.genAttrs [ "dash" "immich" "silly" "notes" "blog" "share" "downloader" "aiostreams" "jellyfin" ] (_: {
         serverName = "10.0.0.1";
         serverAliases = [ "bin" ];
       }) // {
         private = {
           default = true;
-          listen = map (port: { addr = "10.0.0.1"; inherit port; }) [ 2283 8081 8090 8091 8092 8093 8094 ];
+          listen = map (port: { addr = "10.0.0.1"; inherit port; }) [ 2283 8081 8090 8091 8092 8093 8094 8095 8096 ];
           locations."/".return = "444";
         };
       };

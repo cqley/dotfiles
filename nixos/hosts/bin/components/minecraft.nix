@@ -54,7 +54,7 @@ let
 
   app = pkgs.runCommand "silly" { nativeBuildInputs = [ pkgs.librsvg pkgs.gnused ]; } ''
     mkdir $out
-    sed -e 's/#000000/#f2b8e2/' -e 's/stroke-opacity="0.9"//' -e 's/width="800px" height="800px" viewBox="0 0 400 400"/viewBox="-60 -60 520 520"/' ${./website/assets/cat.svg} > cat.svg
+    sed -e 's/#000000/#f2b8e2/' -e 's/stroke-opacity="0.9"//' -e 's/width="800px" height="800px" viewBox="0 0 400 400"/viewBox="-60 -60 520 520"/' ${./network/assets/cat.svg} > cat.svg
     for n in 180 192 512; do rsvg-convert -b '#161616' -w $n -h $n cat.svg -o $out/icon$n.png; done
     cp ${manifest} $out/manifest.json
   '';

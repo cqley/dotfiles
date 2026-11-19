@@ -7,16 +7,18 @@
     ./components/security.nix
     ./components/immich.nix
     ./components/minecraft.nix
-    ./components/website/nginx.nix
-    ./components/website/assets.nix
-    ./components/website/website.nix
-    ./components/website/dashboard.nix
-    ./components/website/matrix.nix
-    ./components/website/blog.nix
-    ./components/website/music.nix
-    ./components/website/share.nix
-    ./components/website/notes.nix
-    ./components/website/git.nix
+    ./components/network/nginx.nix
+    ./components/network/assets.nix
+    ./components/network/website.nix
+    ./components/network/dashboard.nix
+    ./components/network/matrix.nix
+    ./components/network/blog.nix
+    ./components/network/music.nix
+    ./components/network/share.nix
+    ./components/network/notes.nix
+    ./components/network/git.nix
+    ./components/streaming/jellyfin.nix
+    ./components/streaming/aiostreams.nix
     ../../modules/system/core.nix
     ../../modules/system/names.nix
     ../../modules/system/editor.nix
