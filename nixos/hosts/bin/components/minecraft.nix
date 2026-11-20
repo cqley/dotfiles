@@ -20,7 +20,6 @@ let
     display = "standalone";
     background_color = "#161616";
     theme_color = "#161616";
-    icons = [{ src = "/apple-touch-icon.png"; sizes = "512x512"; type = "image/png"; }];
   });
 
   valid = ''

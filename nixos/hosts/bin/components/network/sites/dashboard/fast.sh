@@ -1,4 +1,4 @@
-units="nginx.service tuwunel.service livekit.service lk-jwt-service.service coturn.service navidrome.service downloader.service edeltalk.timer unfassbar.timer henkescorner.timer wanshow.timer blog.service share.service notes.service immich-server.service jellyfin.service aiostreams.service minecraft-cron.timer mcpanel.service syncthing.service wireguard-wg0.service fcgiwrap-git.socket gittrash.timer sshd.service fail2ban.service"
+units="nginx.service tuwunel.service livekit.service lk-jwt-service.service coturn.service navidrome.service downloader.service downloader.socket edeltalk.timer unfassbar.timer henkescorner.timer wanshow.timer blog.service share.service notes.service immich-server.service jellyfin.service aiostreams.service minecraft-cron.timer mcpanel.service syncthing.service wireguard-wg0.service fcgiwrap-git.socket gittrash.timer sshd.service fail2ban.service"
 units="$units $(systemctl list-units --all --plain --no-legend 'minecraft@*.service' 2>/dev/null | awk '{print $1}')"
 
 read -r l1 l5 l15 _ < /proc/loadavg
@@ -37,7 +37,7 @@ events=$(
       <(cat /etc/ssh/authorized_keys.d/* | ssh-keygen -lf - | awk '{ print $2, $3 }') -
   journalctl -S @"$since" -q --no-pager -o short-unix SYSLOG_IDENTIFIER=doas |
     awk '{ m = $0; sub(/^[^:]*: /, "", m) } m ~ / ran command / { u = m; sub(/ .*/, "", u); c = m; sub(/^[^ ]* ran command /, "", c); sub(/ as root from .*$/, "", c); printf "%d\tdoas\t%s\t%s\t\n", $1, u, c } m ~ /^failed auth for / { printf "%d\tdoas\t%s\tfailed\t\n", $1, $NF }'
-} | sort -rn | head -n 25)
+} | sort -rn | awk 'NR <= 25')
 
 today=$(journalctl -u sshd -S today -q --no-pager -o cat)
 conns=$(grep -c '^Connection from ' <<< "$today" || true)

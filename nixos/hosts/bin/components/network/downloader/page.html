@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>plum</title>
+  <link rel="stylesheet" href="/assets/style.css">
+  <script src="/assets/theme.js"></script>
+  <style>
+    .row{display:flex;flex-wrap:wrap;gap:.5rem;}
+    .row select{flex:1;min-width:0;}
+    .row button{align-self:stretch;}
+    #url{width:100%;min-width:0;}
+    #out{color:var(--dim);border:1px solid var(--line);padding:.5rem;max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;display:none;font-size:.85em;margin-top:1.5rem;}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <a class="up" href="https://music.1f2t.org/">../</a>
+    <h1 style="margin-top:1.5rem">music</h1>
+    <div id="app">
+      <p class="muted">downloader &lt;3</p>
+      <h2>fetch</h2>
+      <form id="f">
+        <input type="url" id="url" placeholder="link" required autocomplete="off">
+        <div class="row">
+          <select id="type">
+            <option value="song">song</option>
+            <option value="playlist">playlist</option>
+          </select>
+          <select id="dest">
+            <option value="server">server</option>
+            <option value="device">device</option>
+          </select>
+          <button type="submit" id="btn">download</button>
+        </div>
+      </form>
+      <div id="status" class="status">ready</div>
+      <pre id="out"></pre>
+    </div>
+  </main>
+  <script>
+    const store = {
+      get(k) { try { return localStorage.getItem(k) || ""; } catch { return ""; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+      del(k) { try { localStorage.removeItem(k); } catch {} },
+    };
+    const f = document.getElementById("f");
+    const urlInput = document.getElementById("url");
+    const typeSelect = document.getElementById("type");
+    const destSelect = document.getElementById("dest");
+    const btn = document.getElementById("btn");
+    const out = document.getElementById("out");
+    const status = document.getElementById("status");
+
+    destSelect.value = store.get("downloaderdest") || "server";
+    destSelect.onchange = () => store.set("downloaderdest", destSelect.value);
+
+    urlInput.addEventListener("input", (e) => {
+      const val = e.target.value;
+      if (val.includes("playlist") || val.includes("&list=") || val.includes("/album/") || val.includes("/sets/")) {
+        typeSelect.value = "playlist";
+      }
+    });
+
+    function filename(res) {
+      const cd = res.headers.get("content-disposition") || "";
+      const star = cd.match(/filename\*=UTF-8''([^;]+)/);
+      if (star) return decodeURIComponent(star[1]);
+      const plain = cd.match(/filename="([^"]+)"/);
+      return plain ? plain[1] : "music";
+    }
+
+    function setBusy(busy) {
+      btn.disabled = busy;
+      urlInput.disabled = busy;
+      typeSelect.disabled = busy;
+      destSelect.disabled = busy;
+    }
+
+    f.onsubmit = async (e) => {
+      e.preventDefault();
+      setBusy(true);
+      out.style.display = "none";
+      out.textContent = "";
+      status.textContent = "processing...";
+      status.className = "status";
+
+      try {
+        const res = await fetch("dl", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ url: urlInput.value, type: typeSelect.value, dest: destSelect.value }),
+        });
+        if (res.ok && res.headers.get("content-disposition")) {
+          status.textContent = "saving...";
+          const blob = await res.blob();
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = filename(res);
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+          status.textContent = "saved to your device";
+          status.className = "status ok";
+          urlInput.value = "";
+          return;
+        }
+        const text = await res.text();
+        out.style.display = "block";
+        out.textContent = text;
+        if (res.ok && text.startsWith("success")) {
+          status.textContent = "download complete";
+          status.className = "status ok";
+          urlInput.value = "";
+        } else {
+          status.textContent = "process failed";
+          status.className = "status err";
+        }
+      } catch (err) {
+        out.style.display = "block";
+        out.textContent = err;
+        status.textContent = "network error";
+        status.className = "status err";
+      } finally {
+        setBusy(false);
+        urlInput.focus();
+      }
+    };
+
+    urlInput.focus();
+  </script>
+</body>
+</html>

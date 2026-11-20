@@ -26,7 +26,7 @@ var embedded embed.FS
 var (
 	root   string
 	pages  = template.Must(template.New("").Funcs(template.FuncMap{"leaf": leaf, "path": escape, "at": at}).ParseFS(embedded, "page.html"))
-	token  = regexp.MustCompile("`([^`]+)`" + `|(!?)\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]*))?\]\]|(!?)\[([^\]]*)\]\(([^)\s]+)\)|\*\*(.+?)\*\*|\*([^*\s][^*]*)\*|(https?://[^\s<]+)`)
+	token  = regexp.MustCompile("`([^`]+)`" + `|(!?)\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]*))?\]\]|(!?)\[([^\]]*)\]\(((?:[^()\s]|\([^()\s]*\))+)\)|\*\*(.+?)\*\*|\*([^*\s][^*]*)\*|(https?://[^\s<]+)`)
 	head   = regexp.MustCompile(`^(#{1,6})\s+(.*)$`)
 	item   = regexp.MustCompile(`^(\s*)([-*+]|\d+[.)])\s+(.*)$`)
 	scheme = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9+.-]*:`)
@@ -200,7 +200,15 @@ func inline(s string) string {
 		case m[18] >= 0:
 			b.WriteString("<em>" + inline(g(9)) + "</em>")
 		default:
-			b.WriteString(`<a href="` + esc(g(10)) + `">` + esc(g(10)) + `</a>`)
+			u := g(10)
+			for len(u) > 0 {
+				c := u[len(u)-1]
+				if !strings.ContainsRune(".,:;!?'\"", rune(c)) && (c != ')' || strings.Count(u, "(") >= strings.Count(u, ")")) {
+					break
+				}
+				u = u[:len(u)-1]
+			}
+			b.WriteString(`<a href="` + esc(u) + `">` + esc(u) + `</a>` + esc(g(10)[len(u):]))
 		}
 	}
 	return b.String() + esc(s[last:])

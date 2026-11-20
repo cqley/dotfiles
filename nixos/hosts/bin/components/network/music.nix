@@ -1,6 +1,7 @@
 { lib, pkgs, ... }:
 
 let
+  downloader = pkgs.callPackage ./downloader/package.nix { };
   podcasts = {
     edeltalk = { list = "PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss"; newest = "1:3"; };
     unfassbar = { list = "PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp"; newest = "1:3"; };
@@ -78,21 +79,32 @@ in
   }) podcasts // {
     downloader = {
       wantedBy = [ "multi-user.target" ];
+      requires = [ "downloader.socket" ];
+      after = [ "downloader.socket" ];
       path = [ pkgs.yt-dlp pkgs.ffmpeg pkgs.deno pkgs.spotdl pkgs.zip ];
       environment = {
         HOME = "/var/lib/navidrome";
         XDG_CONFIG_HOME = "/var/lib/navidrome/.config";
         XDG_CACHE_HOME = "/var/lib/navidrome/.cache";
         DENO_DIR = "/var/lib/navidrome/.deno";
+        DOWNLOADER_ORIGINS = "http://10.0.0.1:8094 http://bin:8094";
       };
-      script = ''
-        exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1:4534 --allow-run=yt-dlp,spotdl,zip --allow-read=/var/lib/navidrome --allow-write=/var/lib/navidrome ${./sites/downloader/server.js}
-      '';
       serviceConfig = sandbox // {
+        ExecStart = "${downloader}/bin/downloader";
         User = "navidrome";
         WorkingDirectory = "/var/lib/navidrome";
         Restart = "on-failure";
       };
+    };
+  };
+
+  systemd.sockets.downloader = {
+    wantedBy = [ "sockets.target" ];
+    listenStreams = [ "/run/downloader.sock" ];
+    socketConfig = {
+      SocketUser = "nginx";
+      SocketGroup = "nginx";
+      SocketMode = "0600";
     };
   };
 
@@ -107,7 +119,7 @@ in
     listen = [{ addr = "10.0.0.1"; port = 8094; }];
     locations."/assets/".alias = "/etc/assets/";
     locations."/" = {
-      proxyPass = "http://127.0.0.1:4534";
+      proxyPass = "http://unix:/run/downloader.sock";
       extraConfig = ''
         proxy_read_timeout 1800s;
         proxy_send_timeout 1800s;

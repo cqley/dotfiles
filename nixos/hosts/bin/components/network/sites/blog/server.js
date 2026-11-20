@@ -104,7 +104,6 @@ function layout(body, extra = "", title = "banana") {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(title)}</title>
-<link rel="icon" href="/favicon.svg">
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/theme.js"></script>
 <link rel="stylesheet" href="/blog.css">

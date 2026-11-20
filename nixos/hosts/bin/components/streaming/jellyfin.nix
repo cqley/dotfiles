@@ -36,14 +36,16 @@ in
 
   systemd.services.jellyfin = {
     preStart = "install -m 600 ${network} /var/lib/jellyfin/config/network.xml";
+    environment.DOTNET_GCHeapHardLimit = "0xC0000000";
     serviceConfig = {
       CPUQuota = "500%";
       Nice = 10;
+      MemoryHigh = "5G";
+      MemoryMax = "6G";
     };
   };
 
   systemd.tmpfiles.rules = [
-    "d /var/lib/media 2750 cat jellyfin -"
     "d /var/lib/jellyfin/gelato 0750 jellyfin jellyfin -"
     "d /var/lib/jellyfin/gelato/movies 0750 jellyfin jellyfin -"
     "d /var/lib/jellyfin/gelato/shows 0750 jellyfin jellyfin -"
@@ -63,7 +65,7 @@ in
     forceSSL = true;
     enableACME = true;
     locations."/" = proxy;
-    locations."~* ^/(users/(authenticatebyname|authenticatewithquickconnect|forgotpassword)|quickconnect/)" = proxy // {
+    locations."~* ^/(users/(authenticatebyname|authenticatewithquickconnect|forgotpassword)|quickconnect/initiate)" = proxy // {
       extraConfig = ''
         limit_req zone=jellylogin burst=5 nodelay;
         limit_req_status 429;

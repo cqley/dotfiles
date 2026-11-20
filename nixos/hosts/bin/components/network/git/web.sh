@@ -77,18 +77,18 @@ function inl(s,  x, a, b) {
 	while (match(S, /<!--([^-]|-[^-])*-->/)) { cut(); S = pre post }
 	while (match(S, /<https?:\/\/[^ <>]+>/)) { x = cut(); x = substr(x, 2, length(x) - 2); S = pre keep("<a href=\"" e(x) "\">" e(x) "</a>") post }
 	while (match(S, /<\/?[A-Za-z][^<>]*>/)) { x = cut(); S = pre keep(tag(x)) post }
-	while (match(S, /!\[[^]]*\]\([^)]*\)/)) {
+	while (match(S, /!\[[^]]*\]\(([^()]|\([^()]*\))*\)/)) {
 		x = cut(); a = x; sub(/^!\[/, "", a); sub(/\]\(.*$/, "", a)
 		b = x; sub(/^!\[[^]]*\]\(/, "", b); sub(/\)$/, "", b); sub(/[ \t]+".*"$/, "", b)
 		S = pre pic("<img src=\"" e(url(bare(b), 1)) "\" alt=\"" e(bare(a)) "\" loading=\"lazy\">", url(bare(b), 1)) post
 	}
-	while (match(S, /\[[^]]*\]\([^)]*\)/)) {
+	while (match(S, /\[[^]]*\]\(([^()]|\([^()]*\))*\)/)) {
 		x = cut(); a = x; sub(/^\[/, "", a); sub(/\]\(.*$/, "", a)
 		b = x; sub(/^\[[^]]*\]\(/, "", b); sub(/\)$/, "", b); sub(/[ \t]+".*"$/, "", b)
 		x = a; while (match(x, /\001[0-9]+\002/)) { NOW[substr(x, RSTART + 1, RLENGTH - 2)] = 1; x = substr(x, RSTART + RLENGTH) }
 		S = pre keep("<a href=\"" e(url(bare(b), 0)) "\">") a keep("</a>") post
 	}
-	while (match(S, /https?:\/\/[^ \t<>"\001\002]+[^ \t<>"\001\002.,;:!?)]/)) { x = cut(); S = pre keep("<a href=\"" e(x) "\">" e(x) "</a>") post }
+	while (match(S, /https?:\/\/[^ \t<>"\001\002]+[^ \t<>"\001\002.,;:!?)]/)) { x = cut(); if (substr(post, 1, 1) == ")" && gsub(/\(/, "(", x) > gsub(/\)/, ")", x)) { x = x ")"; post = substr(post, 2) } S = pre keep("<a href=\"" e(x) "\">" e(x) "</a>") post }
 	S = e(S)
 	while (match(S, /\*\*[^*]+\*\*/)) { x = cut(); S = pre "<strong>" substr(x, 3, length(x) - 4) "</strong>" post }
 	while (match(S, /__[^_]+__/)) { x = cut(); S = pre "<strong>" substr(x, 3, length(x) - 4) "</strong>" post }
@@ -245,7 +245,7 @@ top() {
 	printf 'Content-Type: text/html; charset=utf-8\n%s\n' "$csp"
 	[ -n "$cache" ] && printf '%s\n' "$cache"
 	printf '\n'
-	printf '<!doctype html>\n<html lang=en>\n<meta charset=utf-8>\n<meta name=viewport content="width=device-width,initial-scale=1">\n<title>%s</title>\n<link rel=icon href=/favicon.svg>\n<link rel=stylesheet href=/git.css>\n<script src=/assets/theme.js></script>\n<script src=/git.js defer></script>\n<header><a href=/ class=site>git</a>' "$(h "$title")"
+	printf '<!doctype html>\n<html lang=en>\n<meta charset=utf-8>\n<meta name=viewport content="width=device-width,initial-scale=1">\n<title>%s</title>\n<link rel=stylesheet href=/git.css>\n<script src=/assets/theme.js></script>\n<script src=/git.js defer></script>\n<header><a href=/ class=site>git</a>' "$(h "$title")"
 	[ -n "$o" ] && printf ' / <a href="/%s/">%s</a>' "$o" "$o"
 	[ -n "$r" ] && printf ' / <a href="/%s/%s/">%s</a>' "$o" "$r" "$r"
 	printf '</header>\n'
@@ -260,6 +260,12 @@ top() {
 		printf '<a href="%s"%s>%s</a>' "$l" "$c" $t
 	done
 	printf '</nav>\n'
+}
+
+empty() {
+	top "$tab"
+	printf '<p class=dim>empty</p>\n'
+	exit 0
 }
 
 nf() {
@@ -466,7 +472,7 @@ summary() {
 tree() {
 	tab=tree
 	if [ -z "$1" ]; then
-		head_ref || nf
+		head_ref || empty
 		go "/$o/$r/tree/$(uh "$ref")/"
 	fi
 	resolve "$1" || nf
@@ -571,7 +577,7 @@ raw() {
 log() {
 	tab=commits
 	if [ -z "$1" ]; then
-		head_ref || nf
+		head_ref || empty
 		go "/$o/$r/commits/$(uh "$ref")/"
 	fi
 	resolve "$1" || nf
@@ -631,6 +637,18 @@ commit() {
 	  rows = rows "<tr><td class=r>" ($1 == "-" ? "<span class=dim>bin</span>" : $1 == "0" ? "" : "<span class=add>+" $1 "</span>") "</td><td class=r>" ($2 == "-" || $2 == "0" ? "" : "<span class=del>-" $2 "</span>") "</td><td><a href=\"#f" n "\">" e($3) "</a></td></tr>\n" }
 	END { if (n) printf "<p class=dim>%s · <span class=add>+%d</span> <span class=del>-%d</span></p>\n<table class=stat>\n%s</table>\n", (n == 1 ? "1 file" : n " files"), ta, td, rows }'
 	g diff --no-color "$p" "$sha" | head -n 5000 | awk "$E"'
+	function unq(s,  r, i, c, n, k) {
+		if (substr(s, 1, 1) != "\"") return s
+		s = substr(s, 2, length(s) - 2); r = ""
+		for (i = 1; i <= length(s); i++) {
+			c = substr(s, i, 1)
+			if (c != "\\") { r = r c; continue }
+			c = substr(s, ++i, 1)
+			if (c ~ /[0-7]/) { n = 0; for (k = 0; k < 3 && substr(s, i, 1) ~ /[0-7]/; k++) n = n * 8 + substr(s, i++, 1); r = r sprintf("%c", n); i--; continue }
+			r = r (c == "n" ? "\n" : c == "t" ? "\t" : c == "a" ? "\a" : c == "b" ? "\b" : c == "f" ? "\f" : c == "r" ? "\r" : c == "v" ? "\v" : c)
+		}
+		return r
+	}
 	function show() {
 		if (shown) return
 		shown = 1
@@ -647,21 +665,23 @@ commit() {
 	/^diff --git / {
 		end(); f++; shown = open = del = 0; hd = 1; note = ""
 		x = substr($0, 14); k = length(x); h = (k - 5) / 2
-		if (k % 2 && substr(x, h + 3, 3) == " b/") name = substr(x, 3, h); else name = substr(x, index(x, " b/") + 3)
+		if (substr(x, k) == "\"") { for (i = k - 1; i > 1 && substr(x, i, 4) != " \"b/"; i--); name = substr(unq(substr(x, i + 1)), 3) }
+		else if (k % 2 && substr(x, h + 3, 3) == " b/") name = substr(x, 3, h); else name = substr(x, index(x, " b/") + 3)
 		old = name
 		next
 	}
 	hd && /^new file mode / { note = "new"; next }
 	hd && /^deleted file mode / { note = "deleted"; del = 1; next }
-	hd && /^rename from / { old = substr($0, 13); note = "renamed from " old; next }
-	hd && /^rename to / { name = substr($0, 11); next }
-	hd && /^copy from / { old = substr($0, 11); note = "copied from " old; next }
-	hd && /^copy to / { name = substr($0, 9); next }
+	hd && /^rename from / { old = unq(substr($0, 13)); note = "renamed from " old; next }
+	hd && /^rename to / { name = unq(substr($0, 11)); next }
+	hd && /^copy from / { old = unq(substr($0, 11)); note = "copied from " old; next }
+	hd && /^copy to / { name = unq(substr($0, 9)); next }
 	hd && /^old mode / { om = substr($0, 10); next }
 	hd && /^new mode / { if (!note) note = "mode " om " → " substr($0, 10); next }
 	hd && /^Binary files / { note = note (note ? ", " : "") "binary"; next }
-	hd && /^--- / { if ($0 != "--- /dev/null") old = substr($0, 7); next }
-	hd && /^\+\+\+ / { if ($0 != "+++ /dev/null") name = substr($0, 7); next }
+	hd && /^(---|\+\+\+) / { sub(/\t$/, "") }
+	hd && /^--- / { if ($0 != "--- /dev/null") old = substr(unq(substr($0, 5)), 3); next }
+	hd && /^\+\+\+ / { if ($0 != "+++ /dev/null") name = substr(unq(substr($0, 5)), 3); next }
 	hd && /^(index|similarity|dissimilarity) / { next }
 	/^@@ / {
 		show(); hd = 0
