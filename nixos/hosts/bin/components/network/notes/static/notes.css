@@ -44,7 +44,8 @@ input.name {
   color: #111;
 }
 
-#new a {
+#new a,
+.list .file a {
   color: var(--dim);
 }
 

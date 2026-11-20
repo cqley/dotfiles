@@ -115,7 +115,7 @@ function link(name){
   if(!m) return null;
   if(m.link) return m.link;
   if(!m.site) return null;
-  return location.hostname.endsWith('.bin')?'http://'+m.site+'.bin/':'http://'+location.hostname+':'+m.port+'/';
+  return location.hostname.endsWith('.bin')?'https://'+m.site+'.bin/':'http://'+location.hostname+':'+m.port+'/';
 }
 
 function when(t){

@@ -56,6 +56,10 @@
   services.nginx.virtualHosts."dash" = {
     root = "/etc/dash";
     extraConfig = "error_page 404 /404.html;";
+    locations."= /ca.crt" = {
+      alias = "/var/lib/bincert/ca.crt";
+      extraConfig = "default_type application/x-x509-ca-cert;";
+    };
     locations."/data/".alias = "/var/lib/dash/";
     locations."/assets/".alias = "/etc/assets/";
   };

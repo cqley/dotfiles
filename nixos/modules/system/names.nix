@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 
 let
   sites = {
@@ -25,6 +25,18 @@ in
       "10.0.0.2" = [ "box" ];
       "10.0.0.3" = [ "bed" ];
       "10.0.0.4" = [ "phone" ];
+    };
+
+    security.pki.certificateFiles = [ ./bin.crt ];
+
+    home-manager.users.cat = { lib, ... }: {
+      home.activation.bincert = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        db="$HOME/.pki/nssdb"
+        mkdir -p "$db"
+        [ -f "$db/cert9.db" ] || ${pkgs.nssTools}/bin/certutil -d "sql:$db" -N --empty-password
+        ${pkgs.nssTools}/bin/certutil -d "sql:$db" -D -n bin 2>/dev/null || true
+        ${pkgs.nssTools}/bin/certutil -d "sql:$db" -A -n bin -t C,, -i ${./bin.crt}
+      '';
     };
 
     programs.ssh.knownHosts.bin = {

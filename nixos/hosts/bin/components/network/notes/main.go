@@ -34,10 +34,10 @@ var (
 )
 
 type page struct {
-	Q, New, Name, Text     string
-	HTML                   template.HTML
-	Notes, Dirs, All, Back []string
-	Missing                bool
+	Q, New, Name, Text            string
+	HTML                          template.HTML
+	Notes, Dirs, Files, All, Back []string
+	Missing                       bool
 }
 
 func main() {
@@ -371,6 +371,8 @@ func folder(w http.ResponseWriter, r *http.Request, d string) {
 			p.Dirs = append(p.Dirs, pre+e.Name())
 		} else if strings.HasSuffix(e.Name(), ".md") {
 			p.Notes = append(p.Notes, pre+bare(e.Name()))
+		} else {
+			p.Files = append(p.Files, pre+e.Name())
 		}
 	}
 	for n := range notes() {
@@ -492,18 +494,32 @@ func save(w http.ResponseWriter, r *http.Request) {
 }
 
 func remove(w http.ResponseWriter, r *http.Request) {
+	raw := clean(r.PathValue("name"))
 	n := named(w, r)
 	if n == "" {
 		return
 	}
-	if isdir(n) {
-		if l, err := os.ReadDir(filepath.Join(root, n)); fail(w, err) {
+	if isdir(raw) {
+		l, err := os.ReadDir(filepath.Join(root, raw))
+		if fail(w, err) {
 			return
-		} else if len(l) > 0 {
-			http.Error(w, "folder is not empty", http.StatusConflict)
-		} else if !fail(w, os.Remove(filepath.Join(root, n))) {
-			prune(n)
-			go303(w, r, near(n))
+		}
+		for _, e := range l {
+			if !strings.HasPrefix(e.Name(), ".") {
+				http.Error(w, "folder is not empty", http.StatusConflict)
+				return
+			}
+		}
+		if !fail(w, os.RemoveAll(filepath.Join(root, raw))) {
+			prune(raw)
+			go303(w, r, near(raw))
+		}
+		return
+	}
+	if s, err := os.Stat(filepath.Join(root, raw)); err == nil && s.Mode().IsRegular() && !strings.HasSuffix(raw, ".md") {
+		if !fail(w, os.Remove(filepath.Join(root, raw))) {
+			prune(raw)
+			go303(w, r, near(raw))
 		}
 		return
 	}

@@ -11,7 +11,8 @@ const items = () => [...document.querySelectorAll(".list:not([hidden]) li:not([h
 const mark = () => items().forEach((a, i) => a.classList.toggle("sel", i === sel));
 const pick = (d) => { const n = items().length; sel = n ? (sel + d + n) % n : 0; mark(); items()[sel]?.scrollIntoView({ block: "nearest" }); };
 const drop = (a) => {
-  const m = a?.getAttribute("href").match(/^\/n\/(.+?)(?:\.md|\/)$/);
+  const h = a?.getAttribute("href") || "";
+  const m = h.match(/^\/n\/(.+?)(?:\.md|\/)$/) || h.match(/^\/f\/(.+)$/);
   if (!m || !confirm("delete " + decodeURIComponent(m[1]) + "?")) return;
   const f = document.createElement("form");
   f.method = "post";
