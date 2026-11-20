@@ -139,9 +139,8 @@ function postPage(name, post, md) {
 
 function notFoundPage(name) {
   return layout(`<main class="wrap">
-    <a class="up" href="/">../</a>
-    <h1 style="margin-top:1.5rem">404</h1>
-    <p>no such post.</p>
+    <h1><a href="/">${esc(name)}</a></h1>
+    <p class="dim">no.</p>
   </main>`);
 }
 
@@ -214,7 +213,7 @@ async function media(req, name) {
     size = (await Deno.stat(`${imagesDir}/${name}`)).size;
     file = await Deno.open(`${imagesDir}/${name}`);
   } catch {
-    return new Response("not found", { status: 404 });
+    return new Response("no.", { status: 404 });
   }
   const m = (req.headers.get("range") ?? "").match(/^bytes=(\d*)-(\d*)$/);
   if (!m || (!m[1] && !m[2])) return new Response(file.readable, { headers: { ...headers, "content-length": String(size) } });
@@ -257,7 +256,7 @@ const see = (to) => new Response(null, { status: 303, headers: { location: to } 
 async function site(req) {
   const url = new URL(req.url);
   const path = url.pathname;
-  if (req.method !== "GET") return new Response("not found", { status: 404 });
+  if (req.method !== "GET") return new Response("no.", { status: 404 });
 
   if (path === "/") return html(indexPage((await loadSettings()).name, sorted(await loadIndex())));
 
@@ -267,7 +266,7 @@ async function site(req) {
 
   if (path.startsWith("/images/")) {
     const name = path.slice("/images/".length);
-    if (!imagePattern.test(name)) return new Response("not found", { status: 404 });
+    if (!imagePattern.test(name)) return new Response("no.", { status: 404 });
     const webp = name.replace(/\.png$/, ".webp");
     if (webp !== name && await Deno.stat(`${imagesDir}/${webp}`).then(() => true, () => false)) {
       return new Response(null, { status: 301, headers: { location: `/images/${webp}` } });
@@ -275,7 +274,7 @@ async function site(req) {
     return media(req, name);
   }
 
-  if (path.startsWith("/api/")) return new Response("not found", { status: 404 });
+  if (path.startsWith("/api/")) return new Response("no.", { status: 404 });
 
   const { name } = await loadSettings();
   const postMatch = path.match(/^\/([^/]+)\.md$/);
@@ -304,7 +303,7 @@ async function admin(req) {
   const path = url.pathname;
   const get = req.method === "GET";
 
-  if (!get && req.method !== "POST") return new Response("not found", { status: 404 });
+  if (!get && req.method !== "POST") return new Response("no.", { status: 404 });
   if (!get && req.headers.get("sec-fetch-site") === "cross-site") return new Response("forbidden", { status: 403 });
 
   if (get && path === "/") {
@@ -387,7 +386,7 @@ async function admin(req) {
   }
 
   if (get) return site(req);
-  return new Response("not found", { status: 404 });
+  return new Response("no.", { status: 404 });
 }
 
 Deno.serve({ port: Number(Deno.env.get("PORT") ?? 4600), hostname: "127.0.0.1" }, site);

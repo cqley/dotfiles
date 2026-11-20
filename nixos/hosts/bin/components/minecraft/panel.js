@@ -1118,7 +1118,8 @@ const pageDir = Deno.args[0];
 const pageVersion = pageDir.split("/").pop().slice(0, 8);
 const page = (await Deno.readTextFile(`${pageDir}/index.html`)).replaceAll("VERSION", pageVersion);
 const dashboardPage = (await Deno.readTextFile(`${pageDir}/dashboard.html`)).replaceAll("VERSION", pageVersion);
-const html = (body) => new Response(body, { headers: { "content-type": "text/html; charset=utf-8" } });
+const nopePage = dashboardPage.slice(0, dashboardPage.indexOf("<body>")) + `<body>\n<div class="wrap">\n<p class="top"><a href="/dashboard" class="dim">servers</a></p>\n<p class="dim">no.</p>\n</div>\n</body>\n</html>\n`;
+const html = (body, status = 200) => new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8" } });
 
 const memo = new Map();
 
@@ -1158,8 +1159,8 @@ async function route(req) {
   if (url.pathname === "/") return new Response(null, { status: 302, headers: { location: "/dashboard" } });
   if (/^\/dashboard\/?$/.test(url.pathname)) return html(dashboardPage);
   const tabs = url.pathname.match(/^\/([a-z0-9]{1,16})(\/(players(\/[A-Za-z0-9_]{1,16})?|activity|mods(\/(datapacks|resourcepack))?|world|stats|tasks|settings))?\/?$/);
-  if (tabs && validName(tabs[1])) return html(page);
-  if (parts[0] !== "api") return text("not found", 404);
+  if (tabs && validName(tabs[1]) && names.has(tabs[1])) return html(page);
+  if (parts[0] !== "api") return html(nopePage, 404);
   if (parts[1] === "servers" && !parts[2] && req.method === "GET") {
     return Response.json(await Promise.all([...names].map((n) => status(n))));
   }
@@ -1216,7 +1217,7 @@ async function route(req) {
     if (action === "properties") {
       try { return text(await Deno.readTextFile(props)); } catch { return text("no server.properties yet, start the server once", 404); }
     }
-    return text("not found", 404);
+    return text("no.", 404);
   }
   if (req.method === "PUT" && action === "properties") {
     const body = await req.text();
@@ -1345,7 +1346,7 @@ async function route(req) {
     if (!await running()) return text("server is not running", 409);
     return (await command(name, await req.text())) ? text("ok") : text("empty command", 400);
   }
-  return text("not found", 404);
+  return text("no.", 404);
 }
 
 Deno.serve({ port: 4603, hostname: "127.0.0.1" }, async (req) => {

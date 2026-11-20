@@ -441,8 +441,13 @@ in
     '';
   };
 
+  network.services.minecraft = {
+    units = [ "minecraft-cron.timer" "mcpanel.service" ];
+    site = "silly";
+    data.minecraft = "/var/lib/minecraft";
+  };
+
   services.nginx.virtualHosts."silly" = {
-    listen = [{ addr = "10.0.0.1"; port = 8090; }];
     extraConfig = "client_max_body_size 4g;";
     locations."/assets/".alias = "/etc/assets/";
     locations."= /app/manifest.json".alias = "${manifest}";

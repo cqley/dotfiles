@@ -1,4 +1,4 @@
-units="nginx.service tuwunel.service livekit.service lk-jwt-service.service coturn.service navidrome.service downloader.service downloader.socket edeltalk.timer unfassbar.timer henkescorner.timer wanshow.timer blog.service share.service notes.service immich-server.service jellyfin.service aiostreams.service minecraft-cron.timer mcpanel.service syncthing.service wireguard-wg0.service fcgiwrap-git.socket gittrash.timer sshd.service fail2ban.service"
+units=$(jq -r ".units[].unit" /etc/dash/services.json)
 units="$units $(systemctl list-units --all --plain --no-legend 'minecraft@*.service' 2>/dev/null | awk '{print $1}')"
 
 read -r l1 l5 l15 _ < /proc/loadavg

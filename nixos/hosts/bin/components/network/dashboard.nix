@@ -31,7 +31,7 @@
 
   systemd.services.dashstorage = {
     script = builtins.readFile ./sites/dashboard/slow.sh;
-    path = [ pkgs.coreutils ];
+    path = [ pkgs.coreutils pkgs.jq ];
     serviceConfig = {
       Type = "oneshot";
       User = "dash";
@@ -51,10 +51,11 @@
   };
 
   environment.etc."dash/index.html".source = ./sites/dashboard/dashboard.html;
+  environment.etc."dash/404.html".source = ./sites/dashboard/404.html;
 
   services.nginx.virtualHosts."dash" = {
-    listen = [{ addr = "10.0.0.1"; port = 8081; }];
     root = "/etc/dash";
+    extraConfig = "error_page 404 /404.html;";
     locations."/data/".alias = "/var/lib/dash/";
     locations."/assets/".alias = "/etc/assets/";
   };

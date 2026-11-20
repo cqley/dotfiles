@@ -57,9 +57,9 @@ in
     limit_req_zone $binary_remote_addr zone=jellylogin:1m rate=5r/m;
   '';
 
-  services.nginx.virtualHosts."jellyfin" = site // {
-    listen = [{ addr = "10.0.0.1"; port = 8096; }];
-  };
+  network.services.jellyfin.site = "jellyfin";
+
+  services.nginx.virtualHosts."jellyfin" = site;
 
   services.nginx.virtualHosts."stream.1f2t.org" = site // {
     forceSSL = true;

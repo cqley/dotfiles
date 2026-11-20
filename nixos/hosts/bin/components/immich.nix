@@ -11,8 +11,13 @@
     machine-learning.enable = false;
   };
 
+  network.services.immich = {
+    units = [ "immich-server.service" ];
+    site = "immich";
+    data.photos = "/var/lib/immich";
+  };
+
   services.nginx.virtualHosts."immich" = {
-    listen = [{ addr = "10.0.0.1"; port = 2283; }];
     extraConfig = ''
       client_max_body_size 50000M;
       proxy_read_timeout 600s;

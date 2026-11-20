@@ -7,21 +7,33 @@ if (text) {
 }
 addEventListener("beforeunload", (e) => { if (dirty) e.preventDefault(); });
 
-const items = () => [...document.querySelectorAll(".list li:not([hidden]) a")];
+const items = () => [...document.querySelectorAll(".list:not([hidden]) li:not([hidden]) a")];
 const mark = () => items().forEach((a, i) => a.classList.toggle("sel", i === sel));
 const pick = (d) => { const n = items().length; sel = n ? (sel + d + n) % n : 0; mark(); items()[sel]?.scrollIntoView({ block: "nearest" }); };
+const drop = (a) => {
+  const m = a?.getAttribute("href").match(/^\/n\/(.+?)(?:\.md|\/)$/);
+  if (!m || !confirm("delete " + decodeURIComponent(m[1]) + "?")) return;
+  const f = document.createElement("form");
+  f.method = "post";
+  f.action = "/d/" + m[1];
+  document.body.append(f);
+  f.submit();
+};
 
 if (find) {
+  const pre = find.dataset.dir ? find.dataset.dir + "/" : "";
   find.oninput = () => {
-    const q = find.value.trim(), lq = q.toLowerCase();
+    const q = find.value.trim(), lq = q.toLowerCase(), name = pre + q.replace(/\.md$/, "");
     let exact = false;
-    for (const li of document.querySelectorAll(".list li:not(#new)")) {
-      li.hidden = !li.textContent.toLowerCase().includes(lq);
-      exact ||= li.textContent === q.replace(/\.md$/, "");
+    for (const li of document.querySelectorAll("#all li:not(#new)")) {
+      li.hidden = !li.textContent.slice(pre.length).toLowerCase().includes(lq);
+      exact ||= li.textContent === name;
     }
+    for (const el of document.querySelectorAll("#dir, #empty")) el.hidden = !!q;
+    $("#all").hidden = !q;
     make.hidden = !q || exact;
-    make.firstChild.textContent = "new: " + q;
-    make.firstChild.href = "/e/" + q.split("/").map(encodeURIComponent).join("/");
+    make.firstChild.textContent = "new: " + name;
+    make.firstChild.href = "/e/" + name.split("/").map(encodeURIComponent).join("/");
     sel = 0;
     mark();
   };
@@ -46,10 +58,11 @@ addEventListener("keydown", (e) => {
     e: () => $("#edit") && ($("#edit").click(), true),
     j: () => find && (pick(1), true),
     k: () => find && (pick(-1), true),
+    d: () => find && items()[sel] && (drop(items()[sel]), true),
     ArrowDown: () => find && (pick(1), true),
     ArrowUp: () => find && (pick(-1), true),
     Enter: () => find && items()[sel] && (items()[sel].click(), true),
-    Escape: () => location.pathname !== "/" && (location = "/"),
+    Escape: () => location.pathname !== "/" && (location = $(".head a:last-of-type:not(#edit)")?.href || "/"),
   }[e.key];
   if (run?.()) e.preventDefault();
 });

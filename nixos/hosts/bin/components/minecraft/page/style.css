@@ -1,8 +1,7 @@
 [hidden] { display: none !important; }
-:root { --warn: #c80; --mono: "Courier Prime", monospace; --term: ui-monospace, Menlo, Consolas, monospace; }
-:root:not([data-theme=light]) { --bg: #161616; --fg: #ddd; --line: #333; --err: #f66; --ok: #6c6; --warn: #eb5; --code: #222; color-scheme: dark; }
+:root { --term: ui-monospace, Menlo, Consolas, monospace; }
 
-body { font-family: "Libertinus Serif", serif; font-size: 17px; -webkit-tap-highlight-color: transparent; }
+body { -webkit-tap-highlight-color: transparent; }
 .wrap { max-width: 50rem; margin: 2rem auto 5rem; padding: 0 max(1rem, env(safe-area-inset-right)) 0 max(1rem, env(safe-area-inset-left)); }
 p { margin: 0 0 .6rem; }
 h1 { font-size: 1.3rem; display: flex; align-items: center; gap: .5rem; margin: 0 0 .2rem; }

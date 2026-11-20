@@ -109,6 +109,7 @@ in
 
   services.nginx.appendHttpConfig = ''
     limit_req_zone $binary_remote_addr zone=githeavy:1m rate=1r/s;
+    fastcgi_cache_path /var/cache/nginx/git levels=1:2 keys_zone=git:10m max_size=256m inactive=1d use_temp_path=off;
   '';
 
   services.nginx.virtualHosts.${host} = {
@@ -123,7 +124,14 @@ in
       return 200 "User-agent: *\nDisallow: /*/*/archive/\nDisallow: /*/*/commit/\nDisallow: /*/*/commits/\nDisallow: /*/*/files/\nDisallow: /*/*/raw/\n";
     '';
 
-    locations."/".extraConfig = fcgi;
+    locations."/".extraConfig = fcgi + ''
+      fastcgi_cache git;
+      fastcgi_cache_key $request_method$host$request_uri;
+      fastcgi_ignore_headers Cache-Control Expires;
+      fastcgi_cache_valid 200 5s;
+      fastcgi_cache_revalidate on;
+      fastcgi_cache_use_stale updating;
+    '';
     locations."~ ^/[^/]+/[^/]+/(archive/|info/refs$|git-upload-pack$)".extraConfig = ''
       limit_req zone=githeavy burst=20 nodelay;
       limit_req_status 429;

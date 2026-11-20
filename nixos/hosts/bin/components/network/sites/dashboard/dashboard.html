@@ -107,24 +107,16 @@ function ago(ts){
   return Math.floor(s/3600)+'h ago';
 }
 
-const links={
-  nginx:'https://1f2t.org/',
-  tuwunel:'https://federationtester.matrix.org/#matrix.1f2t.org',
-  navidrome:'https://music.1f2t.org/',
-  downloader:'http://10.0.0.1:8094/',
-  edeltalk:'https://www.youtube.com/playlist?list=PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss',
-  unfassbar:'https://www.youtube.com/playlist?list=PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp',
-  henkescorner:'https://www.youtube.com/playlist?list=PLnEam709xEo1DuqpEFBR43gEYBFfQyM7D',
-  wanshow:'https://www.youtube.com/playlist?list=PLBKxjEPgnXa0',
-  blog:'http://10.0.0.1:8092/',
-  share:'http://10.0.0.1:8093/',
-  notes:'http://10.0.0.1:8091/',
-  'fcgiwrap-git':'https://git.1f2t.org/',
-  'immich-server':'http://10.0.0.1:2283/',
-  jellyfin:'https://stream.1f2t.org/',
-  aiostreams:'http://10.0.0.1:8095/',
-  mcpanel:'http://10.0.0.1:8090/'
-};
+let meta=null;
+
+function link(name){
+  if(!meta) return null;
+  const m=meta[name]||(name.startsWith('minecraft')?Object.values(meta).find(u=>u.site==='silly'):null);
+  if(!m) return null;
+  if(m.link) return m.link;
+  if(!m.site) return null;
+  return location.hostname.endsWith('.bin')?'http://'+m.site+'.bin/':'http://'+location.hostname+':'+m.port+'/';
+}
 
 function when(t){
   const d=new Date(t*1000);
@@ -197,10 +189,10 @@ function renderStatus(s){
   s.services.forEach(x=>{
     const bad = x.active!=='active' || x.failed==='failed' || x.errors>0;
     if(bad) badServices++;
-    const link=links[x.name]||(x.name.startsWith('minecraft')?'http://10.0.0.1:8090/':null);
-    const chip=document.createElement(link?'a':'div');
-    if(link){chip.href=link;chip.target='_blank';chip.rel='noopener';}
-    chip.className='chip '+(bad?'bad':'ok')+(link?' link':'');
+    const href=link(x.name);
+    const chip=document.createElement(href?'a':'div');
+    if(href){chip.href=href;chip.target='_blank';chip.rel='noopener';}
+    chip.className='chip '+(bad?'bad':'ok')+(href?' link':'');
     chip.innerHTML='<span class="dot"></span><span class="name">'+x.name+'</span>'+
       (x.errors>0?('<span class="err-count">'+x.errors+' err</span>'):'');
     st.appendChild(chip);
@@ -260,6 +252,13 @@ function tickFreshness(){
 }
 
 async function load(){
+  if(!meta){
+    try{
+      meta={};
+      for(const u of (await (await fetch('/services.json',{cache:'no-store'})).json()).units) meta[u.unit.replace(/\.[^.]*$/,'')]=u;
+    }catch(e){meta=null;}
+  }
+
   try{
     renderLogins(await (await fetch('/data/logins.json',{cache:'no-store'})).json());
   }catch(e){}

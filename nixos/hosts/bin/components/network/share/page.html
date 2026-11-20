@@ -48,6 +48,10 @@
 <div id="done"></div>
 {{template "end"}}{{end}}
 
+{{define "no"}}{{template "top" .}}
+<p class="dim">no.</p>
+{{template "end"}}{{end}}
+
 {{define "done"}}{{template "top" .}}
 <div id="done">{{range .Done}}<div class="upload"><a href="{{.URL}}">{{.Name}}</a><span class="muted">delete key {{.DeleteKey}}</span></div>{{end}}</div>
 {{template "end"}}{{end}}

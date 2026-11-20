@@ -16,7 +16,7 @@ async function refresh(){
   let list;
   try{list=await json("servers");}catch{return;}
   const s=list.find((x)=>x.name===sel);
-  if(!s){$("state").textContent="not found";return;}
+  if(!s){$("state").textContent="no.";return;}
   cur=s;
   const ph=phase(s),up=s.state==="active"||s.state==="activating",p=s.players;
   $("state").textContent=ph;$("state").className="st "+ph;

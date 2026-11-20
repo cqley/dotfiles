@@ -1,8 +1,3 @@
-body {
-  font-family: "Libertinus Serif", serif;
-  font-size: 17px;
-}
-
 .wrap {
   max-width: 44rem;
   margin: 2rem auto 4rem;
@@ -12,7 +7,7 @@ body {
   margin-right: 1.2rem;
 }
 
-.head, .bar a, .bar button {
+.head, .bar a, .bar button, .head button {
   color: var(--dim);
 }
 
@@ -65,7 +60,8 @@ input.name {
   margin: 0;
 }
 
-.bar button {
+.bar button,
+.head button {
   border: 0;
   padding: 0;
   min-height: 0;
@@ -74,7 +70,7 @@ input.name {
   display: inline;
 }
 
-.bar a:hover, .bar button:hover {
+.bar a:hover, .bar button:hover, .head button:hover {
   color: var(--acc);
 }
 
@@ -113,7 +109,7 @@ input.name {
 }
 
 .prose code, .prose pre, textarea {
-  font-family: "Courier Prime", monospace;
+  font-family: var(--mono);
 }
 
 .prose code, .prose pre {

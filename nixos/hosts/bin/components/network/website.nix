@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 {
   environment.etc."website".source = ./sites/website;
 
@@ -9,7 +9,6 @@
     extraConfig = "error_page 404 /404.html;";
     locations = {
       "/assets/".alias = "/etc/assets/";
-      "/fonts/".alias = "${pkgs.courier-prime}/share/fonts/truetype/";
       "= /blog".return = "301 https://blog.1f2t.org/";
       "= /blog/".return = "301 https://blog.1f2t.org/";
       "= /contact".return = "301 /";

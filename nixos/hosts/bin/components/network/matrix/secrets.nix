@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ bin, ... }:
 
 let
   dir = "/var/lib/matrixsecrets";
@@ -8,22 +8,21 @@ let
   };
 in
 {
-  systemd.services.matrixsecrets = {
-    path = [ pkgs.coreutils ];
-    script = ''
-      umask 077
-      gen() { head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n'; }
-      [ -s ${dir}/registration ] || gen > ${dir}/registration
-      [ -s ${dir}/turn ] || gen > ${dir}/turn
-      [ -s ${dir}/livekit ] || printf 'tuwunel: %s\n' "$(gen)" > ${dir}/livekit
-    '';
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      StateDirectory = "matrixsecrets";
-      StateDirectoryMode = "0700";
+  network.services = {
+    tuwunel = {
+      link = "https://federationtester.matrix.org/#matrix.1f2t.org";
+      data.matrix = "/var/lib/tuwunel";
     };
+    livekit = { };
+    lk-jwt-service = { };
+    coturn = { };
   };
+
+  systemd.services.matrixsecrets = bin.secret "matrixsecrets" ''
+    [ -s registration ] || gen 32 > registration
+    [ -s turn ] || gen 32 > turn
+    [ -s livekit ] || printf 'tuwunel: %s\n' "$(gen 32)" > livekit
+  '';
 
   systemd.services.tuwunel = needs // {
     serviceConfig.LoadCredential = [

@@ -25,7 +25,7 @@ var embedded embed.FS
 
 var (
 	root   string
-	pages  = template.Must(template.New("").Funcs(template.FuncMap{"leaf": leaf, "path": escape, "at": at}).ParseFS(embedded, "page.html"))
+	pages  = template.Must(template.New("").Funcs(template.FuncMap{"leaf": leaf, "path": escape, "at": at, "dir": dir, "up": up, "parent": parent}).ParseFS(embedded, "page.html"))
 	token  = regexp.MustCompile("`([^`]+)`" + `|(!?)\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]*))?\]\]|(!?)\[([^\]]*)\]\(((?:[^()\s]|\([^()\s]*\))+)\)|\*\*(.+?)\*\*|\*([^*\s][^*]*)\*|(https?://[^\s<]+)`)
 	head   = regexp.MustCompile(`^(#{1,6})\s+(.*)$`)
 	item   = regexp.MustCompile(`^(\s*)([-*+]|\d+[.)])\s+(.*)$`)
@@ -34,9 +34,10 @@ var (
 )
 
 type page struct {
-	Q, New, Name, Text string
-	HTML                      template.HTML
-	Notes, Back               []string
+	Q, New, Name, Text     string
+	HTML                   template.HTML
+	Notes, Dirs, All, Back []string
+	Missing                bool
 }
 
 func main() {
@@ -47,13 +48,14 @@ func main() {
 	static, _ := fs.Sub(embedded, "static")
 	m := http.NewServeMux()
 	m.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
-	m.HandleFunc("GET /{$}", home)
+	m.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) { folder(w, r, "") })
 	m.HandleFunc("GET /today", today)
 	m.HandleFunc("GET /n/{name...}", view)
 	m.HandleFunc("GET /e/{name...}", edit)
 	m.HandleFunc("POST /e/{name...}", save)
 	m.HandleFunc("POST /d/{name...}", remove)
 	m.HandleFunc("GET /f/{name...}", file)
+	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { no(w) })
 	l, err := net.FileListener(os.NewFile(3, "notes.sock"))
 	if err != nil {
 		log.Fatal(err)
@@ -81,6 +83,16 @@ func show(w http.ResponseWriter, name string, p page) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-cache")
+	b.WriteTo(w)
+}
+
+func no(w http.ResponseWriter) {
+	var b bytes.Buffer
+	if fail(w, pages.ExecuteTemplate(&b, "no", page{})) {
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusNotFound)
 	b.WriteTo(w)
 }
 
@@ -136,6 +148,45 @@ func escape(name string) string {
 
 func leaf(name string) string {
 	return name[strings.LastIndex(name, "/")+1:]
+}
+
+func parent(name string) string {
+	return name[:max(strings.LastIndex(name, "/"), 0)]
+}
+
+func dir(name string) string {
+	if name == "" {
+		return "/"
+	}
+	return "/n/" + escape(name) + "/"
+}
+
+func up(name string) []string {
+	var out []string
+	for i, c := range name {
+		if c == '/' {
+			out = append(out, name[:i])
+		}
+	}
+	return out
+}
+
+func isdir(name string) bool {
+	s, err := os.Stat(filepath.Join(root, name))
+	return err == nil && s.IsDir()
+}
+
+func prune(name string) {
+	for d := parent(name); d != "" && os.Remove(filepath.Join(root, d)) == nil; d = parent(d) {
+	}
+}
+
+func near(name string) string {
+	d := parent(name)
+	for d != "" && !isdir(d) {
+		d = parent(d)
+	}
+	return dir(d)
 }
 
 func notes() map[string]string {
@@ -298,32 +349,79 @@ func render(text string) string {
 	return b.String()
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
+func folder(w http.ResponseWriter, r *http.Request, d string) {
 	q := strings.TrimSpace(r.FormValue("q"))
-	p := page{Q: q, New: bare(clean(q))}
+	pre := ""
+	if d != "" {
+		pre = d + "/"
+	}
+	p := page{Q: q, Name: d}
+	if q != "" {
+		p.New = bare(clean(pre + q))
+	}
+	list, err := os.ReadDir(filepath.Join(root, d))
+	if fail(w, err) {
+		return
+	}
+	for _, e := range list {
+		if strings.HasPrefix(e.Name(), ".") {
+			continue
+		}
+		if e.IsDir() {
+			p.Dirs = append(p.Dirs, pre+e.Name())
+		} else if strings.HasSuffix(e.Name(), ".md") {
+			p.Notes = append(p.Notes, pre+bare(e.Name()))
+		}
+	}
 	for n := range notes() {
-		if strings.Contains(strings.ToLower(n), strings.ToLower(q)) {
-			p.Notes = append(p.Notes, n)
+		if strings.HasPrefix(n, pre) && strings.Contains(strings.ToLower(n[len(pre):]), strings.ToLower(q)) {
+			p.All = append(p.All, n)
 		}
 		if n == p.New {
 			p.New = ""
 		}
 	}
-	sort.Strings(p.Notes)
+	sort.Strings(p.All)
 	show(w, "home", p)
 }
 
 func today(w http.ResponseWriter, r *http.Request) {
-	go303(w, r, at(time.Now().Format("2006-01-02")))
+	go303(w, r, at("daily/"+time.Now().Format("2006-01-02")))
+}
+
+func find(n string) string {
+	if strings.Contains(n, "/") {
+		return ""
+	}
+	hit := ""
+	for o := range notes() {
+		if leaf(o) == n {
+			if hit != "" {
+				return ""
+			}
+			hit = o
+		}
+	}
+	return hit
 }
 
 func view(w http.ResponseWriter, r *http.Request) {
+	if clean(r.PathValue("name")) == "" {
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		return
+	}
 	n := named(w, r)
 	if n == "" {
 		return
 	}
 	if raw := clean(r.PathValue("name")); !strings.HasSuffix(raw, ".md") {
-		if s, err := os.Stat(filepath.Join(root, raw)); err == nil && s.Mode().IsRegular() {
+		if s, err := os.Stat(filepath.Join(root, raw)); err == nil && s.IsDir() {
+			if strings.HasSuffix(r.URL.Path, "/") {
+				folder(w, r, raw)
+			} else {
+				http.Redirect(w, r, dir(raw), http.StatusMovedPermanently)
+			}
+		} else if err == nil && s.Mode().IsRegular() {
 			go303(w, r, "/f/"+escape(raw))
 		} else {
 			http.Redirect(w, r, at(n), http.StatusMovedPermanently)
@@ -332,15 +430,23 @@ func view(w http.ResponseWriter, r *http.Request) {
 	}
 	b, err := os.ReadFile(src(n))
 	if os.IsNotExist(err) {
-		go303(w, r, "/e/"+escape(n))
+		if o := find(n); o != "" {
+			go303(w, r, at(o))
+		} else {
+			go303(w, r, "/e/"+escape(n))
+		}
 		return
 	}
 	if fail(w, err) {
 		return
 	}
 	p := page{Name: n, HTML: template.HTML(render(string(b)))}
+	short := n
+	if find(leaf(n)) == n {
+		short = leaf(n)
+	}
 	for o, text := range notes() {
-		if o != n && slices.ContainsFunc(link.FindAllStringSubmatch(text, -1), func(m []string) bool { return bare(strings.TrimSpace(m[2])) == n }) {
+		if o != n && slices.ContainsFunc(link.FindAllStringSubmatch(text, -1), func(m []string) bool { t := bare(strings.TrimSpace(m[2])); return t == n || t == short }) {
 			p.Back = append(p.Back, o)
 		}
 	}
@@ -352,7 +458,7 @@ func edit(w http.ResponseWriter, r *http.Request) {
 	if n := named(w, r); n != "" {
 		b, err := os.ReadFile(src(n))
 		if os.IsNotExist(err) || !fail(w, err) {
-			show(w, "edit", page{Name: n, Text: string(b)})
+			show(w, "edit", page{Name: n, Text: string(b), Missing: err != nil})
 		}
 	}
 }
@@ -376,21 +482,46 @@ func save(w http.ResponseWriter, r *http.Request) {
 		fail(w, os.Rename(src(to)+".tmp", src(to))) {
 		return
 	}
-	if to != n && fail(w, os.Remove(src(n))) {
-		return
+	if to != n {
+		if err := os.Remove(src(n)); !os.IsNotExist(err) && fail(w, err) {
+			return
+		}
+		prune(n)
 	}
 	go303(w, r, at(to))
 }
 
 func remove(w http.ResponseWriter, r *http.Request) {
-	if n := named(w, r); n != "" && !fail(w, os.Remove(src(n))) {
-		go303(w, r, "/")
+	n := named(w, r)
+	if n == "" {
+		return
+	}
+	if isdir(n) {
+		if l, err := os.ReadDir(filepath.Join(root, n)); fail(w, err) {
+			return
+		} else if len(l) > 0 {
+			http.Error(w, "folder is not empty", http.StatusConflict)
+		} else if !fail(w, os.Remove(filepath.Join(root, n))) {
+			prune(n)
+			go303(w, r, near(n))
+		}
+		return
+	}
+	if err := os.Remove(src(n)); os.IsNotExist(err) {
+		no(w)
+	} else if !fail(w, err) {
+		prune(n)
+		go303(w, r, near(n))
 	}
 }
 
 func file(w http.ResponseWriter, r *http.Request) {
 	if n := clean(r.PathValue("name")); n == "" {
 		http.Error(w, "bad name", http.StatusBadRequest)
+	} else if isdir(n) {
+		http.Redirect(w, r, dir(n), http.StatusMovedPermanently)
+	} else if _, err := os.Stat(filepath.Join(root, n)); err != nil {
+		no(w)
 	} else {
 		w.Header().Set("Content-Security-Policy", "sandbox")
 		http.ServeFile(w, r, filepath.Join(root, n))

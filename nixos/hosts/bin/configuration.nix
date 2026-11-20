@@ -8,6 +8,7 @@
     ./components/immich.nix
     ./components/minecraft.nix
     ./components/network/nginx.nix
+    ./components/network/services.nix
     ./components/network/assets.nix
     ./components/network/website.nix
     ./components/network/dashboard.nix

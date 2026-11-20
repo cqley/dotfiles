@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -241,7 +242,12 @@ func main() {
 		w.Write(page)
 	})
 	m.HandleFunc("POST /dl", download)
-	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { reply(w, 404, "not found") })
+	nope := string(page[:bytes.Index(page, []byte("<body>"))]) + "<body>\n  <main class=\"wrap\">\n    <a class=\"up\" href=\"https://music.1f2t.org/\">../</a>\n    <h1 style=\"margin-top:1.5rem\">music</h1>\n    <p class=\"dim\">no.</p>\n  </main>\n</body>\n</html>\n"
+	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusNotFound)
+		io.WriteString(w, nope)
+	})
 	c := http.NewCrossOriginProtection()
 	for _, o := range strings.Fields(os.Getenv("DOWNLOADER_ORIGINS")) {
 		if err := c.AddTrustedOrigin(o); err != nil {

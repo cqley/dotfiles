@@ -44,7 +44,7 @@ var embedded embed.FS
 const (
 	limit   = 250 << 20
 	textMax = 1 << 20
-	csp     = "default-src 'none'; img-src 'self'; media-src 'self'; frame-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'self'"
+	csp     = "default-src 'none'; img-src 'self'; media-src 'self'; frame-src 'self'; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'self'"
 	rawCSP  = "default-src 'none'; img-src 'self' data:; media-src 'self'; style-src 'unsafe-inline'; sandbox"
 	pdfCSP  = "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; frame-ancestors 'self'"
 )
@@ -224,6 +224,8 @@ func main() {
 	dash.HandleFunc("POST /d/{name}", purge)
 	dash.HandleFunc("POST /keys", mint)
 	dash.HandleFunc("POST /k/{id}", revoke)
+	pub.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { show(w, 404, "no", page{}) })
+	dash.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { show(w, 404, "no", page{Site: site}) })
 	go serve(4, dash, strings.Fields(os.Getenv("SHARE_DASH_ORIGINS")))
 	serve(3, pub, nil)
 }
@@ -884,6 +886,10 @@ func upload(w http.ResponseWriter, r *http.Request) {
 
 func view(w http.ResponseWriter, r *http.Request) {
 	f, m, err := load(r.PathValue("name"))
+	if errors.Is(err, fs.ErrNotExist) {
+		show(w, 404, "no", page{})
+		return
+	}
 	if fail(w, err) {
 		return
 	}

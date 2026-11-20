@@ -1,0 +1,98 @@
+@font-face {
+  font-family: "Libertinus Serif";
+  src: local("Libertinus Serif Regular"), local("LibertinusSerif-Regular"), url("/assets/fonts/LibertinusSerif-Regular.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Libertinus Serif";
+  src: local("Libertinus Serif Italic"), local("LibertinusSerif-Italic"), url("/assets/fonts/LibertinusSerif-Italic.woff2") format("woff2");
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Libertinus Serif";
+  src: local("Libertinus Serif Bold"), local("LibertinusSerif-Bold"), url("/assets/fonts/LibertinusSerif-Bold.woff2") format("woff2");
+  font-weight: bold;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Libertinus Serif";
+  src: local("Libertinus Serif Bold Italic"), local("LibertinusSerif-BoldItalic"), url("/assets/fonts/LibertinusSerif-BoldItalic.woff2") format("woff2");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  src: local("Courier Prime"), local("CourierPrime-Regular"), url("/assets/fonts/CourierPrime-Regular.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  src: local("Courier Prime Italic"), local("CourierPrime-Italic"), url("/assets/fonts/CourierPrime-Italic.woff2") format("woff2");
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  src: local("Courier Prime Bold"), local("CourierPrime-Bold"), url("/assets/fonts/CourierPrime-Bold.woff2") format("woff2");
+  font-weight: bold;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  src: local("Courier Prime Bold Italic"), local("CourierPrime-BoldItalic"), url("/assets/fonts/CourierPrime-BoldItalic.woff2") format("woff2");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --bg: #fff;
+  --fg: #222;
+  --dim: #888;
+  --acc: #f2b8e2;
+  --line: #ddd;
+  --code: #f6f6f6;
+  --err: #e33;
+  --ok: #5a5;
+  --warn: #c80;
+  --serif: "Libertinus Serif", serif;
+  --mono: "Courier Prime", monospace;
+  color-scheme: light;
+}
+
+:root[data-theme=dark] {
+  --bg: #161616;
+  --fg: #ddd;
+  --line: #333;
+  --code: #222;
+  --err: #f66;
+  --ok: #6c6;
+  --warn: #eb5;
+  color-scheme: dark;
+}
+
+html {
+  background: var(--bg);
+}
+
+* {
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+::selection {
+  background: var(--acc);
+  color: #222;
+}

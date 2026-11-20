@@ -1,35 +1,33 @@
-{ lib, pkgs, ... }:
+{ config, lib, pkgs, bin, ... }:
 
 let
-  downloader = pkgs.callPackage ./downloader/package.nix { };
+  downloader = bin.go "downloader" ./downloader;
   podcasts = {
     edeltalk = { list = "PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss"; newest = "1:3"; };
     unfassbar = { list = "PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp"; newest = "1:3"; };
     henkescorner = { list = "PLnEam709xEo1DuqpEFBR43gEYBFfQyM7D"; newest = "-3:"; };
     wanshow = { list = "PLBKxjEPgnXa0"; newest = "1:3"; };
   };
-  sandbox = {
-    NoNewPrivileges = true;
-    PrivateTmp = true;
-    PrivateDevices = true;
-    ProtectSystem = "strict";
-    ProtectHome = true;
+  sandbox = bin.sandbox // {
     ReadWritePaths = [ "/var/lib/navidrome" ];
-    ProtectKernelTunables = true;
-    ProtectKernelModules = true;
-    ProtectKernelLogs = true;
-    ProtectControlGroups = true;
-    ProtectClock = true;
-    ProtectHostname = true;
-    RestrictSUIDSGID = true;
-    RestrictRealtime = true;
-    RestrictNamespaces = true;
-    LockPersonality = true;
     RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
-    CapabilityBoundingSet = "";
   };
 in
 {
+  network.services = lib.mapAttrs (name: podcast: {
+    units = [ "${name}.timer" ];
+    link = "https://www.youtube.com/playlist?list=${podcast.list}";
+  }) podcasts // {
+    navidrome = {
+      link = "https://music.1f2t.org/";
+      data.music = "/var/lib/navidrome";
+    };
+    downloader = {
+      units = [ "downloader.service" "downloader.socket" ];
+      site = "downloader";
+    };
+  };
+
   services.navidrome = {
     enable = true;
     settings = {
@@ -87,7 +85,7 @@ in
         XDG_CONFIG_HOME = "/var/lib/navidrome/.config";
         XDG_CACHE_HOME = "/var/lib/navidrome/.cache";
         DENO_DIR = "/var/lib/navidrome/.deno";
-        DOWNLOADER_ORIGINS = "http://10.0.0.1:8094 http://bin:8094";
+        DOWNLOADER_ORIGINS = config.network.origins.downloader;
       };
       serviceConfig = sandbox // {
         ExecStart = "${downloader}/bin/downloader";
@@ -98,15 +96,7 @@ in
     };
   };
 
-  systemd.sockets.downloader = {
-    wantedBy = [ "sockets.target" ];
-    listenStreams = [ "/run/downloader.sock" ];
-    socketConfig = {
-      SocketUser = "nginx";
-      SocketGroup = "nginx";
-      SocketMode = "0600";
-    };
-  };
+  systemd.sockets.downloader = bin.socket [ "/run/downloader.sock" ];
 
   services.nginx.virtualHosts."music.1f2t.org" = {
     forceSSL = true;
@@ -116,7 +106,6 @@ in
   };
 
   services.nginx.virtualHosts."downloader" = {
-    listen = [{ addr = "10.0.0.1"; port = 8094; }];
     locations."/assets/".alias = "/etc/assets/";
     locations."/" = {
       proxyPass = "http://unix:/run/downloader.sock";

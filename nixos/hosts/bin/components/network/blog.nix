@@ -1,5 +1,10 @@
 { pkgs, ... }:
 {
+  network.services.blog = {
+    site = "blog";
+    data.blog = "/var/lib/blog";
+  };
+
   systemd.services.blog = {
     wantedBy = [ "multi-user.target" ];
     environment.DENO_DIR = "/var/lib/blog/.deno";
@@ -23,7 +28,6 @@
   };
 
   services.nginx.virtualHosts."blog" = {
-    listen = [{ addr = "10.0.0.1"; port = 8092; }];
     extraConfig = "client_max_body_size 210m;";
     locations."/assets/".alias = "/etc/assets/";
     locations."/".proxyPass = "http://127.0.0.1:4606";

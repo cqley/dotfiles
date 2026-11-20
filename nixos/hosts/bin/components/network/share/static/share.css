@@ -308,7 +308,7 @@ audio.media,
 
 pre,
 code {
-  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-family: var(--mono);
   font-size: .85rem;
 }
 

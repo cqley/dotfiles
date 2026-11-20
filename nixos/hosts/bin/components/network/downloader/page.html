@@ -130,6 +130,10 @@
     };
 
     urlInput.focus();
+    addEventListener("keydown", (e) => {
+      if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.target.closest("input, select")) { e.preventDefault(); urlInput.focus(); }
+      if (e.key === "Escape") document.activeElement.blur();
+    });
   </script>
 </body>
 </html>
