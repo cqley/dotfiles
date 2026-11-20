@@ -471,25 +471,6 @@ table.diff .gap td {
   cursor: pointer;
 }
 
-#theme {
-  position: fixed;
-  top: .6rem;
-  right: .7rem;
-  border: none;
-  background: none;
-  padding: .3rem;
-  line-height: 0;
-  color: var(--dim);
-  opacity: .25;
-  cursor: pointer;
-}
-
-#theme:hover,
-#theme:focus-visible {
-  opacity: 1;
-  color: var(--acc);
-}
-
 @media (max-width: 600px) {
   body {
     padding: 1rem .75rem 2rem;

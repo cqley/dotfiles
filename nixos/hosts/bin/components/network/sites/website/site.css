@@ -73,21 +73,3 @@ a:focus-visible {
 .dim {
   color: var(--dim);
 }
-
-#theme {
-  position: fixed;
-  top: .6rem;
-  right: .7rem;
-  border: 0;
-  background: none;
-  padding: .3rem;
-  line-height: 0;
-  color: var(--dim);
-  opacity: .3;
-  cursor: pointer;
-}
-
-#theme:hover {
-  opacity: 1;
-  color: var(--acc);
-}
