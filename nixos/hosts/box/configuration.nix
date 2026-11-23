@@ -97,7 +97,7 @@
     wireguard-tools
     kitty
     tmux
-    pkgs.unstable-quickshell
+    pkgs-unstable.quickshell
     awww
     wl-clipboard
     libnotify
