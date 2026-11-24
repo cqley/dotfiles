@@ -130,7 +130,7 @@ bind(mod .. " + V", window.float({ action = "toggle" }))
 bind(mod .. " + F", window.fullscreen({ mode = 0 }))
 bind(mod .. " + Tab", focus({ workspace = "m+1" }))
 
-bind(mod .. " + W", exec("quickshell ipc call bar toggle"))
+bind(mod .. " + W", exec("quickshell ipc call shell toggle"))
 bind(mod .. " + H", exec("quickshell ipc call notifications toggle"))
 bind(mod .. " + L", exec("quickshell ipc call settings toggle"))
 bind(mod .. " + P", exec("quickshell ipc call power toggle"))
