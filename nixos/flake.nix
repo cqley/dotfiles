@@ -21,6 +21,14 @@
       inherit system;
       config.allowUnfree = true;
     };
+
+    heliumPkg = helium.packages.${system}.helium.overrideAttrs (old: rec {
+      version = "0.22.4.1";
+      src = nixpkgs.legacyPackages.${system}.fetchurl {
+        url = "https://github.com/imputnet/helium-linux/releases/download/${version}/helium-bin_${version}-1_amd64.deb";
+        hash = "sha256-78vTqSQsaXs0t5OWxSKXA407n0L+23kOpLS+n/EbuKk=";
+      };
+    });
   in {
     nixosConfigurations = {
       box = nixpkgs.lib.nixosSystem {
@@ -33,7 +41,7 @@
           {
             programs.helium = {
               enable = true;
-              package = helium.packages.${system}.helium;
+              package = heliumPkg;
             };
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
@@ -55,7 +63,7 @@
           {
             programs.helium = {
               enable = true;
-              package = helium.packages.${system}.helium;
+              package = heliumPkg;
             };
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
