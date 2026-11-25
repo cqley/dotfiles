@@ -2,6 +2,27 @@
 
 let
   downloader = bin.go "downloader" ./downloader;
+  beets = pkgs.writeText "beets.yaml" (builtins.toJSON {
+    directory = "/var/lib/navidrome/music";
+    library = "/var/lib/navidrome/.beets/library.db";
+    plugins = "musicbrainz lyrics replaygain";
+    ui.color = false;
+    import = { move = true; quiet_fallback = "asis"; };
+    paths.singleton = "\$artist/\$title";
+    lyrics = { auto = true; sources = "lrclib"; synced = true; };
+    replaygain = { auto = true; backend = "ffmpeg"; };
+  });
+  beet = pkgs.writeShellScriptBin "beet" ''
+    export BEETSDIR=/var/lib/navidrome/.beets PATH=${pkgs.ffmpeg}/bin:$PATH
+    exec ${pkgs.beets}/bin/beet -c ${beets} "$@"
+  '';
+  tag = pkgs.writeShellScriptBin "tag" ''
+    ${beet}/bin/beet import -q -s "$1"
+    ${beet}/bin/beet write
+    ${pkgs.findutils}/bin/find "$1" -type f -name '*.mp3' -exec ${pkgs.coreutils}/bin/mv -n -t /var/lib/navidrome/music {} +
+    ${pkgs.coreutils}/bin/rm -rf "$1"
+  '';
+  tidy = [ "--parse-metadata" "title:(?P<artist>.+?) [-–—] (?P<title>.+)" "--replace-in-metadata" "title" ''(?i)\s*[(\[][^)\]]*(official|video|audio|lyric|visuali[sz]er|remaster|hd|4k|mv)[^)\]]*[)\]]|\s+(ft|feat)\.?\s.*'' "" ];
   podcasts = {
     edeltalk = { list = "PL_PrOB576HxI0mXdEVlBRpB2zerTAGCss"; newest = "1:3"; };
     unfassbar = { list = "PLEjgu53NfIVDFSb4HV3Qj7-IF4TQlXBNp"; newest = "1:3"; };
@@ -34,6 +55,7 @@ in
       Address = "127.0.0.1";
       Port = 4533;
       MusicFolder = "/var/lib/navidrome/music";
+      Scanner.PurgeMissing = "full";
     };
   };
 
@@ -41,15 +63,19 @@ in
     pkgs.ffmpeg
     pkgs.deno
     pkgs.spotdl
+    beet
     (pkgs.writeShellScriptBin "music" ''
       [[ $# -lt 2 ]] && { echo "usage: music [song|playlist] url"; exit 1; }
+      doas -u navidrome mkdir -p /var/lib/navidrome/tmp
+      d=$(doas -u navidrome mktemp -d /var/lib/navidrome/tmp/XXXXXX) || exit 1
       if [[ "$2" == *"spotify.com"* ]]; then
-        exec doas -u navidrome env HOME=/var/lib/navidrome XDG_CONFIG_HOME=/var/lib/navidrome/.config ${pkgs.spotdl}/bin/spotdl download "$2" --output /var/lib/navidrome/music --format mp3
+        doas -u navidrome env HOME=/var/lib/navidrome XDG_CONFIG_HOME=/var/lib/navidrome/.config ${pkgs.spotdl}/bin/spotdl download "$2" --output "$d" --format mp3
       else
-        args=(-x --audio-format mp3 --embed-metadata --embed-thumbnail -o '%(title)s.%(ext)s' -P /var/lib/navidrome/music)
+        args=(-x --audio-format mp3 --embed-metadata --embed-thumbnail ${lib.escapeShellArgs tidy} -o '%(title)s.%(ext)s' -P "$d")
         [[ $1 == "song" ]] && args+=(--no-playlist)
-        exec doas -u navidrome ${pkgs.yt-dlp}/bin/yt-dlp "''${args[@]}" "$2"
+        doas -u navidrome ${pkgs.yt-dlp}/bin/yt-dlp "''${args[@]}" "$2"
       fi
+      doas -u navidrome ${tag}/bin/tag "$d"
     '')
   ];
 
@@ -79,7 +105,7 @@ in
       wantedBy = [ "multi-user.target" ];
       requires = [ "downloader.socket" ];
       after = [ "downloader.socket" ];
-      path = [ pkgs.yt-dlp pkgs.ffmpeg pkgs.deno pkgs.spotdl pkgs.zip ];
+      path = [ pkgs.yt-dlp pkgs.ffmpeg pkgs.deno pkgs.spotdl pkgs.zip tag ];
       environment = {
         HOME = "/var/lib/navidrome";
         XDG_CONFIG_HOME = "/var/lib/navidrome/.config";

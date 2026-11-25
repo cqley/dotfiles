@@ -26,8 +26,8 @@ var page []byte
 
 var (
 	home    = env("DOWNLOADER_HOME", "/var/lib/navidrome")
-	music   = home + "/music"
 	temp    = home + "/tmp"
+	tidy    = [2]string{"title:(?P<artist>.+?) [-–—] (?P<title>.+)", `(?i)\s*[(\[][^)\]]*(official|video|audio|lyric|visuali[sz]er|remaster|hd|4k|mv)[^)\]]*[)\]]|\s+(ft|feat)\.?\s.*`}
 	sources = map[string][]string{
 		"youtube":    {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"},
 		"spotify":    {"open.spotify.com"},
@@ -70,7 +70,7 @@ func command(source, link, kind, out string) *exec.Cmd {
 	if source == "spotify" {
 		return exec.Command("spotdl", "download", link, "--output", out, "--format", "mp3")
 	}
-	args := []string{"-x", "--audio-format", "mp3", "--embed-metadata", "--embed-thumbnail", "-o", "%(title)s.%(ext)s", "-P", out}
+	args := []string{"-x", "--audio-format", "mp3", "--embed-metadata", "--embed-thumbnail", "--parse-metadata", tidy[0], "--replace-in-metadata", "title", tidy[1], "", "-o", "%(title)s.%(ext)s", "-P", out}
 	if kind == "song" {
 		args = append(args, "--no-playlist")
 	}
@@ -223,7 +223,20 @@ func download(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	ok, logs := run(command(source, link, kind, music), home)
+	if err := clean(); err != nil {
+		log.Print(err)
+		reply(w, 500, "error\n\n"+err.Error())
+		return
+	}
+	dir, err := os.MkdirTemp(temp, "")
+	if err != nil {
+		log.Print(err)
+		reply(w, 500, "error\n\n"+err.Error())
+		return
+	}
+	ok, logs := run(command(source, link, kind, dir), home)
+	_, tagged := run(exec.Command("tag", dir), home)
+	logs += tagged
 	if ok {
 		reply(w, 200, "success\n\n"+logs)
 	} else {
