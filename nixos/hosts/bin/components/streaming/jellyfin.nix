@@ -40,7 +40,7 @@ in
     serviceConfig = {
       CPUQuota = "500%";
       Nice = 10;
-      MemoryHigh = "5G";
+      MemorySwapMax = 0;
       MemoryMax = "6G";
     };
   };

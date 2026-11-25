@@ -109,7 +109,6 @@ in
       sshd = { };
       fail2ban = { };
       wireguard.units = [ "wireguard-wg0.service" ];
-      dnsmasq = { };
       syncthing.data.public = "/home/cat/public";
       git = {
         units = [ "fcgiwrap-git.socket" "gittrash.timer" ];
@@ -186,21 +185,6 @@ in
     systemd.services.nginx = {
       wants = [ "bincert.service" ];
       after = [ "bincert.service" ];
-    };
-
-    services.dnsmasq = {
-      enable = true;
-      resolveLocalQueries = false;
-      settings = {
-        listen-address = "10.0.0.1";
-        bind-dynamic = true;
-        no-resolv = true;
-        no-hosts = true;
-        addn-hosts = "${pkgs.writeText "hosts" (lib.concatStrings (lib.mapAttrsToList (ip: names: "${ip} ${toString names}\n") (lib.filterAttrs (ip: _: lib.hasPrefix "10.0.0." ip) config.networking.hosts)))}";
-        server = [ "1.1.1.1" "8.8.8.8" ];
-        domain-needed = true;
-        bogus-priv = true;
-      };
     };
 
     environment.etc."dash/services.json".text = builtins.toJSON {

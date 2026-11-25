@@ -57,7 +57,7 @@ function edit(r){
     msg(s.name+" saved"+(up&&(body.memory!==s.memory||body.port!==s.port)?", restart to apply":""));
     edit(r);load();
   }),btn("delete",async()=>{
-    if(prompt("type "+s.name+" to delete it. a backup is kept")!==s.name)return;
+    if(prompt("type "+s.name+" to delete it. old backups are kept")!==s.name)return;
     await api(s.name,{method:"DELETE"});
     msg("deleting "+s.name);edit(r);setTimeout(load,4000);
   },"del"),el("span","dim",s.type+" "+s.version+(s.loader?" · loader "+s.loader:"")));

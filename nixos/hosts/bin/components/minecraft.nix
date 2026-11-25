@@ -267,7 +267,6 @@ let
       trap finish EXIT
       if [ "$action" = import ] && [ ! -f "$staged" ]; then echo "nothing uploaded"; exit 1; fi
       if systemctl is-active --quiet "$unit"; then was=1; fi
-      if [ -d "$level" ]; then systemctl start "minecraft-backup@$name.service"; fi
       systemctl stop "$unit"
       if [ "$action" = reset ] || [ "$action" = import ]; then
         for s in "$level/players/stats" "$level/stats"; do

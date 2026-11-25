@@ -519,6 +519,8 @@ blob() {
 	view=
 	if [ -n "$(mime "$path")" ]; then
 		kind=img
+	elif [ "$s" -eq 0 ]; then
+		kind=none
 	elif [ "$s" -gt 1048576 ]; then
 		kind=big
 	elif text "$s"; then
@@ -540,6 +542,7 @@ blob() {
 	crumbs " <span class=dim>· $info$view · <a href=\"$raw\">raw</a> · <a href=\"$hist\">history</a></span>"
 	case $kind in
 	img) printf '<p class=img><a href="%s"><img src="%s" alt="%s"></a></p>\n' "$raw" "$raw" "$(h "${path##*/}")" ;;
+	none) printf '<p class=dim>empty file</p>\n' ;;
 	big) printf '<p class=dim>too big to show</p>\n' ;;
 	bin) printf '<p class=dim>binary file</p>\n' ;;
 	md)
@@ -635,7 +638,7 @@ commit() {
 	{ if ($3 == "") { getline x; getline y; $3 = x " → " y }
 	  n++; ta += $1; td += $2
 	  rows = rows "<tr><td class=r>" ($1 == "-" ? "<span class=dim>bin</span>" : $1 == "0" ? "" : "<span class=add>+" $1 "</span>") "</td><td class=r>" ($2 == "-" || $2 == "0" ? "" : "<span class=del>-" $2 "</span>") "</td><td><a href=\"#f" n "\">" e($3) "</a></td></tr>\n" }
-	END { if (n) printf "<p class=dim>%s · <span class=add>+%d</span> <span class=del>-%d</span></p>\n<table class=stat>\n%s</table>\n", (n == 1 ? "1 file" : n " files"), ta, td, rows }'
+	END { if (n) printf "<p class=dim>%s%s%s%s</p>\n<table class=stat>\n%s</table>\n", (n == 1 ? "1 file" : n " files"), (ta || td ? " ·" : ""), (ta ? " <span class=add>+" ta "</span>" : ""), (td ? " <span class=del>-" td "</span>" : ""), rows }'
 	g diff --no-color "$p" "$sha" | head -n 5000 | awk "$E"'
 	function unq(s,  r, i, c, n, k) {
 		if (substr(s, 1, 1) != "\"") return s
@@ -657,6 +660,7 @@ commit() {
 	}
 	function end() {
 		if (!f) return
+		if (!open && (note == "new" || note == "deleted")) note = note ", empty"
 		show()
 		if (open) print "</table></div>"
 		print "</div>"

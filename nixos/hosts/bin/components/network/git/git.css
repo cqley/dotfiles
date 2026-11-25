@@ -525,5 +525,6 @@ table.diff .gap td {
 }
 
 #find[hidden] {
-  display: none;
+  display: block;
+  visibility: hidden;
 }

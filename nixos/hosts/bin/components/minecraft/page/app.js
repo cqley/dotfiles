@@ -398,7 +398,7 @@ function worldPane(){
     for(const [k,v] of ch){await post(A("command"),"gamerule "+k+" "+v);data.rules[k]=v;}
     msg("rules reset");rules();
   };
-  const ask=(what)=>confirm(what+"? a backup is made first"+(live()?", the server restarts"+(online()?" and "+online()+" online get disconnected":""):""));
+  const ask=(what)=>confirm(what+"?"+(live()?" the server restarts"+(online()?" and "+online()+" online get disconnected":""):""));
   const act=async(action,extra)=>{await post(A("world/action"),{action,...extra});busy=action;load();};
   const load=async()=>{
     clearTimeout(timer);
@@ -467,7 +467,7 @@ function worldPane(){
     const f=$("wfile").files[0];$("wfile").value="";
     if(!f)return;
     if(!/\.(zip|tar\.gz|tgz)$/i.test(f.name))return msg("pick a .zip or .tar.gz file",true);
-    if(!confirm("replace the world with "+f.name+"? a backup is made first"+(live()?", the server restarts":"")))return;
+    if(!confirm("replace the world with "+f.name+"?"+(live()?" the server restarts":"")))return;
     const note=$("wnote");
     try{
       await new Promise((res,rej)=>{
