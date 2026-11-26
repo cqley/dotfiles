@@ -43,5 +43,15 @@ in
       hostNames = [ "bin" "10.0.0.1" "5.231.118.153" ];
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHMj59OaH5wP7xicn35YobPLaB7hpnvlkrAVlcMi5a08";
     };
+
+    programs.ssh.knownHosts.box = {
+      hostNames = [ "box" "10.0.0.2" ];
+      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA58MvrVk6HqUIbXlSnNmofmDseiUt4D46zMxQ+RpEIS";
+    };
+
+    programs.ssh.knownHosts.bed = {
+      hostNames = [ "bed" "10.0.0.3" ];
+      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIML80wrMlcIsezdnH+BQkBIo32fTF3egFhxZ8iM18R7n";
+    };
   };
 }
