@@ -11,7 +11,6 @@ let
     downloader = 8094;
     aiostreams = 8095;
     jellyfin = 8096;
-    vault = 8097;
   };
 in
 {

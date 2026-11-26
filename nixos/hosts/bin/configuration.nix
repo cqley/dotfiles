@@ -18,7 +18,6 @@
     ./components/network/share.nix
     ./components/network/notes.nix
     ./components/network/git.nix
-    ./components/network/vault.nix
     ./components/streaming/jellyfin.nix
     ./components/streaming/aiostreams.nix
     ../../modules/system/core.nix
