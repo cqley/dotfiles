@@ -67,7 +67,7 @@
 
       confirm_os_window_close 0
       remember_window_size no
-      allow_remote_control yes
+      allow_remote_control no
 
       background_opacity 1
       background_blur 1

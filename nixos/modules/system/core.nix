@@ -3,6 +3,7 @@
 {
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.auto-optimise-store = true;
+  nix.settings.allowed-users = [ "@wheel" ];
 
   nix.gc = {
     automatic = true;

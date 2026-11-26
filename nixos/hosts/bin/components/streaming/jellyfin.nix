@@ -65,7 +65,7 @@ in
     forceSSL = true;
     enableACME = true;
     locations."/" = proxy;
-    locations."~* ^/(users/(authenticatebyname|authenticatewithquickconnect|forgotpassword)|quickconnect/initiate)" = proxy // {
+    locations."~* ^/(users/(authenticatebyname|authenticatewithquickconnect|forgotpassword|[^/]+/authenticate)|quickconnect/initiate)" = proxy // {
       extraConfig = ''
         limit_req zone=jellylogin burst=5 nodelay;
         limit_req_status 429;

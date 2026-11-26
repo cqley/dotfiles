@@ -1,4 +1,4 @@
-import { marked } from "npm:marked@12";
+import { marked } from "npm:marked@12.0.2";
 
 const dir = Deno.env.get("STATE_DIRECTORY") ?? ".";
 const postsFile = `${dir}/posts.json`;

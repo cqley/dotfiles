@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ lib, pkgs, bin, ... }:
 
 let
   root = "/var/lib/minecraft";
@@ -26,19 +26,7 @@ let
     valid() { [[ "$1" =~ ^[a-z0-9]{1,16}$ ]] && case "$1" in backups|dashboard|api|static|assets|app) false ;; esac; }
   '';
 
-  sandbox = {
-    NoNewPrivileges = true;
-    PrivateTmp = true;
-    PrivateDevices = true;
-    ProtectSystem = "strict";
-    ProtectHome = true;
-    ProtectKernelTunables = true;
-    ProtectKernelModules = true;
-    ProtectControlGroups = true;
-    RestrictSUIDSGID = true;
-    LockPersonality = true;
-    CapabilityBoundingSet = "";
-  };
+  sandbox = bin.sandbox;
 
   start = pkgs.writeShellScript "minecraftstart" ''
     set -eu
@@ -109,7 +97,7 @@ let
       StandardError = "journal";
       Restart = "on-failure";
       TimeoutStopSec = 90;
-      IPAddressDeny = [ "localhost" "10.0.0.0/24" ];
+      IPAddressDeny = [ "localhost" "10.0.0.0/24" "2a14:7c0:1002:1307::/64" ];
     };
   };
 
@@ -399,17 +387,14 @@ in
       script = ''
         exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1,5.231.118.153,api.modrinth.com,cdn.modrinth.com,piston-meta.mojang.com,piston-data.mojang.com,meta.fabricmc.net,sessionserver.mojang.com --allow-read=${root},/var/lib/mcpanel,/run/minecraft,${page} --allow-write=${root},/var/lib/mcpanel,/run/minecraft --allow-run=systemctl,journalctl ${./minecraft/panel.js} ${page}
       '';
-      serviceConfig = {
+      serviceConfig = bin.sandbox // {
         User = "mcpanel";
         Group = "mcpanel";
         StateDirectory = "mcpanel";
         WorkingDirectory = "/var/lib/mcpanel";
         ReadWritePaths = [ root ];
         Restart = "on-failure";
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
+        RestrictAddressFamilies = [ "AF_UNIX" "AF_INET" "AF_INET6" ];
       };
     };
   };

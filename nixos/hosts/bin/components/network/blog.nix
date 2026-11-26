@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, bin, ... }:
 {
   network.services.blog = {
     site = "blog";
@@ -12,9 +12,10 @@
     script = ''
       exec ${pkgs.deno}/bin/deno run --no-prompt --allow-net=127.0.0.1:4600,127.0.0.1:4606 --allow-read=/var/lib/blog,${./sites/blog} --allow-write=/var/lib/blog --allow-run=${pkgs.libwebp}/bin/cwebp --allow-env=STATE_DIRECTORY,PORT,ADMIN_PORT,CWEBP ${./sites/blog}/server.js
     '';
-    serviceConfig = {
+    serviceConfig = bin.sandbox // {
       DynamicUser = true;
       StateDirectory = "blog";
+      RestrictAddressFamilies = [ "AF_UNIX" "AF_INET" "AF_INET6" ];
       WorkingDirectory = "/var/lib/blog";
       Restart = "on-failure";
     };
