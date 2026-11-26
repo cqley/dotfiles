@@ -96,6 +96,7 @@ git-receive-pack)
 		b=$(git -C "$d" for-each-ref --count=1 --format='%(refname)' refs/heads)
 		[ -n "$b" ] && git -C "$d" symbolic-ref HEAD "$b"
 	fi
+	[ $s -eq 0 ] && [ -f "$d/git-daemon-export-ok" ] && printf 'https://%s/%s/%s/\n' "$GITHOST" "$o" "$r" >&2
 	exit $s
 	;;
 ls)

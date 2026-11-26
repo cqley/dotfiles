@@ -6,6 +6,7 @@
     ./components/wireguard.nix
     ../../modules/system/core.nix
     ../../modules/system/names.nix
+    ../../modules/system/mesh.nix
     ../../modules/system/editor.nix
     ../../modules/misc/public.nix
     ../../modules/misc/ariang.nix
@@ -72,13 +73,6 @@
     };
   };
 
-  security.doas.enable = true;
-  security.sudo.enable = false;
-  security.doas.extraRules = [{
-    users = ["cat"];
-    keepEnv = true;
-    persist = true;
-  }];
 
   users.users.cat = {
     isNormalUser = true;
